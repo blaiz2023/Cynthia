@@ -41,9 +41,9 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 
 # Images
 <img src="images/cynthia-screenshot2.jpg">
-
+<br>
 
 <img src="images/cynthia-screenshot3.jpg">
-
+<br>
 
 <img src="images/cynthia-screenshot4.jpg">
