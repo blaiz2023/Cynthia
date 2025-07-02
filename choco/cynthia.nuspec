@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>cynthia</id>
+    <version>1.0.4830</version>
+    <title>Cynthia</title>
+    <authors>Blaiz Enterprises</authors>
+    <owners>Blaiz Enterprises</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://www.blaizenterprises.com/cynthia.html#help--mit-license</licenseUrl>
+    <projectUrl>https://www.blaizenterprises.com/cynthia.html</projectUrl>
+    <iconUrl>https://rawcdn.githack.com/blaiz2023/Cynthia/af7690d957506104a5e945cd5c1f890583fa839b/images/cynthia-256.png</iconUrl>
+    <description>Reliably play midi music files from a (img style="aspect-ratio:0.75;width:15px;max-width:100%;" loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAUCAYAAABSx2cSAAAAGnRFWHRTb2Z0d2FyZQBDbGF1ZGUgdjMuMDAuNDAxMM0lLYsAAAAWdEVYdGJlLnBuZy5zZXR0aW5ncwAtMS4wLjC996d4AAAAsklEQVR4AWL8z0A+YCJfKwPDSNTMAgqwhU3K8ECPr7vLSGwgMi4AaoyvKWJgYMxiYPg/jWFhSx9OvegGg22GaQTR8TVAvVCDkOmFzSoYhkKiCmgjskKQCzD4GFoZGDBsRjgd5nwYjRo2ILMgmpFsAvnZ3t4Viz2oQgcP7oamMKTAIlYjKPDgfibFRliogzWToxHkCUZQ6kBOJKg+Q+XBbISJgjXDOKTSQzRLAgAAAP//AwCma07ytzfPqgAAAABJRU5ErkJggg==" title="folder20 TEP image") folder or ".m3u" (img style="aspect-ratio:1;width:20px;max-width:100%;" loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGnRFWHRTb2Z0d2FyZQBDbGF1ZGUgdjMuMDAuNDAxMM0lLYsAAAAWdEVYdGJlLnBuZy5zZXR0aW5ncwAtMS4wLjC996d4AAAA00lEQVR4AcySYQrCMAyFnfOQgjDwGDuBxxAEwUNWJq/wwjOkWZn7YWEkTV6+JHRDKeWw5zllsNf1vSB/vo9DptNcCqSQYN5hW026gAqir00UfqRgL9s1oU7AxjohY7CbJ4ya/ATUqdTfPKFC1P9/4Ncrt15OV1rzbWXCLo/bWk3NU+/FdUIkAXpOc/28iPcWhHlYWxmw6OB/I4hNIx1jtjIDavXn7YGhtgK1EEHcfSzbADU8trIHUJDZqCZdmTA/sb9TB2sTarDlRxN57QcAAP//AwArlEH+NAjvqgAAAABJRU5ErkJggg==" title="notes20 TEP image") playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap. Supports ".mid", ".midi" and ".rmi" files in format 0 (single track) and format 1 (multi-track). Comes complete with 24 sample midis ready to play.
+
+![Cynthia v1.0.4830 Screenshot](https://rawcdn.githack.com/blaiz2023/Cynthia/af7690d957506104a5e945cd5c1f890583fa839b/images/cynthia-screenshot.jpg)
+
+Features
+* Dual play systems - (img style="aspect-ratio:0.75;width:15px;max-width:100%;" loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAUCAYAAABSx2cSAAAAGnRFWHRTb2Z0d2FyZQBDbGF1ZGUgdjMuMDAuNDAxMM0lLYsAAAAWdEVYdGJlLnBuZy5zZXR0aW5ncwAtMS4wLjC996d4AAAAsklEQVR4AWL8z0A+YCJfKwPDSNTMAgqwhU3K8ECPr7vLSGwgMi4AaoyvKWJgYMxiYPg/jWFhSx9OvegGg22GaQTR8TVAvVCDkOmFzSoYhkKiCmgjskKQCzD4GFoZGDBsRjgd5nwYjRo2ILMgmpFsAvnZ3t4Viz2oQgcP7oamMKTAIlYjKPDgfibFRliogzWToxHkCUZQ6kBOJKg+Q+XBbISJgjXDOKTSQzRLAgAAAP//AwCma07ytzfPqgAAAABJRU5ErkJggg==" title="folder20 TEP image") Play Folder and (img style="aspect-ratio:1;width:20px;max-width:100%;" loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAGnRFWHRTb2Z0d2FyZQBDbGF1ZGUgdjMuMDAuNDAxMM0lLYsAAAAWdEVYdGJlLnBuZy5zZXR0aW5ncwAtMS4wLjC996d4AAAA00lEQVR4AcySYQrCMAyFnfOQgjDwGDuBxxAEwUNWJq/wwjOkWZn7YWEkTV6+JHRDKeWw5zllsNf1vSB/vo9DptNcCqSQYN5hW026gAqir00UfqRgL9s1oU7AxjohY7CbJ4ya/ATUqdTfPKFC1P9/4Ncrt15OV1rzbWXCLo/bWk3NU+/FdUIkAXpOc/28iPcWhHlYWxmw6OB/I4hNIx1jtjIDavXn7YGhtgK1EEHcfSzbADU8trIHUJDZqCZdmTA/sb9TB2sTarDlRxN57QcAAP//AwArlEH+NAjvqgAAAABJRU5ErkJggg==" title="notes20 TEP image") Play List
+* Comes with 24 built-in sample midis on a virtual disk
+* Elapsed, Remaining and Total time readouts
+* Native ".m3u" playlist support (copy, paste, open, save, build)
+* Drag and drop midi files to play / add to playlist
+* Play Modes: Once, Repeat One, Repeat All, All Once, Random
+* Play Speed: 10% to 1,000% (1/10th to 10x)
+* Intro Mode: Play first 2s, 5s, 10s or 30s of midi
+* Rewind / Fast Forward by: 1s, 2s, 5s, 10s or 30s
+* Play on Start option - playback commences on app start
+* Always on Midi option - maintain connection to midi device for instant playback
+* Auto Fade In - eliminate loud or abrupt notes during rewind, fast forward or reposition operations
+* Playback Progress bar - click to reposition/jump backward or forward in time
+* Volume control with volume boost (up to 200%)
+* "(img style="aspect-ratio:0.6;width:12px;max-width:100%;" loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAUCAYAAAC58NwRAAAAGnRFWHRTb2Z0d2FyZQBDbGF1ZGUgdjMuMDAuNDAxMM0lLYsAAAAWdEVYdGJlLnBuZy5zZXR0aW5ncwAtMS4wLjC996d4AAAAo0lEQVR4AcyT0Q2AIAxEi3EMZ3AfZ3ACop8aJnAGx0SP5JJWNLEfJvIDHH3Xw2CQLK7RuKrPYjfQosM0T6+CrcsaWhQPw1gl2/dNKn2WXDpU1aeQUiryFTIAXDlijGVJjaC5NEQecM09jR470JmFnA2g3fq+E8TSGiAD3LlC05AB9IH7KzHzjzogkr4TIwb8D57HVwDSb2bzND4BDgAAAP//AwBVNEI5WGN8AAAAAABJRU5ErkJggg==" title="vol20 TEP image") Mixer" link - display Windows "Volume Mixer" app
+* Play ".mid", ".midi" and ".rmi" midi files in 0 and 1 formats
+* Custom built midi playback subsystem for high playback stability
+* Scrolling lyrics viewer
+* Detailed midi information panel
+* Tracks Panel: Realtime track data indicators with mute all, unmute all, and mute individual track options 
+* Channels Panel: Realtime channel output volume indicators with peak level hold and variable hold time, unmute all, mute all, and mute individual channel options
+* Notes Panel: 128 realtime note usage indicators with variable hold time, 8-12 notes per line display, labels as letters or numbers, unmute all, mute all, and mute individual note options
+* Piano Panel: View realtime piano keystrokes on a 128, 88, 76, 61, 54, 49 or 37 key keyboard with animated and lit keystrokes
+* Piano: Mark middle C key, C + F keys, or all white keys
+* Transpose option: Shift all notes up or down music scale
+* Use an Xbox Controller to control Cynthia's main functions - playback speed and volume, song position, display panels, song file navigation, jump to start of song, toggle fullscreen mode, etc
+* Large list capacity for handling thousands of midi files
+* Switch between up to 10 midi playback devices
+* Simple and easy to use
+* Options Window - Easily change app color, font and settings
+* Portable</description>
+    <summary>Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap.</summary>
+    <copyright>2025 Blaiz Enterprises</copyright>
+    <tags>reliably play midi music files from a folder or ' m3u' playlist adjust playback speed</tags>
+    <projectSourceUrl>https://github.com/blaiz2023/Cynthia</projectSourceUrl>
+    <packageSourceUrl>https://github.com/blaiz2023/Cynthia/tree/main/choco</packageSourceUrl>
+    <docsUrl>https://www.blaizenterprises.com/cynthia.html#help</docsUrl>
+    <bugTrackerUrl>https://www.blaizenterprises.com/contact.html</bugTrackerUrl>
+  </metadata>
+</package>
