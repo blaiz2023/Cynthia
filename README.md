@@ -1,4 +1,4 @@
-# Cynthia v1.00.4830 - 03jul2025
+# Cynthia v1.00.4900 - 11aug2025
 Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap. Supports ".mid", ".midi" and ".rmi" files in format 0 (single track) and format 1 (multi-track). Comes complete with 24 sample midis ready to play.
 
 <img src="images/cynthia-screenshot.jpg">
@@ -7,6 +7,7 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Dual play systems - Play Folder and Play List
 * Comes with 24 built-in sample midis on a virtual disk
 * Elapsed, Remaining and Total time readouts
+* Device Status, Device Count, Msgs/sec and Data Rate readouts
 * Native ".m3u" playlist support (copy, paste, open, save, build)
 * Drag and drop midi files to play / add to playlist
 * Play Modes: Once, Repeat One, Repeat All, All Once, Random
