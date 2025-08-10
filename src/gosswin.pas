@@ -1,13 +1,15 @@
 unit gosswin;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+{Requires the "$align on" conditional to force "aligned record fields" state for Win32 procs -> e.g. without this state Win32 api calls can fail/act erratically, e.g. "win____waveoutgetdevcaps()" can sometimes work, sometimes fail, or sometimes return bad/incorrect/inconsistent data }
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -28,10 +30,10 @@ interface
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. 32bit Windows api's (gosswin.pas)
-//## Version.................. 4.00.070 (+0)
-//## Items.................... 1
-//## Last Updated ............ 04may2025, 17feb2024
-//## Lines of Code............ 400+
+//## Version.................. 4.00.1490 (+23)
+//## Items.................... 6
+//## Last Updated ............ 11aug2025, 09aug2025, 29jul2025, 26jul2025, 04may2025, 17feb2024
+//## Lines of Code............ 5,400+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -44,12 +46,14 @@ interface
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | xbox__*                | Xbox Controller   | 1.00.120  | 25jan2025   | Xbox Controller support with ease-of-access support, complete with persistent button clicks and variable inputs/outputs scaled to floats between 0..1 and -1..1
-//## | win____*               | Win32 general     | 1.00.352  | 29apr2025   | Win32 general api procs for Windows specific features and functionality.  The leading "win____" denotes a Window's API call - 01dec2024, 26nov2024, 04mar2024
+//## | xbox__*                | Xbox Controller   | 1.00.741  | 10aug2025   | Xbox Controller support with ease-of-access support, complete with persistent button clicks and variable inputs/outputs scaled to floats between 0..1 and -1..1 - 29jul2025, 25jan2025
+//## | win____*               | Win32 general     | 1.00.365  | 11aug2025  | Win32 general api procs for Windows specific features and functionality.  The leading "win____" denotes a Window's API call - 26jul2025, 29apr2025, 01dec2024, 26nov2024, 04mar2024
 //## | net____*               | Win32 network     | 1.00.110  | 04mar2024   | Win32 network api procs for low level network IO.  The leading "net____" denotes a Window's network API call
 //## | reg__*                 | family of procs   | 1.00.032  | 24jun2024   | Registry access procs (requires admin terminal for write/delete) - 03mar2024
 //## | service__*             | family of procs   | 1.00.170  | 04mar2024   | Service support, permits seamless switching from console app to app as a service
@@ -94,6 +98,57 @@ const
   MAXDWORD = $FFFFFFFF;
 
   //xinput - xbox controller support -------------------------------------------
+  xbox_thumbstick_threshold_value =0.7;//22jul2025
+  xbox_autoclick_initialdelay     =550;//ms
+  xbox_autoclick_repeatdelay      =100;//ms - 10fps
+
+
+  //slot ranges
+  xssNative0                    =0;
+  xssNative1                    =1;
+  xssNative2                    =2;
+  xssNative3                    =3;
+  xssNativeMin                  =0;
+  xssNativeMax                  =3;
+  xssKeyboard                   =4;
+  xssMouse                      =5;
+  xssMax                        =5;//no mouse yet
+
+
+  //keyboard mapping key codes  (0..xkey_max) - 24jul2025
+
+  xkey_lt                       =0;//left trigger pressed
+  xkey_rt                       =1;//right trigger pressed
+
+  xkey_lbumper                  =2;
+  xkey_rbumper                  =3;
+  xkey_lsbutton                 =4;
+  xkey_rsbutton                 =5;
+
+  xkey_a_button                 =6;//"a" button press
+  xkey_b_button                 =7;//"b" button press
+  xkey_x_button                 =8;//"x" button press
+  xkey_y_button                 =9;//"y" button press
+
+  xkey_left                     =10;//game pad
+  xkey_right                    =11;
+  xkey_up                       =12;
+  xkey_down                     =13;
+
+  xkey_rx_left                  =14;//right joystick moves left
+  xkey_rx_right                 =15;//right joystick moves right
+  xkey_ry_up                    =16;//right joystick moves up
+  xkey_ry_down                  =17;//right joystick moves down
+
+  xkey_lx_left                  =18;//left joystick moves left
+  xkey_lx_right                 =19;//left joystick moves right
+  xkey_ly_up                    =20;//left joystick moves up
+  xkey_ly_down                  =21;//left joystick moves down
+
+  xkey_menu                     =22;//menu pressed
+  xkey_max                      =22;
+  xkey_canmap                   =xkey_menu-1;//exclude "menu" from map list
+
   XINPUT_GAMEPAD_DPAD_UP 	=1;//0x0001
   XINPUT_GAMEPAD_DPAD_DOWN 	=2;//0x0002
   XINPUT_GAMEPAD_DPAD_LEFT 	=4;//0x0004
@@ -393,20 +448,56 @@ type
    txinputgetstate=function(dwUserIndex03:dword;xinputstate:pxinputstate):tbasic_lresult stdcall;
    txinputsetstate=function(dwUserIndex03:dword;xinputvibration:pxinputvibration):tbasic_lresult stdcall;
 
+//xxxxxxxxxxxxxxxxxxxxxxxxxxx//111111111111
+   txinputkey=packed record
+      rawkey     :longint;//key to trigger action
+      down       :boolean;
+      downonce   :boolean;
+      end;
+
+   txinputkeylist=array[0..xkey_max] of txinputkey;
+
+   txinputfromkeyboard=packed record
+      //maintain xbox controller-like input data
+      xinput:txinputstate;
+
+      //map keys to actions
+      keylist     :txinputkeylist;
+      //.special keyboard keys
+      enter       :boolean;
+      esc         :boolean;
+      del         :boolean;
+      end;
+
+   thumbstickinfo=record//22jul2025
+      lpeak:double;
+      rpeak:double;
+      upeak:double;
+      dpeak:double;
+
+      lclick:boolean;
+      rclick:boolean;
+      uclick:boolean;
+      dclick:boolean;
+      end;
+
    pxboxcontrollerinfo=^txboxcontrollerinfo;
    txboxcontrollerinfo=record
       index:longint;
       connected:boolean;
       newdata:boolean;
       packetcount:dword;
+
       //triggers
       lt:double;//0..1
       rt:double;//0..1
+
       //thumb sticks
       lx:double;//-1..1
       ly:double;//-1..1
       rx:double;//-1..1
       ry:double;//-1..1
+
       //buttons
       start:boolean;
       back:boolean;
@@ -423,6 +514,7 @@ type
       d:boolean;
       l:boolean;
       r:boolean;
+
       //button clicks
       startclick:boolean;
       backclick:boolean;
@@ -436,14 +528,27 @@ type
       bclick:boolean;
       xclick:boolean;
       yclick:boolean;
+      //.extended keyboard support via slot #4
+      entClick:boolean;
+      escClick:boolean;
+      delClick:boolean;
+
       //.dpad
       uclick:boolean;
       dclick:boolean;
       lclick:boolean;
       rclick:boolean;
+
+      //.thumbsticks (l and r) as l/r/u/d clicks - 22jul2025
+      lxyinfo:thumbstickinfo;
+      rxyinfo:thumbstickinfo;
+
       //vibration
       lm:double;//0..1
       rm:double;//0..1
+
+      //auto click support
+      autoclick64:array[0..3] of comp;
       end;
 
    pOSVersionInfo=^TOSVersionInfo;
@@ -721,7 +826,6 @@ const
    CF_OEMTEXT       =7;
    CF_DIB           =8;
    CF_DIBV5         =17;//08jun2025
-   CF_PNG           =49447;
    CF_PALETTE       =9;
    CF_PENDATA       =10;
    CF_RIFF          =11;
@@ -941,9 +1045,11 @@ const
    WM_USER              =$0400;//anything below this is reserved
    WM_MULTIMEDIA_TIMER  =WM_USER + 127;
    WM_PAINT             = $000F;
+   WM_DESTROY           = $0002;
    WM_CLOSE             = $0010;
    WM_QUERYENDSESSION   = $0011;
    WM_QUIT              = $0012;
+   WM_ENDSESSION        = $0016;
    WM_DISPLAYCHANGE     = $007E;
    WM_DPICHANGED        = 736;//0x02E0
    GWL_EXSTYLE          =-20;
@@ -1378,7 +1484,6 @@ const
    WHDR_INQUEUE    = $00000010;  { reserved for driver }
    MM_WOM_OPEN         = $3BB;
    MM_WOM_CLOSE        = $3BC;
-   MM_WOM_DONE         = $3BD;
    MM_WIM_OPEN         = $3BE;
    MM_WIM_CLOSE        = $3BF;
    MM_WIM_DATA         = $3C0;
@@ -1613,9 +1718,8 @@ type
    TFNDrawStateProc = TFarProc;
    TFNTimeCallBack  = procedure(uTimerID,uMessage:UINT;dwUser,dw1,dw2:dword) stdcall;// <<-- special note: NO semicolon between "dword)" and "stdcall"!!!!
 
-
-
    TFNHookProc = function (code: Integer; wparam: WPARAM; lparam: LPARAM): LRESULT stdcall;
+
    //.service status
    PServiceStatus = ^TServiceStatus;
    TServiceStatus = record
@@ -2287,10 +2391,44 @@ var
    system_xbox_getstate                       :txinputgetstate=nil;
    system_xbox_setstate                       :txinputsetstate=nil;
    system_xbox_deadzone                       :double=0.1;//0..1 => 0.1=10%
-   system_xbox_retryref64                     :array[0..3] of comp;
-   system_xbox_statelist                      :array[-1..3] of txboxcontrollerinfo;//friendly version => [-1] reserved for xbox__info() for returning a blank/uninitiated data structure
-   system_xbox_setstatelist                   :array[0..3] of txinputvibration;
+   system_xbox_retryref64                     :array[0..xssMax] of comp;
+   system_xbox_statelist                      :array[-1..xssMax] of txboxcontrollerinfo;//friendly version => [-1] reserved for xbox__info() for returning a blank/uninitiated data structure
+   system_xbox_setstatelist                   :array[0..xssMax] of txinputvibration;
 
+   //.idle support
+   system_xbox_idleref                        :array[0..xssMax] of longint;
+   system_xbox_idletime                       :comp=0;
+
+   //.keyboard support
+   system_xbox_keyboard                       :txinputfromkeyboard;
+   system_xbox_lastrawkey                     :longint=65;
+   system_xbox_lastrawkeycount                :longint=0;
+   system_xbox_lockkeyboard_count             :longint=0;
+
+   //.mouse support
+   system_xbox_mouse                          :txinputfromkeyboard;
+   system_xbox_mouseref                       :string='';
+   system_xbox_mousetimeref                   :comp=0;
+
+   //.invert x-axis and y-axis and swap left/right joysticks and triggers
+   system_xbox_suspend_all_inversions         :boolean=false;//disabled by default, to allow for proper menu navigation, but during game play it's enabled and movement is inverted as set by user - 26jul2025
+
+   system_xbox_nativecontroller_inverty       :boolean=false;//slots 0..3
+   system_xbox_nativecontroller_invertx       :boolean=false;
+   system_xbox_nativecontroller_swapjoysticks :boolean=false;
+   system_xbox_nativecontroller_swaptriggers  :boolean=false;
+   system_xbox_nativecontroller_swapbumpers   :boolean=false;
+
+   system_xbox_keyboard_inverty               :boolean=false;//slot 4
+   system_xbox_keyboard_invertx               :boolean=false;
+
+   system_xbox_mouse_inverty                  :boolean=false;//slot 5
+   system_xbox_mouse_invertx                  :boolean=false;
+   system_xbox_mouse_swapbuttons              :boolean=false;
+   
+   //.input labels => game specific labels for each controller button/movement, a "nil" label indicates the button/movement is not used by the game
+   system_xbox_input_labels                    :array[0..xkey_max] of string;
+   system_xbox_input_allowed                   :array[0..xkey_max] of boolean;
 
    //.dynamic support (dll) ----------------------------------------------------
    dwin____GetDefaultPrinter_state            :longint=0;
@@ -2352,6 +2490,14 @@ function win____MessageBox(hWnd: HWND; lpText, lpCaption: PChar; uType: UINT): I
 function win____EnumFonts(DC: HDC; lpszFace: PChar; fntenmprc: TFarProc; lpszData: PChar): Integer; stdcall; external gdi32 name 'EnumFontsA';
 function win____EnumFontFamiliesEx(DC: HDC; var p2: TLogFont; p3: TFarProc; p4: LPARAM; p5: DWORD): BOOL; stdcall; external gdi32 name 'EnumFontFamiliesExA';
 function win____GetStockObject(Index: Integer): HGDIOBJ; stdcall; external gdi32 name 'GetStockObject';
+function win____GetCurrentThread: THandle; stdcall; external kernel32 name 'GetCurrentThread';
+function win____GetCurrentThreadId: DWORD; stdcall; external kernel32 name 'GetCurrentThreadId';
+//function win____SetWindowsHookExA(idHook: Integer; lpfn: TFNHookProc; hmod: HINST; dwThreadId: DWORD): HHOOK; stdcall; external user32 name 'SetWindowsHookExA';
+//function win____UnhookWindowsHookEx(hhk: HHOOK): BOOL; stdcall; external user32 name 'UnhookWindowsHookEx';
+//function win____CallNextHookEx(hhk: HHOOK; nCode: Integer; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall; external user32 name 'CallNextHookEx';
+function win____ClipCursor(lpRect: pwinrect): BOOL; stdcall; external user32 name 'ClipCursor';
+function win____GetClipCursor(var lpRect: twinrect): BOOL; stdcall; external user32 name 'CloseClipboard';
+function win____GetCapture: HWND; stdcall; external user32 name 'GetCapture';
 function win____SetCapture(hWnd: HWND): HWND; stdcall; external user32 name 'SetCapture';
 function win____ReleaseCapture: BOOL; stdcall; external user32 name 'ReleaseCapture';
 function win____PostMessage(hWnd: HWND; Msg: UINT; wParam: WPARAM; lParam: LPARAM): BOOL; stdcall; external user32 name 'PostMessageA';
@@ -2587,14 +2733,19 @@ function win____waveInStart(hWaveIn: HWAVEIN): MMRESULT; stdcall; external mmsys
 function win____waveInStop(hWaveIn: HWAVEIN): MMRESULT; stdcall; external mmsyst name 'waveInStop';
 function win____waveInReset(hWaveIn: HWAVEIN): MMRESULT; stdcall; external mmsyst name 'waveInReset';
 //.midi
+function win____midiOutGetNumDevs: UINT; stdcall; external mmsyst name 'midiOutGetNumDevs';
 function win____midiOutGetDevCaps(uDeviceID: UINT; lpCaps: PMidiOutCaps; uSize: UINT): MMRESULT; stdcall; external mmsyst name 'midiOutGetDevCapsA';
 function win____midiOutOpen(lphMidiOut: PHMIDIOUT; uDeviceID: UINT; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT; stdcall; external mmsyst name 'midiOutOpen';
 function win____midiOutClose(hMidiOut: HMIDIOUT): MMRESULT; stdcall; external mmsyst name 'midiOutClose';
-function win____midiOutShortMsg(hMidiOut: HMIDIOUT; dwMsg: DWORD): MMRESULT; stdcall; external mmsyst name 'midiOutShortMsg';
 function win____midiOutReset(hMidiOut: HMIDIOUT): MMRESULT; stdcall; external mmsyst name 'midiOutReset';//for midi streams only? -> hence the "no effect" for volume reset between songs - 15apr2021
+
+//was: function win____midiOutShortMsg(hMidiOut: HMIDIOUT; dwMsg: DWORD): MMRESULT; stdcall; external mmsyst name 'midiOutShortMsg';
+function win____midiOutShortMsg(const hMidiOut: HMIDIOUT; const dwMsg: DWORD): MMRESULT; stdcall; external mmsyst name 'midiOutShortMsg';
+
 //function midiOutPrepareHeader(hMidiOut: HMIDIOUT; lpMidiOutHdr: PMidiHdr; uSize: UINT): MMRESULT; stdcall; external mmsyst name 'midiOutPrepareHeader';
 //function midiOutUnprepareHeader(hMidiOut: HMIDIOUT; lpMidiOutHdr: PMidiHdr; uSize: UINT): MMRESULT; stdcall; external mmsyst name 'midiOutUnprepareHeader';
 //function midiOutLongMsg(hMidiOut: HMIDIOUT; lpMidiOutHdr: PMidiHdr; uSize: UINT): MMRESULT; stdcall; external mmsyst name 'midiOutLongMsg';
+
 //.mci
 function win____mciSendCommand(mciId:MCIDEVICEID;uMessage:UINT;dwParam1,dwParam2:DWORD):MCIERROR; stdcall; external 'winmm.dll' name 'mciSendCommandA';
 function win____mciGetErrorString(mcierr: MCIERROR; pszText: PChar; uLength: UINT): BOOL; stdcall; external 'winmm.dll' name 'mciGetErrorStringA';
@@ -2676,18 +2827,28 @@ procedure xbox__stop;//called internally on app shutdown
 function xbox__init:boolean;//called automatically
 function xbox__inited:boolean;
 function xbox__info(xindex:longint):pxboxcontrollerinfo;
-function xbox__state(xindex:longint):boolean;//xindex=0..3 = max of 4 controllers
+function xbox__state(xindex:longint):boolean;//xindex=0..3 = max of 4 controllers, return=true=connected and we might have new data, check "xbox__info[].newdata" - 22jul2025
 function xbox__state2(xindex:longint;var x:txboxcontrollerinfo):boolean;//xindex=0..3 = max of 4 controllers
 function xbox__setstate(xindex:longint):boolean;
 function xbox__setstate2(xindex:longint;lmotorspeed,rmotorspeed:double):boolean;//0..1 for each left and right motors
-function xbox__lastindex:longint;
+function xbox__lastindex(xallslots:boolean):longint;//24jul2025
+function xbox__native(xindex:longint):boolean;//0..3=native controllers, 4=virtual controller via keyboard input
+
 //.adjust deadzone
 function xbox__deadzone(x:double):double;
 procedure xbox__setdeadzone(x:double);
+procedure xbox__invertaxis(var nativex,nativey,keyboardx,keyboardy,mousex,mousey:boolean);//24jul2025
+procedure xbox__setinvertaxis(nativex,nativey,keyboardx,keyboardy,mousex,mousey:boolean);
+function xbox__invertaxislist:string;//24jul2025
+procedure xbox__setinvertaxislist(x:string);
+
 //.support
 function xbox__usebool(var x:boolean):boolean;
 function xbox__index(x:longint):longint;
 function xbox__stateshow(xindex:longint):boolean;//for debugging
+function xbox__autoclicked(xindex,xindex03:longint;xdown:boolean):boolean;
+function xbox__roundtozero(x:double):double;
+
 //.detect button clicks -> click remains until the proc is called -> allows for persistent clicks that are not time-sensitive -> click ready on the down stroke of the button
 function xbox__aclick(xindex:longint):boolean;//A
 function xbox__bclick(xindex:longint):boolean;//B
@@ -2705,6 +2866,82 @@ function xbox__lbclick(xindex:longint):boolean;//left thumb stick (left stick)
 function xbox__rbclick(xindex:longint):boolean;//right thumb stick (right stick)
 function xbox__lsclick(xindex:longint):boolean;//left shoulder
 function xbox__rsclick(xindex:longint):boolean;//right shoulder
+//.extended keyboard support via slot #4
+function xbox__enterClick(xindex:longint):boolean;
+function xbox__escClick(xindex:longint):boolean;
+function xbox__delClick(xindex:longint):boolean;
+//.other
+function xbox__showmenu(xindex:longint):boolean;
+
+//.thumbsticks as clicks (x/y) coordinates
+function xbox__lthumbstick_lclick(xindex:longint):boolean;//22jul2025
+function xbox__lthumbstick_rclick(xindex:longint):boolean;
+function xbox__lthumbstick_uclick(xindex:longint):boolean;
+function xbox__lthumbstick_dclick(xindex:longint):boolean;
+
+function xbox__rthumbstick_lclick(xindex:longint):boolean;//22jul2025
+function xbox__rthumbstick_rclick(xindex:longint):boolean;
+function xbox__rthumbstick_uclick(xindex:longint):boolean;
+function xbox__rthumbstick_dclick(xindex:longint):boolean;
+
+//.any click - 22jul2025
+function xbox__lanyclick(xindex:longint):boolean;
+function xbox__ranyclick(xindex:longint):boolean;
+function xbox__uanyclick(xindex:longint):boolean;
+function xbox__danyclick(xindex:longint):boolean;
+
+//.any down - 22jul2025
+function xbox__lanydown(xindex:longint):boolean;
+function xbox__ranydown(xindex:longint):boolean;
+function xbox__uanydown(xindex:longint):boolean;
+function xbox__danydown(xindex:longint):boolean;
+
+//.any auto click - 22jul2025
+function xbox__lanyautoclick(xindex:longint):boolean;
+function xbox__ranyautoclick(xindex:longint):boolean;
+function xbox__uanyautoclick(xindex:longint):boolean;
+function xbox__danyautoclick(xindex:longint):boolean;
+
+//.reset clicks
+function xbox__resetClicks:boolean;
+procedure xbox__resetClicksAndWait;
+
+//.input idle time in seconds (0..60)
+function xbox__idletime:longint;
+
+
+//.slot #4 - keyboard as a Xbox controller support
+function xbox__rootlabel(xkey_code:longint):string;
+function xbox__keyfilter(xindex:longint):longint;
+function xbox__keylabel(xindex:longint):string;
+function xbox__controllerfilter(xindex:longint):longint;
+function xbox__controllerlabel(xindex:longint):string;
+
+function xbox__keyboardkeylabel(xrawkey:longint):string;
+function xbox__keymap(xindex:longint):longint;
+function xbox__keymap2(xindex:longint;var xlabel:string;var xrawkey:longint):boolean;
+procedure xbox__setkeymap(xindex,xnewkey:longint);
+procedure xbox__keyrawinput(xrawkey:longint;xdown:boolean);//uses slot4
+function xbox__keyslot_getstate(xinputstate:pxinputstate):boolean;
+procedure xbox__keymap__defaults;
+function xbox__lastrawkey:longint;
+function xbox__lastrawkeycount(xreset:boolean):longint;
+function xbox__keymappings:string;
+procedure xbox__setkeymappings(const x:string);
+procedure xbox__lockkeyboard;
+procedure xbox__unlockkeyboard;
+function xbox__keyboardlocked:boolean;
+
+//.slot #5 - mouse as a Xbox controller support
+procedure xbox__mouserawinput(sender:tobject;xmode,xbuttonstyle,dx,dy,dw,dh:longint);//uses slot #5
+function xbox__mouseslot_getstate(xinputstate:pxinputstate):boolean;
+procedure xbox__mouseslot_reset;
+function xbox__mouselabel(xkey_code:longint):string;
+
+
+//.game input label -> use range 0..xkey_max
+function xbox__inputlabel(xindex:longint):string;
+procedure xbox__setinputlabel(xindex:longint;const xlabel:string);
 
 
 implementation
@@ -2714,10 +2951,18 @@ uses gossroot, gossio;
 
 //start-stop procs -------------------------------------------------------------
 procedure gosswin__start;
+type
+   ttestalign=record
+    a:byte;
+    b:longint;
+   end;
 begin
 try
 //check
 if system_started then exit else system_started:=true;
+
+//aligned record fields check - 10aug2025
+if (sizeof(ttestalign)<>8) then showerror('Warning:'+rcode+'Win32 (gosswin.pas) requires "{$align on}" or "Aligned record fields" compiler condition to be set for proper interaction with api calls, otherwise erratic data may result.');
 
 except;end;
 end;
@@ -2758,8 +3003,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosswin.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.978'
-else if (xname='date')       then result:='09jun2025'
+if      (xname='ver')        then result:='4.00.1490'
+else if (xname='date')       then result:='11aug2025'
 else if (xname='name')       then result:='Win32'
 else
    begin
@@ -3521,6 +3766,17 @@ if not system_xbox_init then
    {$ifdef gui}
 
    //cls system vars
+
+   //.keyboard support on slot #4
+   low__cls(@system_xbox_keyboard,sizeof(system_xbox_keyboard));
+   xbox__keymap__defaults;
+
+
+   //.mouse support on slot #5
+   low__cls(@system_xbox_mouse,sizeof(system_xbox_mouse));
+
+
+   //.xbox controller support on slots #0..#3
    for p:=0 to high(system_xbox_retryref64) do
    begin
    low__cls(@system_xbox_statelist[p],sizeof(system_xbox_statelist[p]));
@@ -3539,6 +3795,17 @@ if not system_xbox_init then
       system_xbox_setstate:=win____GetProcAddress(a,PAnsiChar('XInputSetState'));
       end;
    except;end;
+
+   //idle support
+   low__cls(@system_xbox_idleref,sizeof(system_xbox_idleref));
+   system_xbox_idletime :=ms64;
+
+   //game input labels
+   for p:=0 to high(system_xbox_input_labels) do
+   begin
+   system_xbox_input_labels[p]   :='';
+   system_xbox_input_allowed[p]  :=false;
+   end;
 
    {$endif}
    end;
@@ -3560,15 +3827,36 @@ else
    end;
 end;
 
-function xbox__state(xindex:longint):boolean;//xindex=0..3 = max of 4 controllers, return=true=connected and we might have new data, check "xbox__info[].newdata"
+function xbox__state(xindex:longint):boolean;//xindex=0..3 = max of 4 controllers, return=true=connected and we might have new data, check "xbox__info[].newdata" - 22jul2025
 var
    s:txinputstate;
    w:word;
-   sclicked,bol1:boolean;
+   xinvok,ltwas0,rtwas0,sclicked:boolean;
 
-   function dz(x:double):double;
+   function dz(x:double):double;//22jul2025
    begin
-   if (x<-system_xbox_deadzone) or (x>system_xbox_deadzone) then result:=x else result:=0;
+
+   //-1..-0
+   if (x<-system_xbox_deadzone) then
+      begin
+
+      result:=xbox__roundtozero( -( (-x-system_xbox_deadzone) / frcminD64(1-system_xbox_deadzone,0.1) ) );//22jul2025
+      if (result<-1) then result:=-1;
+
+      end
+
+   //0+..1
+   else if (x>system_xbox_deadzone) then
+      begin
+
+      result:=xbox__roundtozero( +( (x-system_xbox_deadzone) / frcminD64(1-system_xbox_deadzone,0.1) ) );//22jul2025
+      if (result>1) then result:=1;
+
+      end
+
+   //0
+   else result:=0;
+
    end;
 
    procedure sclick(var xvar,xclickvar:boolean;xfindval:longint);
@@ -3583,13 +3871,84 @@ var
       end;
    xvar:=xnewval;
    end;
+
+   procedure xthumbstickClick(var a:thumbstickinfo;x,y:double);
+   begin
+
+   //filter
+   x   :=dz(x);
+   y   :=dz(y);
+
+   //init
+   if (x<0) and (x<a.lpeak) then a.lpeak:=x;
+   if (x>0) and (x>a.rpeak) then a.rpeak:=x;
+   if (y<0) and (y<a.dpeak) then a.dpeak:=y;
+   if (y>0) and (y>a.upeak) then a.upeak:=y;
+
+   //get
+
+   //.left
+   if (a.lpeak<=-xbox_thumbstick_threshold_value) and (x=0) then
+      begin
+      a.lpeak   :=0;
+      a.lclick  :=true;
+      end;
+
+   //.right
+   if (a.rpeak>=+xbox_thumbstick_threshold_value) and (x=0) then
+      begin
+      a.rpeak   :=0;
+      a.rclick  :=true;
+      end;
+
+   //.up
+   if (a.upeak>=+xbox_thumbstick_threshold_value) and (y=0) then
+      begin
+      a.upeak   :=0;
+      a.uclick  :=true;
+      end;
+
+   //.down
+   if (a.dpeak<=-xbox_thumbstick_threshold_value) and (y=0) then
+      begin
+      a.dpeak   :=0;
+      a.dclick  :=true;
+      end;
+
+   end;
+
+   procedure yinvert;
+   begin
+
+   with system_xbox_statelist[xindex] do
+   begin
+   ly:=-ly;
+   ry:=-ry;
+   end;
+
+   end;
+
+   procedure xinvert;
+   begin
+
+   with system_xbox_statelist[xindex] do
+   begin
+   lx:=-lx;
+   rx:=-rx;
+   end;
+
+   end;
+
 begin
+
 //range
 xindex:=xbox__index(xindex);
 
+
 //init
-system_xbox_statelist[xindex].index:=xindex;
-sclicked:=false;
+system_xbox_statelist[xindex].index :=xindex;
+sclicked                            :=false;
+xinvok                              :=not system_xbox_suspend_all_inversions;
 
 //limit retry rate when controller is not connected or not present -> as per MS specs
 if (system_xbox_retryref64[xindex]<>0) and (system_xbox_retryref64[xindex]>=ms64) then
@@ -3605,9 +3964,10 @@ if (system_xbox_retryref64[xindex]<>0) and (system_xbox_retryref64[xindex]>=ms64
    exit;
    end;
 
+
 //get
 //.controller is present and connected
-if xbox__init and (0=system_xbox_getstate(xindex,@s)) then
+if xbox__init and ( ((xindex<=xssNativeMax) and (0=system_xbox_getstate(xindex,@s))) or ((xindex=xssKeyboard) and xbox__keyslot_getstate(@s)) or ((xindex=xssMouse) and xbox__mouseslot_getstate(@s)) ) then
    begin
    result:=true;
    system_xbox_retryref64[xindex]:=0;//disable retry limit (delay)
@@ -3615,46 +3975,134 @@ if xbox__init and (0=system_xbox_getstate(xindex,@s)) then
 
    with system_xbox_statelist[xindex] do
    begin
+
+   //init
    connected    :=true;
    newdata      :=(packetcount<>s.dwPacketNumber);
    packetcount  :=s.dwPacketnumber;
 
-   bol1         :=(lt<>0);
+   ltwas0       :=(lt=0);
    lt           :=dz(fr64(s.dGamepad.bleftTrigger/255,0,1));
-   if (lt<>0) and (not bol1) then ltclick:=true;
 
-   bol1         :=(rt<>0);
+   rtwas0       :=(rt=0);
    rt           :=dz(fr64(s.dGamepad.brightTrigger/255,0,1));
-   if (rt<>0) and (not bol1) then rtclick:=true;
 
    lx           :=dz(fr64(s.dGamepad.sThumbLX/32768,-1,1));
    ly           :=dz(fr64(s.dGamepad.sThumbLY/32768,-1,1));
    rx           :=dz(fr64(s.dGamepad.sThumbRX/32768,-1,1));
    ry           :=dz(fr64(s.dGamepad.sThumbRY/32768,-1,1));
 
+
+   //invert X and Y axis - 24jul2025
+   case xindex of
+   xssNativeMin..xssNativeMax:if xinvok then
+      begin
+
+      if system_xbox_nativecontroller_inverty       then yinvert;
+      if system_xbox_nativecontroller_invertx       then xinvert;
+
+      if system_xbox_nativecontroller_swapjoysticks then
+         begin
+         low__swapd64(lx,rx);
+         low__swapd64(ly,ry);
+         end;
+
+      if system_xbox_nativecontroller_swaptriggers then low__swapd64(lt,rt);
+
+      end;
+   xssKeyboard:if xinvok then
+      begin
+
+      if system_xbox_keyboard_inverty then yinvert;
+      if system_xbox_keyboard_invertx then xinvert;
+
+      end;
+   xssMouse:if xinvok then
+      begin
+
+      if system_xbox_mouse_inverty     then yinvert;
+      if system_xbox_mouse_invertx     then xinvert;
+
+      if system_xbox_mouse_swapbuttons then
+         begin
+         low__swapd64(lt,rt);
+         end;
+
+      end;
+   end;//case
+
+
+   //triggers as clicks - 26jul2025
+   if (lt<>0) and ltwas0 then ltclick:=true;
+   if (rt<>0) and rtwas0 then rtclick:=true;
+
+
+   //thumbsticks as clicks -> don't process thumbstick clicks for mouse - 28jul2025, 22jul2025
+   if (xindex<>xssMouse) then
+      begin
+      xthumbstickClick(lxyinfo,lx,ly);
+      xthumbstickClick(rxyinfo,rx,ry);
+      end;
+
+
    //buttons
    w            :=s.dGamepad.wbuttons;
 
-   sclick(lb,lbclick,XINPUT_GAMEPAD_LEFT_THUMB);
-   sclick(rb,rbclick,XINPUT_GAMEPAD_RIGHT_THUMB);
+   case xindex of
+   xssNativeMin..xssNativeMax:begin
 
-   sclick(ls,lsclick,XINPUT_GAMEPAD_LEFT_SHOULDER);
-   sclick(rs,rsclick,XINPUT_GAMEPAD_RIGHT_SHOULDER);
+      //.set and/or swap thumb clicks (joystick clicks)
+      sclick(lb,lbclick,low__aorb(XINPUT_GAMEPAD_LEFT_THUMB,XINPUT_GAMEPAD_RIGHT_THUMB,xinvok and system_xbox_nativecontroller_swapjoysticks));
+      sclick(rb,rbclick,low__aorb(XINPUT_GAMEPAD_RIGHT_THUMB,XINPUT_GAMEPAD_LEFT_THUMB,xinvok and system_xbox_nativecontroller_swapjoysticks));
+
+      //.set and/or swap bumpers
+      sclick(ls,lsclick,low__aorb(XINPUT_GAMEPAD_LEFT_SHOULDER,XINPUT_GAMEPAD_RIGHT_SHOULDER,xinvok and system_xbox_nativecontroller_swapbumpers));
+      sclick(rs,rsclick,low__aorb(XINPUT_GAMEPAD_RIGHT_SHOULDER,XINPUT_GAMEPAD_LEFT_SHOULDER,xinvok and system_xbox_nativecontroller_swapbumpers));
+
+      sclick(u,uclick,XINPUT_GAMEPAD_DPAD_UP);
+      sclick(d,dclick,XINPUT_GAMEPAD_DPAD_DOWN);
+      sclick(l,lclick,XINPUT_GAMEPAD_DPAD_LEFT);
+      sclick(r,rclick,XINPUT_GAMEPAD_DPAD_RIGHT);
+
+      end;
+   xssKeyboard:begin
+
+      sclick(lb,lbclick,XINPUT_GAMEPAD_LEFT_THUMB);
+      sclick(rb,rbclick,XINPUT_GAMEPAD_RIGHT_THUMB);
+
+      sclick(ls,lsclick,XINPUT_GAMEPAD_LEFT_SHOULDER);
+      sclick(rs,rsclick,XINPUT_GAMEPAD_RIGHT_SHOULDER);
+
+      sclick(u,uclick,low__aorb(XINPUT_GAMEPAD_DPAD_UP,XINPUT_GAMEPAD_DPAD_DOWN,xinvok and system_xbox_keyboard_inverty));
+      sclick(d,dclick,low__aorb(XINPUT_GAMEPAD_DPAD_DOWN,XINPUT_GAMEPAD_DPAD_UP,xinvok and system_xbox_keyboard_inverty));
+      sclick(l,lclick,low__aorb(XINPUT_GAMEPAD_DPAD_LEFT,XINPUT_GAMEPAD_DPAD_RIGHT,xinvok and system_xbox_keyboard_invertx));
+      sclick(r,rclick,low__aorb(XINPUT_GAMEPAD_DPAD_RIGHT,XINPUT_GAMEPAD_DPAD_LEFT,xinvok and system_xbox_keyboard_invertx));
+
+      end;
+   end;//case
+
+
+   //core buttons
+   sclick(start,startclick,XINPUT_GAMEPAD_START);
+   sclick(back,backclick,XINPUT_GAMEPAD_BACK);
 
    sclick(a,aclick,XINPUT_GAMEPAD_A);
    sclick(b,bclick,XINPUT_GAMEPAD_B);
    sclick(x,xclick,XINPUT_GAMEPAD_X);
    sclick(y,yclick,XINPUT_GAMEPAD_Y);
 
-   sclick(start,startclick,XINPUT_GAMEPAD_START);
-   sclick(back,backclick,XINPUT_GAMEPAD_BACK);
+   if (xindex=xssKeyboard) then
+      begin
 
-   sclick(u,uclick,XINPUT_GAMEPAD_DPAD_UP);
-   sclick(d,dclick,XINPUT_GAMEPAD_DPAD_DOWN);
-   sclick(l,lclick,XINPUT_GAMEPAD_DPAD_LEFT);
-   sclick(r,rclick,XINPUT_GAMEPAD_DPAD_RIGHT);
+      if xbox__usebool(system_xbox_keyboard.enter) then entClick:=true;
+      if xbox__usebool(system_xbox_keyboard.esc)   then escClick:=true;
+      if xbox__usebool(system_xbox_keyboard.del)   then delClick:=true;
+
+      end;
+
    end;//with
    end
+
 
 //.failed -> controller not present or is disconnected
 else
@@ -3669,8 +4117,10 @@ else
    end;//with
    end;
 
+
 //update click idle tracker
 if sclicked then low__resetclicktime;
+
 end;
 
 function xbox__state2(xindex:longint;var x:txboxcontrollerinfo):boolean;//xindex=0..3 = max of 4 controllers
@@ -3684,6 +4134,12 @@ function xbox__setstate(xindex:longint):boolean;
 var
    s:txinputvibration;
 begin
+//defaults
+result:=false;
+
+//check
+if (xindex>=4) then exit;//slot 4 and above are virtual controller slots - 22jul2025
+
 //range
 xindex:=xbox__index(xindex);
 
@@ -3811,6 +4267,175 @@ begin
 result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].rsclick);
 end;
 
+function xbox__lthumbstick_lclick(xindex:longint):boolean;//22jul2025
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].lxyinfo.lclick);
+end;
+
+function xbox__lthumbstick_rclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].lxyinfo.rclick);
+end;
+
+function xbox__lthumbstick_uclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].lxyinfo.uclick);
+end;
+
+function xbox__lthumbstick_dclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].lxyinfo.dclick);
+end;
+
+function xbox__rthumbstick_lclick(xindex:longint):boolean;//22jul2025
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].rxyinfo.lclick);
+end;
+
+function xbox__rthumbstick_rclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].rxyinfo.rclick);
+end;
+
+function xbox__rthumbstick_uclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].rxyinfo.uclick);
+end;
+
+function xbox__rthumbstick_dclick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].rxyinfo.dclick);
+end;
+
+function xbox__lanyclick(xindex:longint):boolean;//22jul2025
+begin
+result:=false;
+if xbox__lclick(xindex)                                      then result:=true;
+if xbox__lthumbstick_lclick(xindex) and xbox__native(xindex) then result:=true;
+if xbox__rthumbstick_lclick(xindex) and xbox__native(xindex) then result:=true;
+end;
+
+function xbox__ranyclick(xindex:longint):boolean;
+begin
+result:=false;
+if xbox__rclick(xindex)                                      then result:=true;
+if xbox__lthumbstick_rclick(xindex) and xbox__native(xindex) then result:=true;
+if xbox__rthumbstick_rclick(xindex) and xbox__native(xindex) then result:=true;
+end;
+
+function xbox__uanyclick(xindex:longint):boolean;
+begin
+result:=false;
+if xbox__uclick(xindex)                                      then result:=true;
+if xbox__lthumbstick_uclick(xindex) and xbox__native(xindex) then result:=true;
+if xbox__rthumbstick_uclick(xindex) and xbox__native(xindex) then result:=true;
+end;
+
+function xbox__danyclick(xindex:longint):boolean;
+begin
+result:=false;
+if xbox__dclick(xindex)                                      then result:=true;
+if xbox__lthumbstick_dclick(xindex) and xbox__native(xindex) then result:=true;
+if xbox__rthumbstick_dclick(xindex) and xbox__native(xindex) then result:=true;
+end;
+
+function xbox__lanydown(xindex:longint):boolean;
+begin
+result:=(system_xbox_statelist[xindex].lx<=-xbox_thumbstick_threshold_value) or (system_xbox_statelist[xindex].rx<=-xbox_thumbstick_threshold_value);
+end;
+
+function xbox__ranydown(xindex:longint):boolean;
+begin
+result:=(system_xbox_statelist[xindex].lx>=xbox_thumbstick_threshold_value) or (system_xbox_statelist[xindex].rx>=xbox_thumbstick_threshold_value);
+end;
+
+function xbox__uanydown(xindex:longint):boolean;
+begin
+result:=(system_xbox_statelist[xindex].ly>=xbox_thumbstick_threshold_value) or (system_xbox_statelist[xindex].ry>=xbox_thumbstick_threshold_value);
+end;
+
+function xbox__danydown(xindex:longint):boolean;
+begin
+result:=(system_xbox_statelist[xindex].ly<=-xbox_thumbstick_threshold_value) or (system_xbox_statelist[xindex].ry<=-xbox_thumbstick_threshold_value);
+end;
+
+function xbox__lanyautoclick(xindex:longint):boolean;
+begin
+result:=xbox__autoclicked(xindex,0, xbox__lanydown(xindex) );
+end;
+
+function xbox__ranyautoclick(xindex:longint):boolean;
+begin
+result:=xbox__autoclicked(xindex,1, xbox__ranydown(xindex) );
+end;
+
+function xbox__uanyautoclick(xindex:longint):boolean;
+begin
+result:=xbox__autoclicked(xindex,2, xbox__uanydown(xindex) );
+end;
+
+function xbox__danyautoclick(xindex:longint):boolean;
+begin
+result:=xbox__autoclicked(xindex,3, xbox__danydown(xindex) );
+end;
+
+function xbox__autoclicked(xindex,xindex03:longint;xdown:boolean):boolean;
+begin
+
+//check
+if (xindex=xssMouse) then
+   begin
+   result:=false;
+   exit;
+   end;
+
+//range
+if (xindex03<0) then xindex03:=0 else if (xindex03>3) then xindex03:=3;
+
+//get
+if xdown then
+   begin
+
+   if (system_xbox_statelist[xindex].autoclick64[xindex03]=0) then system_xbox_statelist[xindex].autoclick64[xindex03]:=add64(ms64,xbox_autoclick_initialdelay);//initial delay
+
+   result:=(ms64>=system_xbox_statelist[xindex].autoclick64[xindex03]);//auto-clicked
+
+   if result then system_xbox_statelist[xindex].autoclick64[xindex03]:=add64(ms64,xbox_autoclick_repeatdelay);//repeat delay
+
+   end
+
+//reset
+else
+   begin
+
+   result:=false;
+
+   if (system_xbox_statelist[xindex].autoclick64[xindex03]<>0) then system_xbox_statelist[xindex].autoclick64[xindex03]:=0;
+
+   end;
+
+end;
+
+function xbox__enterClick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].entclick);
+end;
+
+function xbox__escClick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].escclick);
+end;
+
+function xbox__delClick(xindex:longint):boolean;
+begin
+result:=xbox__usebool(system_xbox_statelist[xbox__index(xindex)].delclick);
+end;
+
+function xbox__showmenu(xindex:longint):boolean;
+begin
+result:=low__or3( (xbox__startclick(xindex) and xbox__native(xindex)), xbox__escclick(xindex), xbox__startclick(xssMouse) );
+end;
+
 //.xbox adjust dead zone -------------------------------------------------------
 function xbox__deadzone(x:double):double;
 begin
@@ -3820,6 +4445,80 @@ end;
 procedure xbox__setdeadzone(x:double);
 begin
 system_xbox_deadzone:=fr64(x,0,0.5);//0..0.5
+end;
+
+//.invert X and Y axis
+procedure xbox__invertaxis(var nativex,nativey,keyboardx,keyboardy,mousex,mousey:boolean);
+begin
+
+nativex     :=system_xbox_nativecontroller_invertx;
+nativey     :=system_xbox_nativecontroller_inverty;
+
+keyboardx   :=system_xbox_keyboard_invertx;
+keyboardy   :=system_xbox_keyboard_inverty;
+
+mousex      :=system_xbox_mouse_invertx;
+mousey      :=system_xbox_mouse_inverty;
+
+end;
+
+procedure xbox__setinvertaxis(nativex,nativey,keyboardx,keyboardy,mousex,mousey:boolean);
+begin
+
+system_xbox_nativecontroller_invertx  :=nativex;
+system_xbox_nativecontroller_inverty  :=nativey;
+
+system_xbox_keyboard_invertx          :=keyboardx;
+system_xbox_keyboard_inverty          :=keyboardy;
+
+system_xbox_mouse_invertx             :=mousex;
+system_xbox_mouse_inverty             :=mousey;
+
+end;
+
+
+function xbox__invertaxislist:string;//24jul2025
+begin
+
+result:=
+bolstr(system_xbox_nativecontroller_invertx)+
+bolstr(system_xbox_nativecontroller_inverty)+
+bolstr(system_xbox_keyboard_invertx)+
+bolstr(system_xbox_keyboard_inverty)+
+bolstr(system_xbox_mouse_invertx)+
+bolstr(system_xbox_mouse_inverty)+
+//additional
+bolstr(system_xbox_nativecontroller_swapjoysticks)+
+bolstr(system_xbox_nativecontroller_swaptriggers)+
+bolstr(system_xbox_nativecontroller_swapbumpers)+
+bolstr(system_xbox_mouse_swapbuttons);
+
+end;
+
+procedure xbox__setinvertaxislist(x:string);
+
+   function b(xindex:longint):boolean;
+   begin
+   result:=strbol( strcopy1(x,xindex,1) );
+   end;
+begin
+
+//init
+x:=x+'000000000';
+
+//get
+system_xbox_nativecontroller_invertx        :=b(1);
+system_xbox_nativecontroller_inverty        :=b(2);
+system_xbox_keyboard_invertx                :=b(3);
+system_xbox_keyboard_inverty                :=b(4);
+system_xbox_mouse_invertx                   :=b(5);
+system_xbox_mouse_inverty                   :=b(6);
+//additional
+system_xbox_nativecontroller_swapjoysticks  :=b(7);
+system_xbox_nativecontroller_swaptriggers   :=b(8);
+system_xbox_nativecontroller_swapbumpers    :=b(9);
+system_xbox_mouse_swapbuttons               :=b(10);//29jul2025
+
 end;
 
 //.xbox support procs ----------------------------------------------------------
@@ -3890,7 +4589,7 @@ end;
 
 function xbox__index(x:longint):longint;
 begin
-result:=frcrange32(x,0,high(system_xbox_retryref64));
+result:=frcrange32(x,xssNativeMin,xssMax);//24jul2025
 end;
 
 function xbox__usebool(var x:boolean):boolean;
@@ -3899,9 +4598,871 @@ result:=x;
 x:=false;
 end;
 
-function xbox__lastindex:longint;
+function xbox__lastindex(xallslots:boolean):longint;//24jul2025
 begin
-result:=high(system_xbox_retryref64);
+if xallslots then result:=xssMax else result:=xssNativeMax;
+end;
+
+function xbox__roundtozero(x:double):double;
+begin
+if (x>=-0.001) and (x<=0.001) then result:=0 else result:=x;
+end;
+
+function xbox__native(xindex:longint):boolean;
+begin
+result:=(xindex>=xssNativeMin) and (xindex<=xssNativeMax);
+end;
+
+function xbox__resetClicks:boolean;
+var
+   p:longint;
+
+   procedure cc(var x:boolean);
+   begin
+   if x then result:=true;
+   x:=false;
+   end;
+
+   procedure cv(var x:double);
+   begin
+   if (x<>0) then result:=true;
+   x:=0;
+   end;
+
+begin
+
+//defaults
+result:=false;
+
+//get
+for p:=0 to xssmax do if xbox__state(p) then
+   begin
+
+   with system_xbox_statelist[p] do
+   begin
+
+   //thumbsticks as clicks
+   cc(lxyinfo.lclick);
+   cc(lxyinfo.rclick);
+   cc(lxyinfo.uclick);
+   cc(lxyinfo.dclick);
+
+   cc(rxyinfo.lclick);
+   cc(rxyinfo.rclick);
+   cc(rxyinfo.uclick);
+   cc(rxyinfo.dclick);
+
+   //buttons
+   cc(lbclick);
+   cc(lb);
+
+   cc(rbclick);
+   cc(rb);
+
+   cc(lsclick);
+   cc(ls);
+
+   cc(rsclick);
+   cc(rs);
+
+   cc(aclick);
+   cc(a);
+
+   cc(bclick);
+   cc(b);
+
+   cc(xclick);
+   cc(x);
+
+   cc(yclick);
+   cc(y);
+
+   cc(startclick);
+
+   cc(backclick);
+
+   cc(uclick);
+   cc(u);
+
+   cc(dclick);
+   cc(d);
+
+   cc(lclick);
+   cc(l);
+
+   cc(rclick);
+   cc(r);
+
+   cc(entClick);
+   cc(escClick);
+   cc(delClick);
+
+   //.joysticks - 29jul2025
+   cv(lx);
+   cv(ly);
+
+   cv(rx);
+   cv(ry);
+
+   //.triggers
+   cv(lt);
+   cv(rt);
+
+   end;//with
+
+   end;//p
+
+end;
+
+procedure xbox__resetClicksAndWait;
+var
+   a,b:comp;
+begin
+
+//init
+a  :=ms64+5000;
+b  :=ms64+100;
+
+//get
+while true do
+begin
+
+//.turn off mouse -> results in a faster clickReset
+system_xbox_mousetimeref:=0;
+
+if xbox__resetClicks then b:=ms64+300;
+
+if (ms64>=a) or (ms64>=b) then break;
+
+win____sleep(30);
+app__processallmessages;
+
+end;//loop
+
+end;
+
+function xbox__idletime:longint;
+var
+   p:longint;
+   xnotidle:boolean;
+begin
+
+//get
+xnotidle:=false;
+
+for p:=0 to xssmax do if xbox__state(p) then if low__setint(system_xbox_idleref[p],system_xbox_statelist[p].packetcount) then
+   begin
+   xnotidle:=true;
+   end;
+
+//reset -> when not idle
+if xnotidle then system_xbox_idletime:=ms64;
+
+//get
+result:=frcrange32( round(sub32(ms64,system_xbox_idletime)/1000) ,0,300);//0..300 seconds (5 minutes)
+
+end;
+
+
+//------------------------------------------------------------------------------
+//xbox controller from keyboard and mouse input --------------------------------
+
+function xbox__keyboardkeylabel(xrawkey:longint):string;
+
+   procedure s(x:string);
+   begin
+   result:=x;
+   end;
+
+begin
+
+case xrawkey of
+8: s('Backspace');
+9: s('Tab');
+13: s('Enter');
+16: s('Shift');
+17: s('Ctrl');
+27: s('Esc');
+32: s('Space');
+
+37: s('Left');
+38: s('Up');
+39: s('Right');
+40: s('Down');
+
+46: s('Del');
+
+48..57,65..90:s( char(xrawkey) );//0..9 and A..Z
+112..123:s('F'+intstr32(xrawkey-111));//F1..F12
+
+188:s('<');
+191:s('/');
+190:s('>');
+
+219:s('[');
+220:s('\');
+221:s(']');
+else s('');
+end;//case
+
+end;
+
+function xbox__rootlabel(xkey_code:longint):string;
+
+   procedure s(x:string);
+   begin
+   result:=x;
+   end;
+
+begin
+
+case xkey_code of
+
+xkey_lbumper:     s('L-bumper');
+xkey_rbumper:     s('R-bumper');
+xkey_lsbutton:    s('L-stick Button');
+xkey_rsbutton:    s('R-stick Button');
+
+xkey_rx_left:     s('R-stick Left');
+xkey_rx_right:    s('R-stick Right');
+xkey_ry_up:       s('R-stick Up');
+xkey_ry_down:     s('R-stick Down');
+
+xkey_lx_left:     s('L-stick Left');
+xkey_lx_right:    s('L-stick Right');
+xkey_ly_up:       s('L-stick Up');
+xkey_ly_down:     s('L-stick Down');
+
+xkey_a_button:    s('A Button');
+xkey_b_button:    s('B Button');
+xkey_x_button:    s('X Button');
+xkey_y_button:    s('Y Button');
+
+xkey_lt      :    s('L-trigger');
+xkey_rt      :    s('R-trigger');
+
+xkey_menu    :    s('Menu');
+
+xkey_left:        s('Gamepad Left');
+xkey_right:       s('Gamepad Right');
+xkey_up:          s('Gamepad Up');
+xkey_down:        s('Gamepad Down');
+
+else result:='Not Used';//29jul2025
+
+end;//case
+
+end;
+
+function xbox__keyfilter(xindex:longint):longint;
+begin
+
+///invert x-axis
+if system_xbox_keyboard_invertx then
+   begin
+
+   case xindex of
+   xkey_lx_left:   xindex:=xkey_lx_right;
+   xkey_lx_right:  xindex:=xkey_lx_left;
+
+   xkey_rx_left:   xindex:=xkey_rx_right;
+   xkey_rx_right:  xindex:=xkey_rx_left;
+   end;//case
+
+   end;
+
+///invert y-axis
+if system_xbox_keyboard_inverty then
+   begin
+
+   case xindex of
+   xkey_ly_up:     xindex:=xkey_ly_down;
+   xkey_ly_down:   xindex:=xkey_ly_up;
+
+   xkey_ry_up:     xindex:=xkey_ry_down;
+   xkey_ry_down:   xindex:=xkey_ry_up;
+   end;//case
+
+   end;
+
+//get
+result:=xindex;
+
+end;
+
+function xbox__keylabel(xindex:longint):string;
+begin
+result:=xbox__rootlabel( xbox__keyfilter(xindex) );
+end;
+
+function xbox__controllerfilter(xindex:longint):longint;
+begin
+
+//filter
+case xindex of
+xkey_lbumper:  if system_xbox_nativecontroller_swapbumpers     then xindex:=xkey_rbumper;
+xkey_rbumper:  if system_xbox_nativecontroller_swapbumpers     then xindex:=xkey_lbumper;
+xkey_lt:       if system_xbox_nativecontroller_swaptriggers    then xindex:=xkey_rt;
+xkey_rt:       if system_xbox_nativecontroller_swaptriggers    then xindex:=xkey_lt;
+
+xkey_lx_left:  if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_rx_left;
+xkey_lx_right: if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_rx_right;
+xkey_ly_up:    if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_ry_up;
+xkey_ly_down:  if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_ry_down;
+
+xkey_rx_left:  if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_lx_left;
+xkey_rx_right: if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_lx_right;
+xkey_ry_up:    if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_ly_up;
+xkey_ry_down:  if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_ly_down;
+
+xkey_lsbutton: if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_rsbutton;
+xkey_rsbutton: if system_xbox_nativecontroller_swapjoysticks   then xindex:=xkey_lsbutton;
+
+end;
+
+///invert x-axis
+if system_xbox_nativecontroller_invertx then
+   begin
+
+   case xindex of
+   xkey_lx_left:   xindex:=xkey_lx_right;
+   xkey_lx_right:  xindex:=xkey_lx_left;
+
+   xkey_rx_left:   xindex:=xkey_rx_right;
+   xkey_rx_right:  xindex:=xkey_rx_left;
+   end;//case
+
+   end;
+
+///invert y-axis
+if system_xbox_nativecontroller_inverty then
+   begin
+
+   case xindex of
+   xkey_ly_up:     xindex:=xkey_ly_down;
+   xkey_ly_down:   xindex:=xkey_ly_up;
+
+   xkey_ry_up:     xindex:=xkey_ry_down;
+   xkey_ry_down:   xindex:=xkey_ry_up;
+   end;//case
+
+   end;
+
+//get
+result:=xindex;
+
+end;
+
+function xbox__controllerlabel(xindex:longint):string;
+begin
+result:=xbox__rootlabel( xbox__controllerfilter(xindex) );
+end;
+
+function xbox__keymap(xindex:longint):longint;
+begin
+if (xindex>=0) and (xindex<=xkey_max) then result:=system_xbox_keyboard.keylist[xindex].rawkey else result:=0;
+end;
+
+function xbox__keymap2(xindex:longint;var xlabel:string;var xrawkey:longint):boolean;
+begin
+
+result:=(xindex>=0) and (xindex<=xkey_max) and (xindex<=xkey_canmap);
+
+if result then
+   begin
+
+   xlabel     :=xbox__rootlabel(xindex);
+   xrawkey    :=system_xbox_keyboard.keylist[xindex].rawkey;
+
+   end
+else
+   begin
+
+   xlabel     :='';
+   xrawkey    :=0;
+
+   end;
+
+end;
+
+procedure xbox__setkeymap(xindex,xnewkey:longint);
+begin
+if (xindex>=0) and (xindex<=xkey_max) then system_xbox_keyboard.keylist[xindex].rawkey:=xnewkey;
+end;
+
+procedure xbox__keymap__defaults;
+
+   procedure s(xindex,xrawkey:longint);
+   begin
+   xbox__setkeymap(xindex,xrawkey);
+   end;
+
+begin
+
+s(xkey_lbumper   ,188);// "<"
+s(xkey_rbumper   ,190);// ">"
+
+s(xkey_lsbutton  ,75);// "K"
+s(xkey_rsbutton  ,76);// "L"
+
+s(xkey_rx_left   ,37);
+s(xkey_rx_right  ,39);
+s(xkey_ry_up     ,38);
+s(xkey_ry_down   ,40);
+
+s(xkey_lx_left   ,37);
+s(xkey_lx_right  ,39);
+s(xkey_ly_up     ,38);
+s(xkey_ly_down   ,40);
+
+s(xkey_left      ,37);
+s(xkey_right     ,39);
+s(xkey_up        ,38);
+s(xkey_down      ,40);
+
+s(xkey_a_button  ,65);
+s(xkey_b_button  ,66);
+s(xkey_x_button  ,88);
+s(xkey_y_button  ,89);
+
+s(xkey_menu      ,27);//esc
+
+s(xkey_lt        ,90);// "Z"
+s(xkey_rt        ,67);// "C"
+
+end;
+
+function xbox__inputlabel(xindex:longint):string;
+begin
+if (xindex>=0) and (xindex<=xkey_max) then result:=system_xbox_input_labels[xindex] else result:='';
+end;
+
+procedure xbox__setinputlabel(xindex:longint;const xlabel:string);
+begin
+
+if (xindex>=0) and (xindex<=xkey_max) then
+   begin
+
+   system_xbox_input_labels[xindex]   :=xlabel;
+   system_xbox_input_allowed[xindex]  :=(system_xbox_input_labels[xindex]<>'');
+
+   end;
+
+end;
+
+function xbox__lastrawkey:longint;
+begin
+result:=system_xbox_lastrawkey;
+end;
+
+function xbox__lastrawkeycount(xreset:boolean):longint;
+begin
+if xreset then system_xbox_lastrawkeycount:=0;
+result:=system_xbox_lastrawkeycount;
+end;
+
+procedure xbox__lockkeyboard;
+begin
+inc(system_xbox_lockkeyboard_count);
+end;
+
+procedure xbox__unlockkeyboard;
+begin
+system_xbox_lockkeyboard_count:=frcmin32(system_xbox_lockkeyboard_count-1,0);
+end;
+
+function xbox__keyboardlocked:boolean;
+begin
+result:=(system_xbox_lockkeyboard_count<>0);
+end;
+
+procedure xbox__keyrawinput(xrawkey:longint;xdown:boolean);//uses slot4
+label
+   skipend;
+var
+   p:longint;
+   xchanged:boolean;
+
+   function xchange:boolean;
+   begin
+   result    :=true;
+   xchanged  :=true;
+   end;
+begin
+
+//init
+xchanged:=false;
+
+//ok
+case (system_xbox_lastrawkey=xrawkey) of
+true:if (system_xbox_lastrawkeycount<max32) then inc(system_xbox_lastrawkeycount);
+else system_xbox_lastrawkeycount:=1;
+end;
+
+//store last rawkey value regardless of slot status
+system_xbox_lastrawkey:=xrawkey;
+
+//check
+if not system_xbox_init then exit;
+
+//remove retry delay
+if (system_xbox_retryref64[xssKeyboard]<>0) then system_xbox_retryref64[xssKeyboard]:=0;
+
+//special extended keyboard support
+if not xdown then
+   begin
+
+   case xrawkey of
+   13:   system_xbox_keyboard.enter :=xchange;
+   27:   system_xbox_keyboard.esc   :=xchange;
+   8,46: system_xbox_keyboard.del   :=xchange;
+   end;//caswe
+
+   end;
+
+//keyboard is locked -> don't process dynamic data below, static above is OK - 22jul2025
+if (system_xbox_lockkeyboard_count<>0) then goto skipend;
+
+//get
+for p:=0 to xkey_max do if (system_xbox_suspend_all_inversions or system_xbox_input_allowed[p]) and (xrawkey=system_xbox_keyboard.keylist[p].rawkey) then
+   begin
+
+   if xdown and (not system_xbox_keyboard.keylist[p].down) then system_xbox_keyboard.keylist[p].downonce:=true;
+
+   system_xbox_keyboard.keylist[p].down   :=xdown;
+   xchanged                               :=true;
+
+   end;//p
+
+
+skipend:
+
+//increment packet counter
+if xchanged then low__irollone(system_xbox_keyboard.xinput.dwPacketNumber);
+
+end;
+
+function xbox__keyslot_getstate(xinputstate:pxinputstate):boolean;
+var
+   lt,rt,lx,ly,rx,ry:double;
+   b4:longint;
+   xdownonce:boolean;
+
+   function xdown(xindex:longint):boolean;
+   begin
+   result     :=system_xbox_keyboard.keylist[xindex].down;
+   xdownonce  :=system_xbox_keyboard.keylist[xindex].downonce;
+
+   //reset
+   system_xbox_keyboard.keylist[xindex].downonce:=false;
+   end;
+
+   procedure addbut(xbutcode:longint);
+   begin
+   bit__addval32(b4,xbutcode);
+   end;
+
+   function s16(x:longint):word;
+   begin
+   result:=frcrange32(x,0,max16);
+   end;
+
+   function s32(x:double):smallint;
+   begin
+   result:=frcrange32( round(x) ,-32767,32767);
+   end;
+
+   function s255(x:double):byte;
+   begin
+   result:=frcrange32( round(x) ,0,255);
+   end;
+
+   procedure dadd(var xval:double;xpositive:boolean);
+   begin
+   xval:=frcrangeD64( xbox__roundtozero(xval + ( sign32(xpositive) * 0.5 ) ),-1,1);
+   end;
+begin
+//defaults
+result:=system_xbox_init and (system_xbox_keyboard.xinput.dwPacketNumber>=1);
+
+//check
+if not result then exit;
+
+//init
+lx:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.sThumbLX/32768,-1,1);
+ly:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.sThumbLY/32768,-1,1);
+
+rx:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.sThumbRX/32768,-1,1);
+ry:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.sThumbRY/32768,-1,1);
+
+lt:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.bleftTrigger/255,0,1);
+rt:=frcrangeD64(system_xbox_keyboard.xinput.dGamepad.brightTrigger/255,0,1);
+
+b4:=system_xbox_keyboard.xinput.dGamepad.wbuttons;
+
+
+//right joystick ---------------------------------------------------------------
+
+//x
+if      xdown(xkey_rx_left)  then dadd(rx,false)
+else if xdown(xkey_rx_right) then dadd(rx,true)
+else                              rx:=0;
+
+//y
+if      xdown(xkey_ry_up)   then dadd(ry,true)
+else if xdown(xkey_ry_down) then dadd(ry,false)
+else                             ry:=0;
+
+
+//left joystick ----------------------------------------------------------------
+
+//x
+if      xdown(xkey_lx_left)  then dadd(lx,false)
+else if xdown(xkey_lx_right) then dadd(lx,true)
+else                              lx:=0;
+
+//y
+if      xdown(xkey_ly_up)    then dadd(ly,true)
+else if xdown(xkey_ly_down)  then dadd(ly,false)
+else                              ly:=0;
+
+
+//game pad ---------------------------------------------------------------------
+if xdown(xkey_left)  then addbut(XINPUT_GAMEPAD_DPAD_Left);
+if xdown(xkey_right) then addbut(XINPUT_GAMEPAD_DPAD_Right);
+if xdown(xkey_up)    then addbut(XINPUT_GAMEPAD_DPAD_Up);
+if xdown(xkey_down)  then addbut(XINPUT_GAMEPAD_DPAD_Down);
+
+
+//left + right triggers --------------------------------------------------------
+if xdown(xkey_lt)   then dadd(lt,true) else lt:=0;
+if xdown(xkey_rt)   then dadd(rt,true) else rt:=0;
+
+
+//ABXY+ buttons -----------------------------------------------------------------
+if xdown(xkey_a_button) then addbut(XINPUT_GAMEPAD_A);
+if xdown(xkey_b_button) then addbut(XINPUT_GAMEPAD_B);
+if xdown(xkey_x_button) then addbut(XINPUT_GAMEPAD_X);
+if xdown(xkey_y_button) then addbut(XINPUT_GAMEPAD_Y);
+if xdown(xkey_lbumper)  then addbut(XINPUT_GAMEPAD_LEFT_SHOULDER);
+if xdown(xkey_rbumper)  then addbut(XINPUT_GAMEPAD_RIGHT_SHOULDER);
+if xdown(xkey_lsbutton) then addbut(XINPUT_GAMEPAD_LEFT_THUMB);
+if xdown(xkey_rsbutton) then addbut(XINPUT_GAMEPAD_RIGHT_THUMB);
+if xdown(xkey_menu)     then addbut(XINPUT_GAMEPAD_START);
+
+//set
+system_xbox_keyboard.xinput.dGamepad.sThumbLX:=s32( lx*32767 );
+system_xbox_keyboard.xinput.dGamepad.sThumbLY:=s32( ly*32767 );
+
+system_xbox_keyboard.xinput.dGamepad.sThumbRX:=s32( rx*32767 );
+system_xbox_keyboard.xinput.dGamepad.sThumbRY:=s32( ry*32767 );
+
+system_xbox_keyboard.xinput.dGamepad.bleftTrigger  :=s255( lt*255 );
+system_xbox_keyboard.xinput.dGamepad.brightTrigger :=s255( rt*255 );
+
+system_xbox_keyboard.xinput.dGamepad.wbuttons      :=s16(b4);
+
+
+//return data to caller
+xinputstate^:=system_xbox_keyboard.xinput;
+
+
+//reset
+system_xbox_keyboard.xinput.dGamepad.wbuttons:=0;
+
+end;
+
+function xbox__keymappings:string;
+var
+   p:longint;
+begin
+
+result:='';
+for p:=0 to frcmax32(xkey_canmap,high(system_xbox_keyboard.keylist)) do result:=result+intstr32(system_xbox_keyboard.keylist[p].rawkey)+',';
+
+end;
+
+procedure xbox__setkeymappings(const x:string);
+var
+   dcount,lp,p:longint;
+   v:string;
+begin
+
+//init
+dcount :=0;
+lp     :=1;
+
+//get
+for p:=1 to low__len(x) do if (x[p-1+stroffset]=',') then
+   begin
+
+   v   :=strcopy1(x,lp,p-lp);
+   lp  :=p+1;
+
+   //.xkey_menu -> exclude items above the "xkey_canmap" range - 22jul2025
+   if (dcount<=xkey_canmap) then system_xbox_keyboard.keylist[dcount].rawkey:=strint32(v);
+
+   inc(dcount);
+   if (dcount>high(system_xbox_keyboard.keylist)) then break;
+
+   end;//p
+
+end;
+
+
+//mouse support - slot 5 -------------------------------------------------------
+procedure xbox__mouseslot_reset;
+begin
+
+//check
+if not system_xbox_init then exit;
+
+//joy sticks
+system_xbox_mouse.xinput.dGamepad.sThumbLX:=0;
+system_xbox_mouse.xinput.dGamepad.sThumbLY:=0;
+system_xbox_mouse.xinput.dGamepad.sThumbRX:=0;
+system_xbox_mouse.xinput.dGamepad.sThumbRY:=0;
+
+//triggers
+system_xbox_mouse.xinput.dGamepad.bleftTrigger :=0;
+system_xbox_mouse.xinput.dGamepad.brightTrigger:=0;
+
+//buttons
+system_xbox_mouse.xinput.dGamepad.wbuttons:=0;
+
+end;
+
+procedure xbox__mouserawinput(sender:tobject;xmode,xbuttonstyle,dx,dy,dw,dh:longint);//uses slot #5
+var
+   w32,ax,ay:longint;
+begin
+
+//check
+if not system_xbox_init then exit;
+
+
+//remove retry delay
+if (system_xbox_retryref64[xssMouse]<>0) then system_xbox_retryref64[xssMouse]:=0;
+
+
+//init
+dw     :=frcmin32(dw,4);
+dh     :=frcmin32(dh,4);
+dx     :=frcrange32((dx div 10)*10,0,dw-1);
+dy     :=frcrange32((dy div 10)*10,0,dh-1);
+
+ax     :=frcrange32( round(frcranged64(( dx - (dw div 2) ) / (dw div 2),-1,1)*32767) ,-32767,+32767);
+ay     :=frcrange32( round(frcranged64(( dy - (dh div 2) ) / (dh div 2),-1,1)*32767) ,-32767,+32767);
+
+
+//left joy stick
+system_xbox_mouse.xinput.dGamepad.sThumbLX:=ax;
+system_xbox_mouse.xinput.dGamepad.sThumbLY:=-ay;
+
+//right joy stick
+system_xbox_mouse.xinput.dGamepad.sThumbRX:=ax;
+system_xbox_mouse.xinput.dGamepad.sThumbRY:=-ay;
+
+//mouse buttons as left/right triggers
+w32:=system_xbox_mouse.xinput.dGamepad.wbuttons;
+
+case xbuttonstyle of
+abLeft:begin
+
+   case xmode of
+   0:system_xbox_mouse.xinput.dGamepad.bleftTrigger:=255;//down
+   2:system_xbox_mouse.xinput.dGamepad.bleftTrigger:=0;//up
+   end;//case
+
+   end;
+
+abCenter:begin
+
+   case xmode of
+   0:bit__addval32(w32,XINPUT_GAMEPAD_START);
+   2:bit__remval32(w32,XINPUT_GAMEPAD_START);
+   end;
+
+   end;
+
+abRight:begin
+
+   case xmode of
+   0:system_xbox_mouse.xinput.dGamepad.brightTrigger:=255;//down
+   2:system_xbox_mouse.xinput.dGamepad.brightTrigger:=0;//up
+   end;//case
+
+   end;
+end;//case
+
+
+//set
+system_xbox_mouse.xinput.dGamepad.wbuttons:=w32;
+
+
+//increment packet counter
+if low__setstr(system_xbox_mouseref,intstr32(w32)+'|'+intstr32(xbuttonstyle)+'|'+intstr32(xmode)+'|'+intstr32(ax)+'|'+intstr32(ay)) then
+   begin
+
+   low__irollone(system_xbox_mouse.xinput.dwPacketNumber);
+   system_xbox_mousetimeref :=ms64 + 5000;
+
+   end;
+
+end;
+
+function xbox__mouseslot_getstate(xinputstate:pxinputstate):boolean;
+begin
+//defaults
+result:=system_xbox_init and (system_xbox_mouse.xinput.dwPacketNumber>=1);
+
+//check
+if not result then exit;
+
+//reset
+if (ms64>=system_xbox_mousetimeref) then
+   begin
+
+   xbox__mouseslot_reset;
+   system_xbox_mousetimeref:=ms64+500;
+
+   end;
+
+//return data to caller
+xinputstate^:=system_xbox_mouse.xinput;
+
+end;
+
+function xbox__mouselabel(xkey_code:longint):string;
+
+   procedure s(x:string);
+   begin
+   result:=x;
+   end;
+
+begin
+
+case xkey_code of
+xkey_rx_left:     s('Move Left');
+xkey_rx_right:    s('Move Right');
+xkey_ry_up:       s('Move Up');
+xkey_ry_down:     s('Move Down');
+
+xkey_lx_left:     s('Move Left');
+xkey_lx_right:    s('Move Right');
+xkey_ly_up:       s('Move Up');
+xkey_ly_down:     s('Move Down');
+
+xkey_lt      :    s('L-trigger');
+xkey_rt      :    s('R-trigger');
+
+xkey_menu    :    s('Menu');
+
+-1           :    s('Not used');
+else              s('N/A'+insstr(#32+intstr32(xkey_code),xkey_code>=0) );//10aug2025
+
+end;//case
+
 end;
 
 end.

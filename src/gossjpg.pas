@@ -1,14 +1,15 @@
 unit gossjpg;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses gossroot {$ifdef laz}{$ifdef jpeg},windows, sysutils, classes, graphics, JcParam, JDataDst, JDataSrc, JCOMapi, JcAPIstd, JdAPIstd, FPReadJPEG, JPEGLib, JcAPImin, JdAPImin{$endif}{$endif};
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+uses gossroot {$ifdef laz}{$ifdef jpeg}, JcParam, JDataDst, JDataSrc, JCOMapi, JcAPIstd, JdAPIstd, FPReadJPEG, JPEGLib, JcAPImin, JdAPImin{$endif}{$endif};
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -55,6 +56,8 @@ uses gossroot {$ifdef laz}{$ifdef jpeg},windows, sysutils, classes, graphics, Jc
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function

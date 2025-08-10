@@ -9,7 +9,10 @@ uses
   gossnet in 'gossnet.pas',
   gossroot in 'gossroot.pas',
   gosssnd in 'gosssnd.pas',
-  gosswin in 'gosswin.pas';
+  gosswin in 'gosswin.pas',
+  gosszip in 'gosszip.pas',
+  gossjpg in 'gossjpg.pas',
+  gossgame in 'gossgame.pas';
 
 //{$R *.RES}
 //include multi-format icon - Delphi 3 can't compile an icon of 256x256 @ 32 bit -> resource error/out of memory error - 19nov2024

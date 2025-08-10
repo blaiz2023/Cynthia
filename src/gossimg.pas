@@ -1,6 +1,7 @@
 unit gossimg;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
@@ -8,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpeg},gossjpg{$endif};
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -29,10 +30,10 @@ uses gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpeg},gossjpg
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. image/graphics (gossimg.pas)
-//## Version.................. 4.00.15574 (+345)
+//## Version.................. 4.00.15697 (+347)
 //## Items.................... 25
-//## Last Updated ............ 19jun2025, 12jun2025, 09jun2025, 29may2025, 26apr2025, 23mar2025, 22feb2025, 05feb2025, 31jan2025, 02jan2025, 27dec2024, 27nov2024, 15nov2024, 18aug2024, 26jul2024, 17apr2024
-//## Lines of Code............ 29,600+
+//## Last Updated ............ 08aug2025, 25jul2025, 16jul2025, 19jun2025, 12jun2025, 09jun2025, 29may2025, 26apr2025, 23mar2025, 22feb2025, 05feb2025, 31jan2025, 02jan2025, 27dec2024, 27nov2024, 15nov2024, 18aug2024, 26jul2024, 17apr2024
+//## Lines of Code............ 29,700+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -45,6 +46,8 @@ uses gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpeg},gossjpg
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version    | Date        | Update history / brief description of function
@@ -52,18 +55,19 @@ uses gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpeg},gossjpg
 //## | tbasicimage            | tobject           | 1.00.187   | 07dec2023   | Lightweight + fast system independent image, not resizable, supports 8/24/32 bit pixel depth - 09may2022, 27jul2021, 25jan2021, ??jan2020: created
 //## | twinbmp                | tobject           | 1.00.060   | 01may2025   | Replacement for tbitmap - 26apr2025
 //## | trawimage              | tobject           | 1.00.070   | 26apr2025   | Independent resizeable image -> persistent pixel rows and supports 8/24/32 bit color depth - 27dec2024, 25jul2024: created
-//## | c8__/c24__/c32__/int__ | family of procs   | 1.00.245   | 06may2025   | Graphic color conversion procs - 18feb2025
+//## | c8__/c24__/c32__/int__ | family of procs   | 1.00.250   | 16jul2025   | Graphic color conversion procs - 06may2025, 18feb2025
 //## | mis*                   | family of procs   | 1.00.10480 | 06jun2025   | Graphic procs for working with multiple different image objects - 09may2025, 27dec2024, 27nov2024
 //## | ref_*                  | family of procs   | 1.00.100   | 20jul2024   | Reference procs for image adjustment
 //## | canvas__*              | family of procs   | 1.00.045   | 18feb2025   | Indirect support for tcanvas - 28jun2024
-//## | gif__*                 | family of procs   | 1.00.900   | 06aug2024   | Read / write GIF images, static and animated, automatic on-the-fly optimisation (solid, transparent and mixed cell modes)
+//## | gif__*                 | family of procs   | 1.00.902   | 08aug2025   | Read / write GIF images, static and animated, automatic on-the-fly optimisation (solid, transparent and mixed cell modes) - 06aug2024
+//## | mask__*                | family of procs   | 1.00.100   | 08aug2025   | Mask related procs for working with alpha channel on 32bit images or 8bit images
 //## | bmp__*                 | family of procs   | 1.00.472   | 12jun2025   | Read / write BMP images - 32bit with alpha/DIB/clipboard formats - 26may2025, 14may2025, 01may2025, 06aug2024
 //## | dib__*                 | family of procs   | 1.00.052   | 28may2025   | Read / write DIB images - 14may2025, 06aug2024
 //## | tj32__*                | family of procs   | 1.00.045   | 06aug2024   | Read / write TJ32 images -> 32bit hybrid transparent jpeg -> static and animated
 //## | img32__*               | family of procs   | 1.00.040   | 06aug2024   | Read / write IMG32 images -> 32bit raw images -> static and animated
 //## | jpg__*                 | family of procs   | 1.00.272   | 05dec2024   | Read / write JPEG images -> automatic quality control - 24nov2024, 06aug2024
-//## | png__*                 | family of procs   | 1.00.331   | 29may2025   | Read / write PMG images - 15mar2025, 15nov2024
-//## | tea__*                 | family of procs   | 1.00.393   | 17jun2025   | Read / write TEA images - 12dec2024, 18nov2024
+//## | png__*                 | family of procs   | 1.00.335   | 25jul2025   | Read / write PMG images - 29may2025, 15mar2025, 15nov2024
+//## | tea__*                 | family of procs   | 1.00.403   | 08aug2025   | Read / write TEA images - 17jun2025, 12dec2024, 18nov2024
 //## | ico__*, low__ico*      | family of procs   | 1.00.653   | 19jun2025   | Read / write ICO images - 28may2025, 13may2025, 22nov2024
 //## | cur__*                 | family of procs   | 1.00.210   | 28may2025   | Read / write CUR images - 22nov2024
 //## | ani__*                 | family of procs   | 1.00.200   | 22nov2024   | Read / write ANI images
@@ -547,6 +551,9 @@ function misch(s:tobject):longint;//cell height
 function miscc(s:tobject):longint;//cell count
 function mis__nextcell(s:tobject;var sitemindex:longint;var stimer:comp):boolean;
 function misf(s:tobject):longint;//color format
+
+function misfast24(s:tobject;var sw,sh:longint;var srows:pcolorrows24):boolean;//15jul2025: fast basic info for 24 bit image
+
 //.animation information
 function misonecell(s:tobject):boolean;//26apr2022
 function miscells(s:tobject;var sbits,sw,sh,scellcount,scellw,scellh,sdelay:longint;var shasai:boolean;var stransparent:boolean):boolean;//16dec2024, 27jul2021
@@ -881,7 +888,7 @@ function png__todata2(s:tobject;d:pobject;daction:string;var e:string):boolean;
 function png__todata3(s:tobject;d:pobject;var daction,e:string):boolean;//29may2025, 06may2025, OK=27jan2021, 20jan2021
 function png__todata4(s:tobject;d:pobject;dbits:longint;var daction,e:string):boolean;//29may2025, 06may2025, OK=27jan2021, 20jan2021
 
-function png__fromdata(s:tobject;d:pobject;var e:string):boolean;
+function png__fromdata(s:tobject;d:pobject;var e:string):boolean;//25jul2025: fixed row rounding error
 
 function png32__todata(s:tobject;d:pobject):boolean;
 function png24__todata(s:tobject;d:pobject):boolean;//no transparency support
@@ -908,7 +915,7 @@ function tea__fromdata(d:tobject;sdata:pobject;var xw,xh:longint):boolean;
 function tea__fromdata32(d:tobject;sdata:pobject;var xw,xh:longint):boolean;
 function tea__todata(x:tobject;xout:pobject;var e:string):boolean;
 function tea__todata2(x:tobject;xtransparent,xsyscolors:boolean;xval1,xval2:longint;xout:pobject;var e:string):boolean;//07apr2021
-function tea__todata32(x:tobject;xtransparent,xsyscolors:boolean;xval1,xval2:longint;xout:pobject;var e:string):boolean;//18nov2024
+function tea__todata32(x:tobject;xtransparent,xsyscolors:boolean;xval1,xval2:longint;xout:pobject;var e:string):boolean;//08aug2025, 18nov2024
 
 
 //ia procs ---------------------------------------------------------------------
@@ -1142,7 +1149,7 @@ function ani__todata5(s:tobject;slist:tfindlistimage;d:pobject;dformat,daction:s
 
 
 //gif procs --------------------------------------------------------------------
-function gif__fromdata(ss:tobject;ds:pobject;var e:string):boolean;//06aug2024, 28jul2021, 20JAN2012, 22SEP2009
+function gif__fromdata(ss:tobject;ds:pobject;var e:string):boolean;//08aug2025, 06aug2024, 28jul2021, 20JAN2012, 22SEP2009
 function gif__todata(s:tobject;ds:pobject;var e:string):boolean;//11SEP2007
 function gif__todata2(s:tobject;ds:pobject;daction:string;var e:string):boolean;
 
@@ -1191,6 +1198,9 @@ function mask__todata2(s:tobject;d:pobject;stranscol:longint):boolean;
 
 //color procs ------------------------------------------------------------------
 //.conversion
+procedure c32__swap(var x,y:tcolor32);//16jul2025
+procedure c24__swap(var x,y:tcolor24);//16jul2025
+procedure c8__swap(var x,y:tcolor8);//16jul2025
 function int24__rgba0(x24__or__syscolor:longint):longint;
 function int__c8(x:longint):tcolor8;
 function int__c24(x:longint):tcolor24;
@@ -1492,8 +1502,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gossimg.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.15574'
-else if (xname='date')       then result:='19jun2025'
+if      (xname='ver')        then result:='4.00.15697'
+else if (xname='date')       then result:='08aug2025'
 else if (xname='name')       then result:='Graphics'
 else
    begin
@@ -3339,7 +3349,7 @@ str__free(@str1);
 str__uaf(d);
 end;
 
-function png__fromdata(s:tobject;d:pobject;var e:string):boolean;
+function png__fromdata(s:tobject;d:pobject;var e:string):boolean;//25jul2025: fixed row rounding error
 label
    skipend;
 var
@@ -3628,7 +3638,9 @@ case xcoltype of
 6:xbits:=32;
 end;
 
-drowsize:=mis__rowsize4(xw,xbits);//29may2025
+//was: drowsize:=mis__rowsize4(xw,xbits);//29may2025 - error -> PNG does not round like a bitmap - 25jul2025
+drowsize:=xw*(xbits div 8);
+
 if ( (xh * (1+drowsize) ) > str__len(@xdata) ) then
    begin
    e:=gecDataCorrupt;
@@ -3912,7 +3924,7 @@ begin
 result:=tea__todata32(x,xtransparent,xsyscolors,xval1,xval2,xout,e);//ver 2
 end;
 
-function tea__todata32(x:tobject;xtransparent,xsyscolors:boolean;xval1,xval2:longint;xout:pobject;var e:string):boolean;//18nov2024
+function tea__todata32(x:tobject;xtransparent,xsyscolors:boolean;xval1,xval2:longint;xout:pobject;var e:string):boolean;//08aug2025, 18nov2024
 label
    skipend;
 var
@@ -3925,7 +3937,6 @@ var
    sr8:pcolorrow8;
    sr24:pcolorrow24;
    sr32:pcolorrow32;
-   sc8:tcolor8;//07apr2021
    sc24:tcolor24;
    sc32:tcolor32;
 
@@ -3972,6 +3983,7 @@ var
       end;
    end;
 begin
+
 //defaults
 result:=false;
 e:=gecTaskfailed;
@@ -3982,12 +3994,12 @@ if not str__lock(xout) then goto skipend;
 if zznil(x,2202) then goto skipend;
 
 //init
-//.rawimage
+//.rawimage - 08aug2025: fixed
 if (x is trawimage) then
    begin
-   prows8 :=(x as tbasicimage).prows8;
-   prows24:=(x as tbasicimage).prows24;
-   prows32:=(x as tbasicimage).prows32;
+   prows8 :=(x as trawimage).prows8;
+   prows24:=(x as trawimage).prows24;
+   prows32:=(x as trawimage).prows32;
    end
 //.image
 else if (x is tbasicimage) then
@@ -4006,17 +4018,20 @@ else if (x is twinbmp) then
 else goto skipend;
 
 //info
-xbits:=misb(x);
-xw:=misw(x);
-xh:=mish(x);
+xbits :=misb(x);
+xw    :=misw(x);
+xh    :=mish(x);
+
 if (xbits<>8) and (xbits<>24) and (xbits<>32) then goto skipend;
+
 str__clear(xout);
+
 l4.val:=0;
-l5.r:=0;
-l5.g:=0;
-l5.b:=0;
-l5.a:=0;
-l5.c:=0;
+l5.r  :=0;
+l5.g  :=0;
+l5.b  :=0;
+l5.a  :=0;
+l5.c  :=0;
 
 //head
 if (xbits>=32) and mask__hasTransparency32(x) then//ver 3 -> 32bit color - 18nov2024
@@ -4056,6 +4071,7 @@ str__addint4(xout,xh);//13 bytes
 
 //pixels
 e:=gecOutofmemory;
+
 for sy:=0 to (xh-1) do
 begin
 if (xbits=8) then
@@ -4063,10 +4079,9 @@ if (xbits=8) then
    sr8:=prows8[sy];
    for sx:=0 to (xw-1) do
    begin
-   sc8:=sr8[sx];
-   sc24.r:=sc8;
-   sc24.g:=sc8;
-   sc24.b:=sc8;
+   sc24.r:=sr8[sx];
+   sc24.g:=sc24.r;
+   sc24.b:=sc24.r;
    xadd24;
    end;//sx
    end
@@ -4112,10 +4127,9 @@ end;
 result:=true;
 skipend:
 except;end;
-try
+//free
 if (not result) and str__ok(xout) then str__clear(xout);
 str__uaf(xout);
-except;end;
 end;
 
 function tea__info(var adata:tlistptr;xsyszoom:boolean;var aw,ah,aSOD,aversion,aval1,aval2:longint;var atransparent,asyscolors:boolean):boolean;
@@ -14112,7 +14126,7 @@ Result := -1;
 except;end;
 end;
 
-function gif__fromdata(ss:tobject;ds:pobject;var e:string):boolean;//06aug2024, 28jul2021, 20JAN2012, 22SEP2009
+function gif__fromdata(ss:tobject;ds:pobject;var e:string):boolean;//08aug2025, 06aug2024, 28jul2021, 20JAN2012, 22SEP2009
 label
    skipone,skipend;
    //ss      = image that will accept the animation cells as a horizontal image strip (best to use a 32bit image for transparency etc)
@@ -14654,6 +14668,7 @@ case gp.count of
 end;//case
 
 //.update animation information
+misai(simage).format       :='GIF';//08aug2025
 misai(simage).delay        :=ddelay;
 misai(simage).count        :=dcellcount;
 misai(simage).cellwidth    :=dcellwidth;
@@ -15858,7 +15873,7 @@ skipend:
 except;end;
 end;
 
-function mask__makesimple0255(s:tobject;tc:longint):boolean;//21nov2024
+function mask__makesimple0255(s:tobject;tc:longint):boolean;//08aug2025, 21nov2024
 label//Creates a mask using the transparent color "tc" into 0=transparent or 255=opaque, 1..254 are not used
    skipend;
 var
@@ -15866,7 +15881,6 @@ var
    sr32:pcolorrow32;
    sr24:pcolorrow24;
    sr8:pcolorrow8;
-   sc32:tcolor32;
 begin
 //defaults
 result:=false;
@@ -15894,24 +15908,22 @@ else
 //get
 for sy:=0 to (sh-1) do
 begin
+
 if not misscan82432(s,sy,sr8,sr24,sr32) then goto skipend;
 
 //.32
 if (sbits=32) then
    begin
-   for sx:=0 to (sw-1) do
-   begin
-   sc32:=sr32[sx];
-   if (sc32.r=tr) and (sc32.g=tg) and (sc32.b=tb) then sr32[sx].a:=0 else sr32[sx].a:=255;//09jan2025: blue effort - fixed
-   end;//sx
+
+   for sx:=0 to (sw-1) do if (sr32[sx].r=tr) and (sr32[sx].g=tg) and (sr32[sx].b=tb) then sr32[sx].a:=0 else sr32[sx].a:=255;//09jan2025: blue effort - fixed
+
    end
 //.8
 else if (sbits=8) then
    begin
-   for sx:=0 to (sw-1) do
-   begin
-   if (sr8[sx]=t8) then sr8[sx]:=0 else sr8[sx]:=255;
-   end;//sx
+
+   for sx:=0 to (sw-1) do if (sr8[sx]=t8) then sr8[sx]:=0 else sr8[sx]:=255;
+
    end
 else break;
 end;//dy
@@ -20607,6 +20619,51 @@ begin
 result:=misokex(s,sbits,sw,sh,shasai) and ((sbits=8) or (sbits=24)) and shasai;
 end;
 
+function misfast24(s:tobject;var sw,sh:longint;var srows:pcolorrows24):boolean;//15jul2025: fast basic info for 24 bit image
+begin
+//defaults
+result:=false;
+
+//get
+if (s=nil) then result:=false
+else if (s is twinbmp) then
+   begin
+
+   if (24=(s as twinbmp).bits) then
+      begin
+      sw    :=(s as twinbmp).width;
+      sh    :=(s as twinbmp).height;
+      srows :=(s as twinbmp).prows24;
+      result:=(sw>=1) and (sh>=1);
+      end;
+
+   end
+else if (s is trawimage) then
+   begin
+
+   if (24=(s as trawimage).bits) then
+      begin
+      sw    :=(s as trawimage).width;
+      sh    :=(s as trawimage).height;
+      srows :=(s as trawimage).prows24;
+      result:=(sw>=1) and (sh>=1);
+      end;
+
+   end
+else if (s is tbasicimage) then
+   begin
+
+   if (24=(s as tbasicimage).bits) then
+      begin
+      sw    :=(s as tbasicimage).width;
+      sh    :=(s as tbasicimage).height;
+      srows :=(s as tbasicimage).prows24;
+      result:=(sw>=1) and (sh>=1);
+      end;
+
+   end;//if
+end;
+
 function misinfo(s:tobject;var sbits,sw,sh:longint;var shasai:boolean):boolean;
 begin
 if zznil(s,2085) then
@@ -20654,7 +20711,7 @@ result:=false;
 xout:=nil;
 
 //get
-if zznil(s,2086) then exit
+if      (s=nil)            then exit
 else if (s is twinbmp)     then xout:=(s as twinbmp).prows8
 else if (s is trawimage)   then xout:=(s as trawimage).prows8
 else if (s is tbasicimage) then xout:=(s as tbasicimage).prows8;
@@ -20670,7 +20727,7 @@ result:=false;
 xout:=nil;
 
 //get
-if zznil(s,2087) then exit
+if      (s=nil)            then exit
 else if (s is twinbmp)     then xout:=(s as twinbmp).prows16
 else if (s is trawimage)   then xout:=(s as trawimage).prows16
 else if (s is tbasicimage) then xout:=(s as tbasicimage).prows16;
@@ -20682,11 +20739,11 @@ end;
 function misrows24(s:tobject;var xout:pcolorrows24):boolean;
 begin
 //defaults
-result:=false;
-xout:=nil;
+result :=false;
+xout   :=nil;
 
 //get
-if zznil(s,2088) then exit
+if      (s=nil)            then exit
 else if (s is twinbmp)     then xout:=(s as twinbmp).prows24
 else if (s is trawimage)   then xout:=(s as trawimage).prows24
 else if (s is tbasicimage) then xout:=(s as tbasicimage).prows24;
@@ -20702,7 +20759,7 @@ result:=false;
 xout:=nil;
 
 //get
-if zznil(s,2089) then exit
+if      (s=nil)            then exit
 else if (s is twinbmp)     then xout:=(s as twinbmp).prows32
 else if (s is trawimage)   then xout:=(s as trawimage).prows32
 else if (s is tbasicimage) then xout:=(s as tbasicimage).prows32;
@@ -28476,6 +28533,33 @@ a.g:=x.g;
 a.b:=x.b;
 a.a:=0;
 result:=a.val;
+end;
+
+procedure c32__swap(var x,y:tcolor32);//16jul2025
+var
+   z:tcolor32;
+begin
+z:=x;
+x:=y;
+y:=z;
+end;
+
+procedure c24__swap(var x,y:tcolor24);//16jul2025
+var
+   z:tcolor24;
+begin
+z:=x;
+x:=y;
+y:=z;
+end;
+
+procedure c8__swap(var x,y:tcolor8);//16jul2025
+var
+   z:tcolor8;
+begin
+z:=x;
+x:=y;
+y:=z;
 end;
 
 function c32__int(x:tcolor32):longint;

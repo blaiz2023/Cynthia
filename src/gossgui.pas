@@ -1,14 +1,15 @@
 unit gossgui;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd{$endif} ,gosswin {$ifdef gui},gossdat{$endif};
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+uses gossroot, gossimg, gossio {$ifdef snd},gosssnd{$endif} ,gosswin {$ifdef gui},gossdat{$endif};
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -29,10 +30,10 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. GUI (gossgui.pas)
-//## Version.................. 4.00.36410 (+4939)
+//## Version.................. 4.00.36710 (+4985)
 //## Items.................... 50
-//## Last Updated ............ 03jul2025, 16jun2025, 12jun2025, 09jun2025, 07jun2025, 03jun2025, 29may2025, 29apr2025, 13apr2025, 31mar2025, 24mar2025, 18feb2025, 28dec2024, 11dec2024, 29nov2024, 22nov2024, 15nov2024, 10nov2024, 04oct2024, 28aug2024, 01ug2024, 25jul2024, 28jun2024, 22mar2024, 09feb2024, 13dec2023, 25nov2023, 19may2023, 25feb2023, 30dec2022, 15nov2022, 06nov2022, 11oct2022, 28sep2022, 05jul2022, 29jun2022, 14jun2022, 31may2022, 14may2022, 30apr2022, 30mar2022, 27feb2022, 08feb2022, 31jan2021, 30dec2021, 19dec2021, 30sep2021, 29aug2021, 09aug2021, 27jul2021, 07jul2021, 20jun2021, 02jun2021, 30may2021, 12may2021, 10may2021, 30apr2021, 19apr2021, 14apr2021, 03apr2021, 31mar2021, 20mar2021, 08mar2021, 26feb2021, 01feb2021, 28jan2021, 11oct2020, 25sep2020, 07sep2020, 26aug2020, 22aug2020, 28jul2020, 23may2020, 10may2020
-//## Lines of Code............ 62,200+
+//## Last Updated ............ 10aug2025, 08aug2025, 26jul2025, 24jul2025, 17jul2025, 14jul2025, 04jul2025, 16jun2025, 12jun2025, 09jun2025, 07jun2025, 03jun2025, 29may2025, 29apr2025, 13apr2025, 31mar2025, 24mar2025, 18feb2025, 28dec2024, 11dec2024, 29nov2024, 22nov2024, 15nov2024, 10nov2024, 04oct2024, 28aug2024, 01ug2024, 25jul2024, 28jun2024, 22mar2024, 09feb2024, 13dec2023, 25nov2023, 19may2023, 25feb2023, 30dec2022, 15nov2022, 06nov2022, 11oct2022, 28sep2022, 05jul2022, 29jun2022, 14jun2022, 31may2022, 14may2022, 30apr2022, 30mar2022, 27feb2022, 08feb2022, 31jan2021, 30dec2021, 19dec2021, 30sep2021, 29aug2021, 09aug2021, 27jul2021, 07jul2021, 20jun2021, 02jun2021, 30may2021, 12may2021, 10may2021, 30apr2021, 19apr2021, 14apr2021, 03apr2021, 31mar2021, 20mar2021, 08mar2021, 26feb2021, 01feb2021, 28jan2021, 11oct2020, 25sep2020, 07sep2020, 26aug2020, 22aug2020, 28jul2020, 23may2020, 10may2020
+//## Lines of Code............ 62,800+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -45,6 +46,8 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## Important Image Format Note:
@@ -59,7 +62,7 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //## | low level procs        | n/a               | 1.00.1742 | 13mar2025   | Collection of basic procedures and functions to support platform and it's controls etc - 11jan2025: ecomode now kicks in at 10min, 18dec2024, 17dec2024: low__font(), 11dec2024, 01dec2024: fixed font leak on Win98 for proc low__toLGF(), 26nov2024, 13dec2023, 19may2023, 11oct2022, 27sep2022, 14may2022, 21may2020
 //## | system__*              | family of procs   | 1.00.050  | 13may2025   | System management and Windows message handling
 //## | sysback__*             | family of procs   | 1.00.121  | 11apr2025   | Background image management procs (integrates with tbackgroundmanager) - 18mar2025
-//## | clip__*                | family of procs   | 1.00.332  | 12jun2025   | Clipboard copy/paste for text, image and wordcore - 01jun2025, 01jun2025, 29apr2025, 17mar2025, 17dec2024
+//## | clip__*                | family of procs   | 1.00.352  | 08aug2025   | Clipboard copy/paste for text, image and wordcore - 08aug2025: fixed "cf_png" bad value, 12jun2025, 01jun2025, 01jun2025, 29apr2025, 17mar2025, 17dec2024
 //## | canvas__*              | family of procs   | 1.00.050  | 01dec2024   | TCanvas abstraction procs
 //## | cols_*                 | color schemes     | 1.00.450  | 09mar2025   | Collection of built-in color schemes
 //## | tbasicprg1             | tobjectex         | 1.00.023  | 10aug2024   | Root level program outline - 01jan2021, 05oct2020
@@ -67,8 +70,8 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //## | tspell                 | tobjectex         | 1.00.150  | 11feb2022   | System dictionary of 296,000+ full length, non-encoded / non-shortened words
 //## | trnd8                  | tobject           | 1.00.020  | 29nov2023   | Random stream generator
 //## | tbackgroundmanager     | tobject           | 1.00.200  | 03jun2025   | Handles static, animated and dynamic background imagery for "tbasicsystem"
-//## | tbasicsystem           | tobject           | 1.00.5132 | 05jun2025   | GUI rendering and control system - 28may2025, 15may2025, 21apr2025, 18feb2025, 04feb2025: auto switches between using buffer 1+2 or only buffer 1 for optimal rendering, 28jan2025, 28nov2024: supports background exclusion areas, 21nov2024: background pauses for window resize/reposition, 18nov2024, 26jul2024m 28jun2024: fixed part paint, 09dec2023, 19nov2023, 12feb2023, 20may2022, 27mar2022: updated onaccept proc for deep drag and drop support, 26feb2022, Fixed ibuffer.w/h mismatch with mustmask - 21sep2021, 29aug2021, 28jul2021, 07jul2021, 18jun2021, 29may2021, 14apr2021, 03apr2021, 08mar2021, 25feb2021, 11oct2020, 28jul2020, 20may2020
-//## | tbasiccontrol          | tobject           | 1.00.1130 | 03jul2025   | Flicker free base control with built-in _onnotify/_ontimer and _onpaint procs for easy customisation - 24may2025, 19apr2025, 31mar2025, 06jan2025, 25dec2024, 28nov2024, 19aug2024, 28jun2024: fixed ldso4 leak, 02dec2023: ldso4 cliparea handling, 17nov2023, 12jan2022, 09sep2021, 27mar2021, 11oct2020, 20may2020, 12apr2020, 14mar2020
+//## | tbasicsystem           | tobject           | 1.00.5185 | 10aug2025   | GUI rendering and control system - 26jul2025, 04jul2025, 28may2025, 15may2025, 21apr2025, 18feb2025, 04feb2025: auto switches between using buffer 1+2 or only buffer 1 for optimal rendering, 28jan2025, 28nov2024: supports background exclusion areas, 21nov2024: background pauses for window resize/reposition, 18nov2024, 26jul2024m 28jun2024: fixed part paint, 09dec2023, 19nov2023, 12feb2023, 20may2022, 27mar2022: updated onaccept proc for deep drag and drop support, 26feb2022, Fixed ibuffer.w/h mismatch with mustmask - 21sep2021, 29aug2021, 28jul2021, 07jul2021, 18jun2021, 29may2021, 14apr2021, 03apr2021, 08mar2021, 25feb2021, 11oct2020, 28jul2020, 20may2020
+//## | tbasiccontrol          | tobject           | 1.00.1131 | 19jul2025   | Flicker free base control with built-in _onnotify/_ontimer and _onpaint procs for easy customisation - 03jul2025, 24may2025, 19apr2025, 31mar2025, 06jan2025, 25dec2024, 28nov2024, 19aug2024, 28jun2024: fixed ldso4 leak, 02dec2023: ldso4 cliparea handling, 17nov2023, 12jan2022, 09sep2021, 27mar2021, 11oct2020, 20may2020, 12apr2020, 14mar2020
 //## | tbasicimgview          | tbasiccontrol     | 1.00.735  | 18feb2025   | Animated image viewer - 30jan2025, 26dec2024
 //## | tbasichelp             | tbasiccontrol     | 1.00.100  | 16may2025   | Realtime help scroller - 02aug2024, 12apr2020, 25mar2020
 //## | tbasicnav              | tbasiccontrol     | 1.00.1247 | 05jun2025   | Multi-purpose favorites/files/folders/open/save navigation control - 24jan2025, 28dec2024, 01dec2024: removed " - " from preview label,22nov2024, 20aug2024, 11feb2023, 11oct2022, 27sep2022, 28jun2022, 22may2022, 23mar2022, 12jan2022, 09aug2021, 28jul2021, 18jun2021, 06apr2021, 25mar2021, 22sep2020
@@ -83,20 +86,20 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //## | tbasictitle            | tbasiccontrol     | 1.00.056  | 11may2025   | Standard title -> supports both small and large modes -> exactly matches tbasictoolbar.maketitle() display output - 08apr2025, 12jan2025, 19nov2023, 24feb2021, 11oct2020
 //## | tbasicbreak            | tbasiccontrol     | 1.00.012  | 09mar2025   | 2021
 //## | tbasicint              | tbasiccontrol     | 1.00.455  | 16may2025   | Fast and responsive slide bar -> compact and easy to use - 14feb2025: makemiditranspose, 09jan2025, 12nov2022, 27mar2022, 27feb2022, 28jul2021, 27mar2021, 26feb2021, 17aug2020
-//## | tsimpleint             | tbasiccontrol     | 1.00.093  | 06jun2025   | Fast and responsive slide bar -> compact and easy to use, simpler version
+//## | tsimpleint             | tbasiccontrol     | 1.00.120  | 11jul2025   | Fast and responsive slide bar -> compact and easy to use, simpler version - 06jun2025
 //## | tbasicset              | tbasiccontrol     | 1.00.300  | 03jun2025   | Upto 32 "yes/no" slots with boolean in/out for each slot -> compact multiple option chooser control - 16may2025, 25dec2022, 27mar2022, 30mar2021, 18aug2020
 //## | tbasicsel              | tbasiccontrol     | 1.00.178  | 03jun2025   | Upto 32 "choose" positions with a value range of 0..31 -> each choice has help/caption for selecting a value range for a specific setting e.g. Text Feather 0=off, 1=mild, 2=strong - 16may2025, 25dec2022, 18sep2022, 27mar2022, 29aug2021, 27mar2021, 19aug2020
 //## | tbasicimageexts        | tbasiccontrol     | 1.00.025  | 21dec2024   | An action list for specific image formats -> to work with dialog windows
 //## | tbasictea              | tbasiccontrol     | 1.00.168  | 12jan2025   | Mini TEA image view and adjustment editor - 2021
 //## | tbasiccolors           | tbasiccontrol     | 1.00.550  | 24may2025   | Multi-color picker with system and static colors support - 09mar2025, 15mar2022, 19mar2021
-//## | tbasictoolbar          | tbasiccontrol     | 1.00.3322 | 09jun2025   | Toolbar with "title + links" support - 26may2025, 24mar2025, 28dec2024, 27dec2024: upgraded to support Window Head functions, 21jul2024, 09dec2023, 03nov2023, 26sep2022, 28jun2022, 25mar2022, 19dec2021, 21sep2021, 07jul2021, 30may2021, 27mar2021, 21feb2021, 11oct2020, 22sep2020, 23apr2020, 29mar2020
+//## | tbasictoolbar          | tbasiccontrol     | 1.00.3355 | 20jul2025   | Toolbar with "title + links" support - 09jun2025, 26may2025, 24mar2025, 28dec2024, 27dec2024: upgraded to support Window Head functions, 21jul2024, 09dec2023, 03nov2023, 26sep2022, 28jun2022, 25mar2022, 19dec2021, 21sep2021, 07jul2021, 30may2021, 27mar2021, 21feb2021, 11oct2020, 22sep2020, 23apr2020, 29mar2020
 //## | tbasicmenu             | tbasiccontrol     | 1.00.2875 | 03jul2025   | Menu handler - 16may2025, 21dec2024, 17nov2024, 04oct2024, 20jul2024: soft back shade for title items, 28sep2022, 20mar2022, 26feb2022, 08jun2021, 27mar2021, 11oct2020, 13apr2020
 //## | tbasicscrollbar        | tbasiccontrol     | 1.00.470  | 04oct2022   | Streamlined scrollbar with full and partial keyboard/wheel handling -> can pass critical handling to parent control for consistent operation - 03mar2022, 08feb2022, 25jul2021, 13apr2020
-//## | tbasicscroll           | tbasiccontrol     | 1.00.582  | 05jun2025   | Vertical scrollbox - 14may2025, 17mar2025, 12jan2024, 17dec2024, 04oct2022, 02jun2021, 29may2021, 08mar2021, 25feb2021, 14aug2020, 05apr2020
+//## | tbasicscroll           | tbasiccontrol     | 1.00.592  | 19jul2025   | Vertical scrollbox - 05jun2025, 14may2025, 17mar2025, 12jan2024, 17dec2024, 04oct2022, 02jun2021, 29may2021, 08mar2021, 25feb2021, 14aug2020, 05apr2020
 //## | tbasicsetcolor         | tbasicscroll      | 1.00.720  | 28may2025   | Color picker and support for "popcolor" dlg - 01feb2025, 28jul2024: head background style, 01mar2021: created
-//## | tbasiccols             | tbasiccontrol     | 1.00.380  | 16may2025   | Multi-column handler - supports upto 10 columns - 09mar2025, 03feb205: remainder "units" support like html5, 17nov2024, 07mar2022, 26feb2021
+//## | tbasiccols             | tbasiccontrol     | 1.00.450  | 14jul2025   | Multi-column handler - supports upto 10 columns - 12jul2025, 16may2025, 09mar2025, 03feb205: remainder "units" support like html5, 17nov2024, 07mar2022, 26feb2021
 //## | tbasiccells            | tbasiccontrol     | 1.00.100  |      2022   | Horizontal cell viewer / editor
-//## | tbasicsplash           | tbasicscroll      | 1.00.558  | 08apr2025   | System splash screen and about window - 23mar2025, 09dec2024, 04dec2024: reworked for one mode with background mask support, 15nov2025, 20jul2024: fallback to icon art if no splash image, style=2=IconArt, 24feb2022, 21sep2021, 18jun2021, 05oct2020
+//## | tbasicsplash           | tbasicscroll      | 1.00.590  | 14jul2025   | System splash screen and about window - 08apr2025, 23mar2025, 09dec2024, 04dec2024: reworked for one mode with background mask support, 15nov2025, 20jul2024: fallback to icon art if no splash image, style=2=IconArt, 24feb2022, 21sep2021, 18jun2021, 05oct2020
 //## | tbasictick             | tbasiccontrol     | 1.00.170  | 11apr2020   | Simple tick - 06apr2020
 //## | tbasicedit             | tbasiccontrol     | 1.00.1128 | 20may2025   | Edit box, supports makers for edit/password/drop/dropstatic/progress -> simulates 5 controls in one with many useful features and functions - 20apr2025, 09mar2025, 01aug2024, 03mar2022, 31mar2021, 07apr2020
 //## | tbasicjump             | tbasiccontrol     | 1.00.100  | 25jan2025   | Realtime jumpto panel for millisecond precision position jumping for song/midi playback - 06mar2022, 21feb2022, 22mar2021, 10mar2021
@@ -113,9 +116,7 @@ uses {$ifdef laz}windows,{$endif} gossroot, gossimg, gossio {$ifdef snd},gosssnd
 //## when compiling.
 //## ==========================================================================================================================================================================================================================
 
-
 const
-
    static_lineheight36  =36;
    static_lineheight30  =30;
 
@@ -374,6 +375,8 @@ type
 
    //.events
    tsystemnotify                 =function(sender:tobject):boolean of object;
+   tsystemkeyevent               =procedure(sender:tobject;xrawkey:longint;xdown:boolean) of object;
+   tsystemmouseevent             =procedure(sender:tobject;xmode,xbuttonstyle,mx,my,mw,mh:longint) of object;
    tlongintevent                 =procedure(sender:tobject;xval:longint) of object;
    tlongintgetevent              =procedure(sender:tobject;var xval:longint) of object;
    tsimplestringevent            =procedure(sender:tobject;var xval:string) of object;//28feb2022
@@ -387,6 +390,7 @@ type
    tonacceptevent                =function(sender:tobject;xfolder,xfilename:string;xindex,xcount:longint):boolean of object;
    tonfindheight                 =function(sender:tobject;xclientwidth:longint):longint of object;
    tnavmodifyitem                =procedure(sender:tobject;var xtab:string;var xindent,xstyle,xtepcolor,xtep:longint;var xcaption,xcaplabel:string;var xbold:boolean;xfav:boolean) of object;//03oct2024
+   tgetobjectevent               =procedure(sender:tobject;xindex:longint;var xval:tobject) of object;//14jul2025
 
    //.fast access font info
    tfontinfo=record
@@ -955,6 +959,9 @@ type
     igamemode_onpaint     :tevent;
     igamemode_onshortcut  :tsystemnotify;
     igamemode_onnotify    :tsystemnotify;
+    igamemode_onkey       :tsystemkeyevent;
+    igamemode_onmouse     :tsystemmouseevent;
+    fonkey                :tsystemkeyevent;//general purpose
     //fps painting stat
     ifps,ifpscount:longint;
     //automatic opacity
@@ -1120,7 +1127,7 @@ type
     procedure xsyncfullscreen;//02dec2024: updated to check exact area and enforce it -> internal use only
     //.form support - 18jan2025
     function form__create(xacceptfiles:boolean):tbasic_handle;//01jun2025, 28may2025
-    procedure form__center(xmonitorindex:longint);
+//    procedure form__center(xmonitorindex:longint);
     function form__monitorindex:longint;
     procedure form__setcaption(x:string);
     function form__bordersize:longint;
@@ -1204,6 +1211,7 @@ type
     otestmode:boolean;//default=false
     ocansize:boolean;//default=true
     ocanmove:boolean;//defalt=true
+    oeraseingbackground:longint;//default=0, increments each time an erase background message is recieved - 24jul2025
     //create
     constructor create(dwidth,dheight:longint); virtual;
     destructor destroy; override;
@@ -1217,6 +1225,7 @@ type
     function xpopnav2(var xvalue:string;var xfilterindex:longint;xfilterlist,xcommonfolder,xstyle,xhisname,xtitle:string;var daction:string):boolean;
     function xpopnav3(var xvalue:string;var xfilterindex:longint;xfilterlist,xcommonfolder,xstyle,xhisname,xtitle:string;var daction:string;xcanpreview:boolean):boolean;
     property winemaximised:boolean read iwinemaximised;
+    procedure form__center(xmonitorindex:longint);
     //closelock
     property mustcloseprompt:boolean read imustcloseprompt write imustcloseprompt;//allow host program to set TRUE or FALSE to PROMPT before closing the program - 26aug2021
     property closelocked:longint read icloselocked;
@@ -1225,7 +1234,7 @@ type
     procedure xfireevent(sender:tobject;xevent:tnotifyevent);//lock close -> fireevent -> unlock close - 03apr2021
     //form
     property handle:tbasic_handle read iform_handle;
-    property painddc:tbasic_handle read iform_paintdc;
+    property paintdc:tbasic_handle read iform_paintdc;
     property state:char read getstate write setstate;
     property caption:string read iform_caption write form__setcaption;
     property showing:boolean read getshowing;
@@ -1249,8 +1258,9 @@ type
     function haverootwin:boolean;
     function rootwin:tbasicscroll;
 
-    //low level debug support
-    procedure debug(yrow:longint;xtext:string);//01aug2024
+    //low level debug support -> normal window mode and game mode now supported - 04jul2025
+    procedure debug(yrow:longint;xtext:string);//04jul2025: persists in Gamemode, 26nov2024, 01aug2024
+
     //drag and drop - simple version - 21jul2024
     function dragdrop_start(dx,dy,dw,dh:longint;const dcode2:string):boolean;
     function dragdrop_start2(dx,dy,dw,dh,diconw,diconh:longint;dicon:tobject;const dcode2:string):boolean;
@@ -1292,6 +1302,7 @@ type
     function backgroundinitmask:boolean;//08mar2025
     property backgroundmanager:tbackgroundmanager read ibackgroundmanager;
     //.buffer2 draw procs - 25dec2024
+    procedure ldsOUTSIDE(dx,dy,dw,dh,dcol:longint);//21jul2025
     procedure lds(darea:twinrect;dcol:longint;xround:boolean);//25dec2024
     procedure ldso(darea:twinrect;dborder,dback:longint;xround:boolean);
     procedure ldso2(darea:twinrect;dborder,dborder2,dback,dback2,dback3,drich:longint;xoptions:string;xround:boolean);
@@ -1593,6 +1604,7 @@ type
     function  _onshortcut(sender:tobject):boolean;
     function _onshortcutlast(sender:tobject):boolean;//09dec2024
     property onshortcut:tsystemnotify read fonshortcut write fonshortcut;//11feb2023
+    property onkey:tsystemkeyevent read fonkey write fonkey;//22jul2025 - general purpose support
     //additional support
     procedure paintallnow;
     procedure paintnow;
@@ -1604,12 +1616,14 @@ type
     property ontimer:tnotifyevent read fontimer write fontimer;//main timer -> itimer
 
     //game mode -> switching into gamemode=true disables all GUI related paint procs and hands control of the GUI screen over to the host for direct rendering with a 200-300% performance increase - 29jan2025
-    property gamemode:boolean read igamemode write setgamemode;//29jan2025
-    property gamemode__cansize:boolean read igamemode_cansize write igamemode_cansize;
-    property gamemode__canmove:boolean read igamemode_canmove write igamemode_canmove;
-    property gamemode__onpaint:tnotifyevent read igamemode_onpaint write igamemode_onpaint;
-    property gamemode__onnotify:tsystemnotify read igamemode_onnotify write igamemode_onnotify;
-    property gamemode__onshortcut:tsystemnotify read igamemode_onshortcut write igamemode_onshortcut;
+    property gamemode:boolean                    read igamemode            write setgamemode;//29jan2025
+    property gamemode__cansize:boolean           read igamemode_cansize    write igamemode_cansize;
+    property gamemode__canmove:boolean           read igamemode_canmove    write igamemode_canmove;
+    property gamemode__onpaint:tnotifyevent      read igamemode_onpaint    write igamemode_onpaint;
+    property gamemode__onkey:tsystemkeyevent     read igamemode_onkey      write igamemode_onkey;
+    property gamemode__onmouse:tsystemmouseevent read igamemode_onmouse    write igamemode_onmouse;//26jul2025
+    property gamemode__onnotify:tsystemnotify    read igamemode_onnotify   write igamemode_onnotify;
+    property gamemode__onshortcut:tsystemnotify  read igamemode_onshortcut write igamemode_onshortcut;
 
     //.raw access to form's paint handle
     function xdrawfrom(shc:tbasic_handle;sa:twinrect):boolean;
@@ -1665,6 +1679,7 @@ type
     procedure setcaption(x:string);
     procedure __onimageviewertimer(sender:tobject);//22may2022
     procedure setimagebufferbackcolor(x:longint);//05dec2024
+    procedure setnormal(x:boolean); virtual;//19jul2025
    public
     //options
     oflatback:boolean;
@@ -1789,7 +1804,8 @@ type
     procedure alignpaintallnow;//05oct2020
     //.focus
     function focused:boolean;
-    procedure setfocus;
+    procedure setfocus; virtual;
+    procedure setfocusforce;//19jul2025
     //showmenu
     function canshowmenu:boolean; virtual;
     procedure showmenu; virtual;
@@ -1940,7 +1956,7 @@ type
     function findframe2:longint;//find frame2 color - 17mar2021
     function infovars(var xinfo:tclientinfo):boolean;//17may2025
     function infovars2(var xinfo:tclientinfo;xnormal:boolean):boolean;//17may2025
-    property normal:boolean read inormal write inormal;
+    property normal:boolean read inormal write setnormal;
     function mousex:longint;
     function mousey:longint;
     function mousexy:tpoint;
@@ -2320,6 +2336,8 @@ type
     property filterfromfilename:string read getfilter write setfilterfromfilename;//18jun2021
     property filterindex:longint read getfilterindex write setfilterindex;
     property folder:string read getfolder write setfolder;
+    function folderpending:boolean;//detects if folder is waiting to be set/updated - 14jul2025
+    function foldervalue:string;//returns the pending "folder" first, then the actual folder that is set - 14jul2025
     property valuelist[xindex:longint]:string read getvaluelist;//28sep2022
     property value:string read getvalue write setvalue;
     property valuestyle:longint read getvaluestyle;//e.g. nltFile, nltFolder, nltNav, nltTitle etc - 22mar2021
@@ -2916,15 +2934,17 @@ type
 {tsimpleint}
    tsimpleint=class(tbasiccontrol)
    private
-    ihightimer,itimerAUTO,itimer250:comp;
+    icommitref,ihightimer,itimerAUTO,itimer250:comp;
     ilastval,ireloadid,idownval,ipaintid,ivalid,ilastpaintid,ilastvalid,imin,imax,idef,ival:longint;
     ffindlabel :tsimplestringevent;
     fclicklabel:tsystemnotify;
     fonreadwriteval,fonreadwritedef:tbasicint_onreadwriteval;
     fonvalue2:tlongintevent;
+    foncommitvalue:tnotifyevent;
     idownball,iaball,ialabel,iabar:twinrect;
     vnone,vlabel,vbar,ihoverref,idownstyle,ihoverstyle:longint;
     icanmorelessonup:boolean;
+    ilastlabel:string;
     procedure setval(xval:longint);
     procedure writeval(xval:longint);
     function readval:longint;
@@ -2959,11 +2979,12 @@ type
     property val:longint read readval write setval;
     procedure reload;//uses "oloadfromname" to gain value - 07sep2020
     //events
-    property onfindlabel   :tsimplestringevent       read ffindlabel write ffindlabel;
-    property onclicklabel  :tsystemnotify            read fclicklabel write fclicklabel;
-    property onvalue2      :tlongintevent            read fonvalue2 write fonvalue2;//26feb2021
+    property onfindlabel   :tsimplestringevent       read ffindlabel      write ffindlabel;
+    property onclicklabel  :tsystemnotify            read fclicklabel     write fclicklabel;
+    property onvalue2      :tlongintevent            read fonvalue2       write fonvalue2;//26feb2021
     property onreadwriteval:tbasicint_onreadwriteval read fonreadwriteval write fonreadwriteval;
     property onreadwritedef:tbasicint_onreadwriteval read fonreadwritedef write fonreadwritedef;
+    property oncommitvalue :tnotifyevent             read foncommitvalue  write foncommitvalue;
     //makers
     procedure makemidivol;//23mar2022
     procedure makewavevol;
@@ -3290,6 +3311,8 @@ type
     pa        :array[0..99] of twinrect;//inner area
     puse      :array[0..99] of boolean;
     //.other
+    icolor    :array[0..99] of longint;//custom tep color -> default is "clnone=Off"
+    icolorb   :array[0..99] of longint;//custom tep color2  -> default is "clnone=Off"
     ititle    :array[0..99] of boolean;//17mar2025
     icap      :array[0..99] of string;
     isize     :array[0..99] of longint;//0=automatic (default), 1..N=static pixels, -1..-N=percentage
@@ -3336,6 +3359,10 @@ type
     function xgetenableds(x:longint):boolean;
     procedure xsetmarked(x:longint;y:boolean);
     function xgetmarked(x:longint):boolean;
+    procedure xsetcolor(x,y:longint);
+    function xgetcolor(x:longint):longint;
+    procedure xsetcolorb(x,y:longint);
+    function xgetcolorb(x:longint):longint;
     procedure xsethighlight2(x:string;y:boolean);
     function xgethighlight2(x:string):boolean;
     procedure xsetcap2(x:string;y:string);
@@ -3353,6 +3380,10 @@ type
     procedure xsetmarked2(x:string;y:boolean);
     function xgetmarked2(x:string):boolean;
     procedure xsetenabled2(x:string;y:boolean);
+    procedure xsetcolor2(x:string;y:longint);
+    function xgetcolor2(x:string):longint;
+    procedure xsetcolor2b(x:string;y:longint);
+    function xgetcolor2b(x:string):longint;
     function xgetenabled2(x:string):boolean;
     procedure xsetsize2(x:string;y:longint);
     function xgetsize2(x:string):longint;
@@ -3407,14 +3438,17 @@ type
     oscaleh:single;
     oscalevpad:single;
     oscalesep:single;
+    //.support
+    otag2:longint;
     //create
     constructor create2(xparent:tobject;xstart:boolean); override;
     destructor destroy; override;
-    procedure _ontimer(sender:tobject); override;
+    procedure _ontimer(sender:tobject); override;//20jul2025, 14jul2025
     procedure _onpaint(sender:tobject); override;//05jun2025, 15may2025
-    function  _onnotify(sender:tobject):boolean; override;
+    function  _onnotify(sender:tobject):boolean; override;//19jul2025
     function getalignheight(xclientwidth:longint):longint; override;
     //information
+    property count:longint read iaddcount;//14jul2025
     property style:longint read istyle write setstyle;//0=tep+cap, 1=tep, 2=cap
     property pause:boolean read ipause write ipause;
     property halign:longint read ihalign write sethalign;
@@ -3424,6 +3458,8 @@ type
     property downindex:longint read idownindex;
     property hoverindex:longint read ihoverindex;
     //.by index
+    property bcolor[xindex:longint]      :longint   read xgetcolor     write xsetcolor;
+    property bcolorb[xindex:longint]     :longint   read xgetcolorb    write xsetcolorb;
     property btitle[xindex:longint]      :boolean   read xgettitle     write xsettitle;
     property bcap[xindex:longint]        :string    read xgetcap       write xsetcap;//Note: '-' = vertical sep (visible line), '+' = new line (invisible)
     property bsize[xindex:longint]       :longint   read xgetsize      write xsetsize;
@@ -3438,6 +3474,8 @@ type
     property bhighlight[xindex:longint]  :boolean   read xgethighlight write xsethighlight;//15mar2022
     property bflash[xindex:longint]      :boolean   read xgetflash     write xsetflash;
     //.by code
+    property bcolor2[xcode2:string]      :longint   read xgetcolor2    write xsetcolor2;
+    property bcolor2b[xcode2:string]     :longint   read xgetcolor2b   write xsetcolor2b;
     property btitle2[xcode2:string]      :boolean   read xgettitle2    write xsettitle2;
     property bsize2[xcode2:string]       :longint   read xgetsize2     write xsetsize2;
     property bpert2[xcode2:string]       :double    read xgetpert2     write xsetpert2;
@@ -3461,7 +3499,8 @@ type
     function makeWinhead2(xclose,xall,xappicon,xlarge:boolean;xapptep:longint):tbasictoolbar;//26dec2024
     function makeWinhead__status_small:tbasictoolbar;//26dec2024
     //add
-    procedure clear;//22sep2020
+    procedure clear;//13jul2025, 22sep2020
+    procedure clear1(p:longint);//13jul2025
     function add(xcap:string;xtep,xcode:longint;xcode2,xhelp:string):longint;
     function add2(xcap:string;xtep,xcode:longint;xcode2,xhelp:string;ximgright:boolean):longint;
     function add3(xcap:string;xtep,xcode:longint;xcode2,xhelp:string;xenabled,xvisible,ximgright:boolean):longint;
@@ -3510,9 +3549,13 @@ type
     function aniAdd(xtep,xms:longint):boolean;//16sep2022
     procedure aniClear;
     procedure aniPlay;
+    //.copy from
+    procedure copyitemsfrom(x:tbasictoolbar);//14jul2025
+    procedure copyitemsfrom2(x:tbasictoolbar;xallitems:boolean);//14jul2025
+    procedure copyitemsfrom3(s:tbasictoolbar;dkeepcount,sfromindex:longint);//14jul2025
     //special
     procedure marktab(xname:string;xmark:boolean);//11sep2021
-    function canmovewindow:boolean;
+    function canmovewindow:boolean;//20jul2025, 14jul2025
     //reference
     function visref:string;//05jun2021
     //events
@@ -3676,7 +3719,7 @@ type
     ihead:tbasictoolbar;//27dec2024
     imainhelp:tmainhelp;//24jul2021
     itoolbar,itoolbar2,itoolbar3:tbasictoolbar;
-    igrad,igrad2,igrad3:tbasicgradient;//19aug2024
+    igrad,igrad2,igrad3,igrad4:tbasicgradient;//19aug2024
     ihigh,ihigh2:tbasicscroll;//automatic-height panels - 21feb2021
     istatus,istatus2:tbasicstatus;
     icols:tbasiccols;
@@ -3713,6 +3756,7 @@ type
     function clientinner2(x:tbasiccontrol):twinrect; override;
     function getalignheight(xclientwidth:longint):longint; override;
     function findbordersize:longint; override;
+    procedure setnormal(x:boolean); override;//19jul2025
     //children
     function childcount:longint;//17mar2025
     function findchild(xindex:longint;var xchild:tbasiccontrol):boolean;//17mar2025
@@ -3730,9 +3774,11 @@ type
     function xhelp:tbasichelp;//top
     function xtoolbar:tbasictoolbar;//top
     function xstatus:tbasicstatus;//top
-    function xgrad:tbasicgradient;//19aug2024
-    function xgrad2:tbasicgradient;
-    function xgrad3:tbasicgradient;//05jun2025
+    function xgrad:tbasicgradient;//below "xhead"
+    function xgrad2:tbasicgradient;//below "xtoolbar2" and above "xtoolbar3"
+    function xgrad3:tbasicgradient;//below "xhigh2" and above "xstatus2"
+    function xgrad4:tbasicgradient;//above "xhigh2"
+    function xnograd:boolean;//13jul2025
     function xhigh:tbasicscroll;//top - 21feb2021
     function xtoolbar2:tbasictoolbar;//bottom
     function xtoolbar3:tbasictoolbar;//05jun2025
@@ -3755,6 +3801,7 @@ type
     function xhavegrad:boolean;
     function xhavegrad2:boolean;
     function xhavegrad3:boolean;
+    function xhavegrad4:boolean;
     function xhavehigh:boolean;
     function xhavehigh2:boolean;
     function xhavecols:boolean;
@@ -3783,6 +3830,7 @@ type
     //support
     function xsmall:longint;
     function xlarge:longint;
+    procedure noscroll;//14jul2025
    end;
 
 {tbasicimageexts}
@@ -3869,6 +3917,7 @@ type
     function xfindsize(x,cw:longint):longint;//17nov2024
     procedure setvis(x:longint;xval:boolean);
     function getvis(x:longint):boolean;
+    procedure xsyncareas(xclientarea:twinrect;xcalconly:boolean);
    public
     //options
     ofullarea:boolean;//default=true=last column uses entire remaining space regardless of it's specified size - 07oct2020
@@ -3878,7 +3927,7 @@ type
     constructor create(xparent:tobject); override;
     constructor create2(xparent:tobject;xstart:boolean); virtual;
     destructor destroy; override;
-    function getalignheight(xclientwidth:longint):longint; override;
+    function getalignheight(xclientwidth:longint):longint; override;//12jul2025: column width correctly used now
     function canautoheight:boolean; override;
     //information
     property style:longint                read istyle write setstyle;
@@ -4328,6 +4377,8 @@ tep_colormatrix20:array[0..152] of byte=(
 84,69,65,49,35,18,0,0,0,20,0,0,0,255,255,255,56,255,144,199,14,255,255,255,3,255,144,199,1,223,148,255,14,255,144,199,1,255,255,255,1,255,144,199,1,217,138,255,16,255,144,199,2,210,128,255,16,255,144,199,2,204,118,255,16,255,144,199,2,197,108,255,16,255,144,199,2,191,98,255,16,255,144,199,2,185,89,255,16,255,144,199,2,178,79,255,16,255,144,199,2,172,69,255,16,255,144,199,2,166,59,255,16,255,144,199,2,159,49,255,16,255,144,199,1,255,255,255,1,255,144,199,1,153,39,255,14,255,144,199,1,255,255,255,3,255,144,199,14,255,255,255,56);
 tep_colorpal20:array[0..168] of byte=(
 84,69,65,49,35,40,0,0,0,20,0,0,0,255,255,255,82,0,0,1,36,255,255,255,3,0,0,1,1,0,0,0,36,0,0,1,1,255,255,255,1,0,0,1,1,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,2,0,0,0,38,0,0,1,1,255,255,255,1,0,0,1,1,0,0,0,36,0,0,1,1,255,255,255,3,0,0,1,36,255,255,255,82);
+tep_colorpal20n:array[0..168] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,255,255,255,42,0,0,1,16,255,255,255,3,0,0,1,1,0,0,0,16,0,0,1,1,255,255,255,1,0,0,1,1,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,2,0,0,0,18,0,0,1,1,255,255,255,1,0,0,1,1,0,0,0,16,0,0,1,1,255,255,255,3,0,0,1,16,255,255,255,42);
 tep_colorhistory20:array[0..440] of byte=(
 84,69,65,49,35,18,0,0,0,20,0,0,0,255,255,255,56,255,198,255,14,255,255,255,3,255,198,255,1,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,1,255,255,255,1,255,198,255,1,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,
 3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,3,255,144,199,3,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,255,255,1,255,198,255,1,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,2,255,144,199,2,255,198,255,1,255,255,255,3,255,198,255,14,255,255,255,56);
@@ -4518,6 +4569,55 @@ mtep_copy20
 :array[0..526] of byte=(
 84,69,65,51,35,0,1,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,20,0,0,0,0,0,0,31,0,0,0,0,1,55,0,0,0,1,141,0,0,0,6,255,0,0,0,1,141,0,0,0,1,60,0,0,0,4,0,0,0,0,1,141,0,0,0,1,58,0,0,0,6,0,0,0,0,1,61,0,0,0,1,142,0,0,0,2,0,0,0,0,1,67,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,179,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,204,0,0,0,1,0,0,0,0,1,255,0,0,0,8,0,0,0,0,1,255,0,0,0,2,0,0,0,0,1,200,0,0,0,1,0,0,0,0,1,141,0,0,0,1,58,0,0,0,6,0,0,0,0,1,61,0,0,0,1,142,0,0,0,2,0,0,0,0,1,166,0,0,0,1,101,0,0,0,1,60,0,
 0,0,1,142,0,0,0,6,255,0,0,0,1,142,0,0,0,1,65,0,0,0,2,0,0,0,0,1,79,0,0,0,1,184,0,0,0,1,71,0,0,0,12,0,0,0,0,1,79,0,0,0,1,167,0,0,0,1,201,0,0,0,4,204,0,0,0,1,183,0,0,0,1,67,0,0,0,31,0);
+
+mtep_dither20
+:array[0..464] of byte=(
+84,69,65,49,35,16,0,0,0,20,0,0,0,252,252,252,65,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,8,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,
+252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,8,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,33);
+
+mtep_rect20
+:array[0..240] of byte=(
+84,69,65,49,35,17,0,0,0,20,0,0,0,239,239,239,52,0,0,0,15,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,1,239,239,239,13,0,0,0,1,239,239,239,2,0,0,0,15,239,239,239,35);
+
+mtep_line20
+:array[0..160] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,252,252,252,38,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,18,0,0,0,1,252,252,252,38);
+
+mtep_pen20
+:array[0..88] of byte=(
+84,69,65,49,35,11,0,0,0,20,0,0,0,252,252,252,70,0,0,0,3,252,252,252,6,0,0,0,7,252,252,252,4,0,0,0,7,252,252,252,3,0,0,0,9,252,252,252,2,0,0,0,9,252,252,252,2,0,0,0,9,252,252,252,3,0,0,0,7,252,252,252,4,0,0,0,7,252,252,252,6,0,0,0,3,252,252,252,59);
+
+mtep_drag20
+:array[0..112] of byte=(
+84,69,65,49,35,15,0,0,0,20,0,0,0,252,252,252,94,0,0,0,3,252,252,252,10,0,0,0,7,252,252,252,8,0,0,0,7,252,252,252,7,0,0,0,9,252,252,252,6,0,0,0,9,252,252,252,6,0,0,0,9,252,252,252,7,0,0,0,7,252,252,252,8,0,0,0,7,252,252,252,10,0,0,0,3,252,252,252,20,0,0,0,2,252,252,252,10,0,0,0,5,252,252,252,2,0,0,0,12,252,252,252,32);
+
+mtep_pot20
+:array[0..168] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,252,252,252,70,0,0,0,2,252,252,252,18,0,0,0,2,252,252,252,19,0,0,0,2,252,252,252,19,0,0,0,2,252,252,252,19,0,0,0,2,252,252,252,19,0,0,0,2,252,252,252,7,0,0,0,14,252,252,252,6,0,0,0,15,252,252,252,3,0,0,0,2,252,252,252,2,0,0,0,13,252,252,252,3,0,0,0,2,252,252,252,3,0,0,0,11,252,252,252,10,0,0,0,9,252,252,252,5,0,0,0,2,252,252,252,5,0,0,0,7,252,252,252,6,0,0,0,2,252,252,252,6,0,0,0,5,252,252,252,16,0,0,0,3,252,252,252,18,0,0,0,1,252,252,252,48);
+
+mtep_gpot20
+:array[0..192] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,255,0,0,70,0,0,0,2,255,0,0,18,0,0,0,2,255,0,0,19,0,0,0,2,255,0,0,19,0,0,0,2,255,0,0,19,0,0,0,2,255,0,0,19,0,0,0,2,255,0,0,7,0,0,0,14,255,0,0,6,0,0,0,15,255,0,0,3,0,0,0,2,255,0,0,2,0,0,0,13,255,0,0,3,0,0,0,2,255,0,0,3,0,0,0,11,255,0,0,10,0,0,0,9,255,0,0,5,0,0,0,2,255,0,0,5,0,0,0,7,255,0,0,6,0,0,0,2,255,0,0,6,0,0,0,5,255,0,0,16,0,0,0,3,255,0,0,8,0,0,0,7,255,0,0,3,0,0,0,1,255,0,0,2,0,0,0,5,255,0,0,22,0,0,0,18,255,0,0,1);
+
+mtep_cls20
+:array[0..376] of byte=(
+84,69,65,49,35,16,0,0,0,20,0,0,0,252,252,252,65,0,0,0,14,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,1,252,252,252,4,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,6,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,6,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,2,0,0,0,1,
+252,252,252,2,0,0,0,1,252,252,252,35);
+
+mtep_move20
+:array[0..144] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,252,252,252,70,0,0,0,1,252,252,252,18,0,0,0,3,252,252,252,16,0,0,0,5,252,252,252,52,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,8,0,0,0,2,252,252,252,9,0,0,0,2,252,252,252,6,0,0,0,3,252,252,252,9,0,0,0,3,252,252,252,6,0,0,0,2,252,252,252,9,0,0,0,2,252,252,252,8,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,52,0,0,0,5,252,252,252,16,0,0,0,3,252,252,252,18,0,0,0,1,252,252,252,49);
+
+mtep_eyedropper20
+:array[0..232] of byte=(
+84,69,65,49,35,20,0,0,0,20,0,0,0,252,252,252,34,0,0,0,3,252,252,252,16,0,0,0,5,252,252,252,14,0,0,0,7,252,252,252,12,0,0,0,8,252,252,252,11,0,0,0,9,252,252,252,10,0,0,0,10,252,252,252,10,0,0,0,9,252,252,252,12,0,0,0,7,252,252,252,12,0,0,0,1,252,252,252,1,0,0,0,5,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,4,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,1,0,0,0,2,252,252,252,12,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,15,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,15,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,15,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,15,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,15,0,0,0,4,252,252,252,16,0,0,0,3,252,252,252,36);
+
+mtep_wraphorz20
+:array[0..184] of byte=(
+84,69,65,49,35,18,0,0,0,20,0,0,0,252,252,252,83,0,0,0,1,252,252,252,16,0,0,0,2,252,252,252,15,0,0,0,3,252,252,252,9,0,0,0,2,252,252,252,3,0,0,0,7,252,252,252,5,0,0,0,1,252,252,252,6,0,0,0,3,252,252,252,3,0,0,0,1,252,252,252,3,0,0,0,1,252,252,252,8,0,0,0,2,252,252,252,4,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,4,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,14,0,0,0,1,252,252,252,2,0,0,0,1,252,252,252,14,0,0,0,1,252,252,252,3,0,0,0,1,252,252,252,12,0,0,0,1,252,252,252,5,0,0,0,12,252,252,252,93);
+
+mtep_swap20:array[0..208] of byte=(
+84,69,65,49,35,16,0,0,0,20,0,0,0,252,252,252,49,0,0,0,7,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,7,252,252,252,16,0,0,0,7,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,1,252,252,252,5,0,0,0,1,252,252,252,9,0,0,0,7,252,252,252,49);
 
 mtep_back20
 :array[0..291] of byte=(
@@ -5947,15 +6047,16 @@ var
    sysmenu_selcount      :array[0..19] of longint;
    sysmenu_ref64         :array[0..19] of currency;
    //system cursor
-   system_cursor         :longint;//index to "system_cursorlist()" list below
-   system_cursorREF      :hcursor;//track any changes to current cursor image
-   system_cursorlist     :array[0..2] of hcursor;
-   system_cursorchanged  :boolean=false;
+   system_cursor            :longint;//index to "system_cursorlist()" list below
+   system_cursorREF         :hcursor;//track any changes to current cursor image
+   system_cursorlist        :array[0..2] of hcursor;
+   system_cursorchanged     :boolean=false;
+   system_clipcursor_active :boolean=false;//26jul2025: when TRUE, win____clipcursor is active and tbasicsystem won't run the resize window cursors or drag window actions
 
    //system support ------------------------------------------------------------
    system_guifirst       :tbasicsystem=nil;
    system_guiactive      :tbasicsystem=nil;
-   system_debugrows      :array[0..39] of string;
+   system_debugrows      :array[0..49] of string;//17jul2025
    system_debugrows_count:longint=0;
    sysnewnameid          :longint=0;//unique system wide -> general purpose NAME BASED id -> range: 0..N -> used with "low__newnameid()" proc - 25jun2022
    sysnewid              :longint=0;//unique system wide -> general purpose id -> range: 0..N
@@ -6069,6 +6170,7 @@ var
    syswait_focus         :tobject=nil;//used for tbasicsystem.xshowwait to set/detect if it's the main tbasicsystem in use, and whether to cancel any showing dialog windows etc -> prevents 2 or more simultanous tbasicsystem's from locking in a cyclic "xshowwait()" reference stall or unexpected behaviour - 03apr2021
 
    //special clipboard formats -------------------------------------------------
+   cf_png                :word=0;//08aug2025
    cf_bwd                :word=0;//26sep2022
    cf_bwp                :word=0;
 
@@ -6233,7 +6335,6 @@ function siSavesyssettings:boolean;
 function siSaveprgsettings:boolean;
 procedure siSaveallsettings;//23mar2022
 procedure siCloseprompt(x:tbasicsystem);
-procedure siClose;
 procedure siHalt;
 procedure viSyncandsave;//24jul2021
 procedure viSyncandsave2(xforce:boolean);//04may2025
@@ -6273,6 +6374,7 @@ function low__akstrb(xcode:longint):string;//convert action key "ak*" -> "text c
 function low__keyboard__fromak(xcode:longint;var xctrl,xalt,xshift,xkeyx:boolean;var xkey:longint;var xhavekey:boolean):boolean;
 function low__keyboard(xstyle:char;xkey:longint;xshift,xctrl,xalt:boolean;var xoutkey:longint):boolean;
 function low__keyboard2(xstyle:char;xkey:longint;xshift,xctrl,xalt:boolean;var xoutkey:longint;var xlaststate:byte):boolean;
+function low__makebasic__akkey(xkey:longint):longint;//22jul2025
 
 
 //.mouse support -> fine control - 17mar2020 -----------------------------------
@@ -6529,7 +6631,7 @@ procedure gui__delrgn(var x:hrgn);
 function gui__tepext(xfilenameORext:string):longint;
 function gui__foldertep2(xownerid:longint;xfolder:string):longint;
 function tepext2(xfilenameORext:string;xdeftep:longint):longint;
-function tepext3(xfilenameORext:string;xdeftep:longint;var xfound:boolean):longint;//19may2025, 09apr2025, 10nov2024
+function tepext3(xfilenameORext:string;xdeftep:longint;var xfound:boolean):longint;//19jul2025, 19may2025, 09apr2025, 10nov2024
 function tepfindbyname(xname:string;var xindex:longint):boolean;
 function tepfound(xindex:longint):boolean;
 function tepfind(xindex:longint;var xdata:tlistptr):boolean;
@@ -6928,6 +7030,7 @@ prgsettings:=vnew2(954);
 
 //special clipboard formats ----------------------------------------------------
 try
+cf_png:=win____registerclipboardformat('PNG');//08aug2025
 cf_bwd:=win____registerclipboardformat('Blaiz Writer Document');
 cf_bwp:=win____registerclipboardformat('Blaiz Word Processor Document');
 except;end;
@@ -7006,8 +7109,8 @@ systimer_enabled:=false;
 visyncevent:=nil;
 //was: fasttimer__stop;//07oct2021
 
+
 //system helpers ---------------------------------------------------------------
-app__destroy;
 //was: if zzok(programhelpviewer,1040) then freeobj(@programhelpviewer);
 
 
@@ -7072,8 +7175,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gossgui.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.36410'
-else if (xname='date')       then result:='03jul2025'
+if      (xname='ver')        then result:='4.00.36710'
+else if (xname='date')       then result:='10aug2025'
 else if (xname='name')       then result:='GUI'
 else
    begin
@@ -7452,7 +7555,7 @@ if gui__closing and (not sicloseviapostDONE) and (low__closecount<=0) then
    systimer_enabled:=false;
    gui__running:=false;//stop the message loop - 17nov2023
    //was: postmessage(app__handle,wm_quit,0,0);//thread friendly shutdown signal - 26may2021
-   win____postmessage(0,wm_quit,0,0);//thread friendly shutdown signal -> post to the app thread - 16jan2025, 26may2021
+   //was:win____postmessage(0,wm_quit,0,0);//thread friendly shutdown signal -> post to the app thread - 16jan2025, 26may2021
    exit;
    end;
 
@@ -7723,10 +7826,6 @@ if (sysback_count<>0) then exit;
 //init
 xlimit    :=high(sysback_name);
 xcanwrite :=true;
-
-
-//xxxxxxxxxxxxxxxxxxxxxx show/apply default value in realtime
-//xxxxxxxxxxxxxxxxxxxxxx hide sliders that CANNOT be changed
 
 //built-in
 xnew('Default',false,'',back_none);
@@ -10494,8 +10593,8 @@ if mask__hasTransparency32(s) then
 //write DIBv5
 d.makeglobal;
 //if not bmp32__todata3(s,@d,false,hsV05,low__aorb(32,24,misb(s)=24)) then goto skipend;
-if not bmp32__todata3(s,@d,false,hsV05,32) then goto skipend;
-if (0=win____setclipboarddata(cf_dibv5,d.handle))                   then goto skipend;//11jun2025: fixed
+if not bmp32__todata3(s,@d,false,hsV05,32)          then goto skipend;
+if (0=win____setclipboarddata(cf_dibv5,d.handle))   then goto skipend;//11jun2025: fixed
 d.ejectcore;
 
 //write DIBv1
@@ -11491,17 +11590,14 @@ try
 //check
 if gui__closing or sicloseprompting or (x=nil) then exit;
 sicloseprompting:=true;
+
 //prompt
 case (not x.mustcloseprompt) or x.popquery2(ntranslate('Close app?'),'','Close App',false) of
-true:siclose;//no need to reset because we are now closing down - 26aug2021
+true:app__startclose;//no need to reset because we are now closing down - 26aug2021
 else sicloseprompting:=false;//cancelled -> reset and allow for another attempt
 end;
-except;end;
-end;
 
-procedure siClose;
-begin
-if not gui__closing then  gui__closing:=true;//goes via "system.__ontimer->siclosing->sihalt" to prevent in "__ontimer()" font referencing during shutdown which can cause fatal access error - 14may2020
+except;end;
 end;
 
 procedure siHalt;
@@ -17949,6 +18045,35 @@ xlaststate:=b1;
 result:=true;
 skipend:
 except;end;
+end;
+
+function low__makebasic__akkey(xkey:longint):longint;//22jul2025
+begin
+
+case xkey of
+vkdelete:    result:=akdelete;
+vkback:      result:=akback;
+vkescape:    result:=akescape;
+vkreturn:    result:=akreturn;
+vktab:       result:=aktab;
+vkf1..vkf12: result:=akf1+(xkey-vkf1);
+
+//.direction keys
+vkleft:      result:=akleft;
+vkright:     result:=akright;
+vkup:        result:=akup;
+vkdown:      result:=akdown;
+
+//.extended direction keys
+vkprior:    result:=akprev;
+vknext:     result:=aknext;
+vkhome:     result:=akhome;
+vkend:      result:=akend;
+
+//.other
+else if (xkey>=32) then result:=xkey else result:=aknone;
+end;//case
+
 end;
 
 
@@ -29208,7 +29333,7 @@ begin
 result:=tepext3(xfilenameORext,xdeftep,bol1);
 end;
 
-function tepext3(xfilenameORext:string;xdeftep:longint;var xfound:boolean):longint;//19may2025, 09apr2025, 10nov2024
+function tepext3(xfilenameORext:string;xdeftep:longint;var xfound:boolean):longint;//19jul2025, 19may2025, 09apr2025, 10nov2024
 var
    n:string;
 
@@ -29230,7 +29355,7 @@ n:=io__readfileext_low(xfilenameORext);
 if       (n='bmp') or (n='dib') or (n='vbmp') or (n='wmf') or (n='emf') or (n='jpg') or (n='jpeg') or (n='jpgt') or (n='jif') or (n='lig') or (n='gif') or (n='img32') or (n='tj32') or (n='res') then xset(tepBMP20)
 else if  (n='ico') or (n='yuv') or (n='gr8') or (n='bw1') or (n='b04') or (n='b12') or (n='ppm') or (n='pgm') or (n='pbm') or (n='xbm') then xset(tepBMP20)
 else if  (n='tea') or (n='teb') or (n='tem') or (n='tep') or (n='tec') or (n='teh') or (n='t24') or (n='atep') or (n='omi') or (n='san') or (n='can') or (n='ean') or (n='aan') or (n='aas') or (n='raw24') then xset(tepBMP20)
-else if (n='png') or (n='abr') or (n='mp4') or (n='webm') or (n='tga') or (n='pnm') or (n='tex1') then xset(tepBMP20)//26jan2025, 02jan2025, 20dec2024, 10nov2024, 30dec2021
+else if (n='png') or (n='abr') or (n='mp4') or (n='webm') or (n='tga') or (n='pnm') or (n='pic8') then xset(tepBMP20)//19jul2025, 26jan2025, 02jan2025, 20dec2024, 10nov2024, 30dec2021
 else if (n='cur') or (n='ani') then xset(tepCUR20)//24may2022
 //.music
 else if (n='wav') or (n='mp1') or (n='mp2') or (n='mp3') or (n='wma') then xset(tepWMA20)
@@ -29448,6 +29573,7 @@ else if nok('color20',tepcolor20) then goto skipdone
 else if nok('colors20',tepcolors20) then goto skipdone
 else if nok('colormatrix20',tepcolormatrix20) then goto skipdone
 else if nok('colorpal20',tepcolorpal20) then goto skipdone
+else if nok('colorpal20n',tepcolorpal20n) then goto skipdone
 else if nok('colorhistory20',tepcolorhistory20) then goto skipdone
 else if nok('font20',tepfont20) then goto skipdone
 else if nok('desktop20',tepdesktop20) then goto skipdone
@@ -29670,6 +29796,7 @@ tepColor20    :s(tep_color20,mtep_color20);
 tepColors20   :m(tep_colors20);
 tepColormatrix20:m(tep_colormatrix20);
 tepColorPal20 :m(tep_colorpal20);//02mar2021
+tepColorPal20n:m(tep_colorpal20n);//13jul2025 - narrower version
 tepColorHistory20:m(tep_colorhistory20);//19mar2021
 tepFont20     :s(tep_font20,mtep_font20);
 tepDesktop20  :s(tep_desktop20,mtep_desktop20);
@@ -29720,6 +29847,21 @@ tepbulletsquare20:m(tep_bulletsquare20);//15mar2025
 tepOutline20  :m(mtep_frame20);
 tepChecker20  :m(mtep_selectall20);
 tepList20     :s(tep_list20,mtep_list20);
+tepSwap20     :m(mtep_swap20);//14jul2025
+
+//.graphic tool images
+tepDither20   :m(mtep_dither20);//19jul2025
+tepRect20     :m(mtep_rect20);
+tepLine20     :m(mtep_line20);
+tepPen20      :m(mtep_pen20);
+tepDrag20     :m(mtep_drag20);
+tepPot20      :m(mtep_pot20);
+tepGPot20     :m(mtep_gpot20);
+tepCls20      :m(mtep_cls20);
+tepMove20     :m(mtep_move20);
+tepEyedropper20 :m(mtep_eyedropper20);
+tepWraphorz20 :m(mtep_wraphorz20);
+
 
 //.file format teps
 tepXXX20       :m(tep_xxx20);
@@ -30136,7 +30278,15 @@ var
    if not win____isiconic(h) then
       begin
       wm.r:=1;
-      if wfind then wf.paintallnow;//13may2025: for Win98
+
+      if wfind then
+         begin
+
+         low__irollone(wf.oeraseingbackground);//24jul2025
+         wf.paintallnow;//13may2025: for Win98 and Gamemode
+
+         end;
+
       end
    else
       begin
@@ -30979,6 +31129,7 @@ constructor tbasicsystem.create(dwidth,dheight:longint);
 var
    xmonitorindex,p:longint;
 begin
+
 //self
 if classnameis('tbasicsystem') then track__inc(satSystem,1);
 zzadd(self);
@@ -30994,6 +31145,9 @@ icloselocked:=0;
 low__sysadd(self);
 ishowmenu:=nil;
 
+//vars
+ifocusindex           :=min32;//no focus
+
 //.rootwin support
 irootwin              :=nil;
 
@@ -31004,6 +31158,10 @@ igamemode_canmove     :=false;
 igamemode_onpaint     :=nil;
 igamemode_onshortcut  :=nil;
 igamemode_onnotify    :=nil;
+igamemode_onkey       :=nil;//22jul2025
+igamemode_onmouse     :=nil;//22jul2025
+fonkey                :=nil;//22jul2025
+oeraseingbackground   :=0;//24jul2025
 
 //.form support
 otestmode             :=false;
@@ -31303,6 +31461,9 @@ igamemode            :=false;
 igamemode_onpaint    :=nil;
 igamemode_onnotify   :=nil;
 igamemode_onshortcut :=nil;
+igamemode_onkey      :=nil;
+igamemode_onmouse    :=nil;
+fonkey               :=nil;
 
 //remove iform from system list
 system__exclude(self);
@@ -31846,18 +32007,21 @@ begin
 
 m.r:=htclient;
 
-if (imousebuttonlock<>-1) then exit;
+//26jul2025
+if system_clipcursor_active or (imousebuttonlock<>-1) then exit;
 
 if haverootwin then
    begin
    if igamemode then xperform(igamemode_cansize,igamemode_canmove)
    else
       begin
+
       //which window is focused
       if (focuscontrol=nil) then fw:=rootwin else focuscontrol.xwindow(fw);
 
       //resize or drag window
       if (fw=rootwin) then xperform(true,rootwin.xhavehead and rootwin.xhead.canmovewindow);
+
       end;
    end;
 end;
@@ -31886,8 +32050,10 @@ iform_paintdc:=dc;
 if otestmode then xtest
 else
    begin
-//   imustpaint:=2;//assume full paint
+
+   //   imustpaint:=2;//assume full paint
    __onpaint(self);
+
    end;
 except;end;
 
@@ -31980,6 +32146,18 @@ label
    skipend;
 var
    dx,dy:longint;
+
+   procedure xextmouse;
+   begin
+
+   //check
+   if (s<0) or (s>2) then exit;
+
+   //event
+   if assigned(igamemode_onmouse) then igamemode_onmouse(self,s,xbut,dx,dy,width,height);
+
+   end;
+
 begin
 //check
 if not stable then exit;
@@ -31993,6 +32171,9 @@ dy:=tint4(m.l).sint[1];
 //.mouse down
 if (s=0) then
    begin
+
+   xextmouse;//external event - 26jul2025
+
    low__resetclicktime;//03apr2021
    xwaitfocus;//03apr2021
 
@@ -32001,23 +32182,33 @@ if (s=0) then
 
    low__mouse2(self,'d',dx,dy);
    aadd('d',xbut,dx,dy);
+
    end
 //.mouse move
 else if (s=1) then
    begin
+
    if (dx<>ilastmousemovecheckx) or (dy<>ilastmousemovechecky) then
       begin
+
+      xextmouse;//external event - 26jul2025
+
       xwoundcalc(dx,dy);
       ilastmousemovecheckx:=dx;
       ilastmousemovechecky:=dy;
       low__resetmovetime;//03apr2021
       low__mouse2(self,'m',dx,dy);
       aadd('m',0,dx,dy);
+
       end;
+
    end
 //.mouse up
 else if (s=2) then
    begin
+
+   xextmouse;//external event - 26jul2025
+
    low__resetclicktime;//03apr2021
    xwaitfocus;//03apr2021
 
@@ -32027,6 +32218,7 @@ else if (s=2) then
    low__mouse2(self,'u',dx,dy);
    aadd('u',xbut,dx,dy);
    imousebuttonlock:=-1;//off
+
    end;
 
 skipend:
@@ -32034,7 +32226,7 @@ end;
 
 procedure tbasicsystem.form__wmmousedown(xbut:longint;var m:twinmessage);
 begin
-win____SetCapture(iform_handle);//capture the mouse
+if not assigned(igamemode_onmouse) then win____SetCapture(iform_handle);//capture the mouse
 form__mouse(0,xbut,m);
 end;
 
@@ -32046,13 +32238,14 @@ end;
 procedure tbasicsystem.form__wmmouseup(xbut:longint;var m:twinmessage);
 begin
 form__mouse(2,xbut,m);
-win____ReleaseCapture;//release captured mouse
+if not assigned(igamemode_onmouse) then win____ReleaseCapture;//release captured mouse
 end;
 
 procedure tbasicsystem.form__wmkeydown(var m:twinmessage);//23jan2025
 var
    p,int1:longint;
 begin
+
 low__resetkeytime;//03apr2021
 
 case m.w of
@@ -32063,12 +32256,18 @@ end;
 
 low__mousefine_turnon(iform_lastshift);
 for p:=1 to tint4(m.l).bytes[0] do if low__keyboard2('d',m.w,iform_lastshift,iform_lastctrl,iform_lastalt,int1,ikeyboardlaststate) then aadd('k',0,int1,0);
+
+//.onkeydown - 22jul2025
+if gamemode and assigned(igamemode_onkey) then igamemode_onkey(self, m.w ,true);
+if assigned(fonkey)                       then fonkey(self, m.w ,true);
+
 end;
 
 procedure tbasicsystem.form__wmkeyup(var m:twinmessage);
 var
    p,int1:longint;
 begin
+
 low__resetkeytime;//03apr2021
 
 case m.w of
@@ -32079,6 +32278,11 @@ end;
 
 low__mousefine_turnon(iform_lastshift);
 for p:=1 to tint4(m.l).bytes[0] do if low__keyboard2('u',m.w,iform_lastshift,iform_lastctrl,iform_lastalt,int1,ikeyboardlaststate) then aadd('k',0,int1,0);
+
+//.onkeydown - 22jul2025
+if gamemode and assigned(igamemode_onkey) then igamemode_onkey(self, m.w ,false);
+if assigned(fonkey)                       then fonkey(self, m.w ,false);
+
 end;
 
 procedure tbasicsystem.form__wmchar(var m:twinmessage);
@@ -32174,12 +32378,12 @@ low__menutitle(a,tepnone,'Online Resources','');
 xhint1:='External Content|View webpage in browser';
 if (app__info('url.software')<>'')    then low__menuitem2(a,strint(app__info('software.tep')),'App Website',xhint1,'nprogram',100,aknone,true);
 if (app__info('url.portal')<>'')      then low__menuitem2(a,strint(app__info('portal.tep')),app__info('portal.name'),xhint1,'be',100,aknone,true);
-if (app__info('url.sourceforge')<>'') then low__menuitem2(a,tepSourceforge20,'Sourceforge',xhint1,'sourceforge',100,aknone,true);
 if (app__info('url.github')<>'')      then low__menuitem2(a,tepGitHub20,'GitHub',xhint1,'github',100,aknone,true);
-if (app__info('url.instagram')<>'')   then low__menuitem2(a,tepInstagram20,'Instagram',xhint1,'instagram',100,aknone,true);
-if (app__info('url.facebook')<>'')    then low__menuitem2(a,tepFacebook20,'Facebook',xhint1,'facebook',100,aknone,true);
+if (app__info('url.sourceforge')<>'') then low__menuitem2(a,tepSourceforge20,'Sourceforge',xhint1,'sourceforge',100,aknone,true);
 if (app__info('url.mastodon')<>'')    then low__menuitem2(a,tepMastodon20,'Mastodon',xhint1,'mastodon',100,aknone,true);
+if (app__info('url.facebook')<>'')    then low__menuitem2(a,tepFacebook20,'Facebook',xhint1,'facebook',100,aknone,true);
 if (app__info('url.twitter')<>'')     then low__menuitem2(a,tepTwitter20,'X',xhint1,'twitter',100,aknone,true);
+if (app__info('url.instagram')<>'')   then low__menuitem2(a,tepInstagram20,'Instagram',xhint1,'instagram',100,aknone,true);
 if (app__info('url.contact')<>'')     then low__menuitem2(a,tepTXT20,'Contact Us','External Content|Contact us with our online contact form','contact',100,aknone,true);
 low__menuitem2(a,tepAbout20,'About','About|About this app','about',100,aknone,true);
 
@@ -32318,7 +32522,7 @@ begin
 if (iform_handle<>0) then result:=monitors__findBYarea(area) else result:=monitors__primaryindex;
 end;
 
-procedure tbasicsystem.debug(yrow:longint;xtext:string);//26nov2024, 01aug2024
+procedure tbasicsystem.debug(yrow:longint;xtext:string);//04jul2025: persists in Gamemode, 26nov2024, 01aug2024
 var
    p,vcount:longint;
 begin//canvas.textout//dbtext
@@ -32339,7 +32543,11 @@ for p:=high(system_debugrows) downto 0 do if (system_debugrows[p]<>'') then
 system_debugrows_count:=vcount;
 
 //paint
-if not ipaintbusy then form__paintnow;
+case igamemode of
+true:if (paintdc<>0) then win____TextOut(paintdc,0,(yrow*vifontheight),pchar(xtext),low__len(xtext))
+else if not ipaintbusy then form__paintnow;
+end;//case
+
 end;
 
 procedure tbasicsystem.closelock;
@@ -35259,6 +35467,31 @@ xdrawtohost__addarea(xarea);
 except;end;
 end;
 
+procedure tbasicsystem.ldsOUTSIDE(dx,dy,dw,dh,dcol:longint);//21jul2025
+var
+   cw,ch:longint;
+begin
+
+//init
+dw:=frcmin32(dw,0);
+dh:=frcmin32(dh,0);
+cw:=width;
+ch:=height;
+
+//left
+lds(area__make(0,0,dx-1,ch-1),dcol,false);
+
+//right
+lds(area__make(dx+dw,0,cw-1,ch-1),dcol,false);
+
+//top
+lds(area__make(dx,0,dx+dw-1,dy-1),dcol,false);
+
+//bottom
+lds(area__make(dx,dy+dh,dx+dw-1,ch-1),dcol,false);
+
+end;
+
 procedure tbasicsystem.lds(darea:twinrect;dcol:longint;xround:boolean);//25dec2024
 begin
 low__draw(false,misb(lastbuffer),width,height,lastrows,nil,0,'s',darea,darea,darea,dcol,clnone,clnone,0,0,0,0,0,nil,nil,corRound,xround);
@@ -35305,6 +35538,7 @@ if (dborder<>clnone) then
    begin
    for p:=0 to (vizoom-1) do low__draw(xdyanmicCorners,misb(lastbuffer),width,height,lastrows,nil,0,'o',darea,darea,area__make(darea.left+p,darea.top+p,darea.right-p,darea.bottom-p),dborder,dborder2,dback3,0,0,0,drich,0,nil,str2,corRound,xround);
    end;
+
 except;end;
 try;freeobj(@str2);except;end;
 end;
@@ -35978,7 +36212,6 @@ try
 ipaintingpart:=false;
 ipaintbusy:=false;
 
-
 //postpaint id
 if xmustfull then low__irollone(ipostpaint_fullid) else low__irollone(ipostpaint_partid);//post paint id - 05dec2025
 low__irollone(ipostpaint_id);
@@ -36029,6 +36262,7 @@ var
    str1:string;
 begin
 try
+
 //closed
 if iclosed then exit;
 
@@ -36036,11 +36270,12 @@ if iclosed then exit;
 if not stable then exit;
 
 //closing
-if gui__closing and (icloselocked<=0) then
+if gui__closing and (icloselocked<=0) then//07jul2025
    begin
    iclosed:=true;
    exit;
    end;
+
 
 //init
 xms64:=ms64;
@@ -39031,26 +39266,25 @@ end;
 
 function tbasicsystem.mousedraggingout3(xoffx,xoffy:longint;x:twinrect;xkeepchecking,xfine:boolean):boolean;
 begin//Note: xoffx and xoffy allows for realtime adjustment of a "strictly local area of 0..N" inside of a control to be extended to a screen based (within system.host clientarea) without sender having to convert the area thenselves - 25feb2021
+//defaults
 result:=false;
 
-try
 if xkeepchecking and imousedown and low__aorbbol(iscreendragging,iscreendraggingfine,xfine) and ((imousemovexy.x<(xoffx+x.left)) or (imousemovexy.x>(xoffx+x.right)) or (imousemovexy.y<(xoffy+x.top)) or (imousemovexy.y>(xoffy+x.bottom))) then
    begin
    result:=true;
    iscreendraggingout:=true;
    end;
 if not xkeepchecking then result:=iscreendraggingout;
-except;end;
 end;
 
 function tbasicsystem.mousedraggingout(x:tbasiccontrol;xkeepchecking,xfine:boolean):boolean;
 begin
+//defaults
 result:=false;
 
-try
+//get
 if xkeepchecking and imousedown and low__aorbbol(iscreendragging,iscreendraggingfine,xfine) and zzok(x,7147) and x.enabled and x.visible then result:=mousedraggingout2(x.clientarea,xkeepchecking,xfine);
 if not xkeepchecking then result:=iscreendraggingout;
-except;end;
 end;
 
 procedure tbasicsystem.amouseupfinalise;//14may2020
@@ -39642,9 +39876,10 @@ procedure tbasicsystem.setfocuscontrol(x:tbasiccontrol);
 var
    p,int1:longint;
 begin
-try
+
 //defaults
-int1:=min32;//none
+int1            :=min32;//none
+
 //get
 if zzok(x,7164) and (icorecount>=1) then
    begin
@@ -39654,9 +39889,10 @@ if zzok(x,7164) and (icorecount>=1) then
       break;
       end;//p
    end;
+
 //set
-focusindex:=int1;
-except;end;
+ifocusindex:=int1;
+
 end;
 
 function tbasicsystem.xrootok(x:tbasiccontrol):boolean;
@@ -40436,6 +40672,11 @@ else
 end;
 
 //-- Other ---------------------------------------------------------------------
+procedure tbasiccontrol.setnormal(x:boolean);//19jul2025
+begin
+inormal:=x;
+end;
+
 function tbasiccontrol.canaccept:boolean;
 begin
 result:=visible and enabled and assigned(fonaccept);
@@ -40947,12 +41188,14 @@ end;
 function tbasiccontrol.mmidivol(xcap,xhelp:string):tsimpleint;//02jul2025
 begin
 result:=tsimpleint.create(self);
+
 if (result<>nil) then
    begin
    result.makemidivol;
    if (xcap<>'')  then result.caption:=xcap;
    if (xhelp<>'') then result.help:=xhelp;
    end;
+   
 end;
 
 function tbasiccontrol.mwavevol(xcap,xhelp:string):tsimpleint;//02jul2025
@@ -42038,18 +42281,22 @@ begin
 try
 //check
 if ialigning or (not stable) then exit else ialigning:=true;
+
 //init
 ialigned:=false;
+
 //.wmfullmode -> parentless window only
 if zznil(parent,2315) and (winstyle=wmfullwin) then
    begin
    if setbounds(0,0,gui.width,gui.height) then imustalign:=true;
    end;
+
 if imustalign or parentaligned then
    begin
    ialigned:=true;
    _onalign(self);//self
    end;
+
 //align children
 if (ownlist.count>=1) then
    begin
@@ -42059,6 +42306,7 @@ if (ownlist.count>=1) then
       a.xmustalign:=false;
       end;//p
    end;
+
 except;end;
 try
 ialigned:=false;
@@ -42388,6 +42636,12 @@ procedure tbasiccontrol.setfocus;
 begin
 if visible and enabled then gui.focuscontrol:=self;
 end;
+
+procedure tbasiccontrol.setfocusforce;
+begin
+gui.focuscontrol:=self;
+end;
+
 
 //-- draw support --------------------------------------------------------------
 procedure tbasiccontrol.ldv(dx,dy,dy2,dcol:longint;xround:boolean);
@@ -44544,7 +44798,8 @@ function tbasicsplash.xcontentarea:twinrect;
 label
    redo;
 var
-   xsize,xgap,sw,sh,cw,ch,int1:longint;
+   p,xlinecount,xsize,xgap,sw,sh,cw,ch,int1:longint;
+   xname,xvalue:string;
 begin
 //defaults
 result:=area__make(0,0,300,100);
@@ -44558,6 +44813,9 @@ if xhavetoolbar2 and xtoolbar2.visible then dec(sh,xtoolbar2.getalignheight(0));
 if xhavegrad2 and xgrad2.visible       then dec(sh,xgrad.getalignheight(0));
 sh:=frcmin32(sh,1);
 
+xlinecount:=0;
+for p:=0 to 9 do if splash__findvalue(p,xname,xvalue) then inc(xlinecount);
+
 //find acceptable size
 int1 :=2*findbordersize;
 xgap :=15;
@@ -44565,7 +44823,7 @@ xsize:=520;
 
 redo:
 cw:=frcmin32(((xgap+xsize+xgap)*vizoom)-1+int1,1);
-ch:=frcmin32(((xgap+round(xsize / 2.5)+xgap)*vizoom)-1+int1,1);
+ch:=frcmin32(((xgap+round(xsize / 3.0)+xgap)*vizoom)-1+int1,1);
 
 if (cw>sw) or (ch>sh) then
    begin
@@ -44578,6 +44836,9 @@ if (cw>sw) or (ch>sh) then
    end;
 
 //set
+inc(cw, low__len(app__info('name')) * 5 );
+inc(ch, xlinecount*vifontheight div 2);
+
 result:=area__make(0,0,cw-1,ch-1);
 if xhavehead and xhead.visible         then inc(result.bottom,xhead.getalignheight(0));
 if xhavetoolbar2 and xtoolbar2.visible then inc(result.bottom,xtoolbar2.getalignheight(0));
@@ -44597,6 +44858,7 @@ var
    s:tclientinfo;
    xsize,xgap,int1,ncount,xlineheight,tgap,tw1,tw2,ih,fs,fsH,dy,p:longint;
    ta,ia:twinrect;
+   str1,str2:string;
    n:array[0..9] of string;
    v:array[0..9] of string;
 
@@ -44628,7 +44890,7 @@ xsize :=frcmin32(isize,1);
 
 //title
 ta.top      :=xgap;//round(s.ch*0.15);
-ta.bottom   :=round(s.ch / 2.5);
+ta.bottom   :=round(s.ch / 3.0);//was 2.5 - 14jul2025
 ta.left     :=xgap;
 ta.right    :=s.cw-xgap;
 
@@ -44644,7 +44906,12 @@ ih          :=ia.bottom-ia.top+1;
 tgap        :=15*s.zoom;
 
 ncount:=0;
-for p:=0 to high(n) do if splash__findvalue(p,n[p],v[p]) then ncount:=p+1 else break;
+for p:=0 to high(n) do if splash__findvalue(p,str1,str2) then
+   begin
+   n[ncount]:=str1;
+   v[ncount]:=str2;
+   inc(ncount);
+   end;
 
 if (ncount>=1) then
    begin
@@ -44676,7 +44943,7 @@ if (ncount>=1) then
    end;
 
 //corner patch
-//iscreen.xparentcorners;
+iscreen.xparentcorners;
 except;end;
 end;
 
@@ -44772,33 +45039,48 @@ if oautoheight then
 except;end;
 end;
 
-function tbasiccols.getalignheight(xclientwidth:longint):longint;
+function tbasiccols.getalignheight(xclientwidth:longint):longint;//12jul2025: column width correctly used now
 var
    int1,v,p:longint;
    xok:boolean;
+
+   function xcolumnwidth(xindex:longint):longint;//14jul2025, 12jul2025
+   begin
+   //14jul2025: xfindsize proc upgraded to handle "remcount"
+   if (xindex>=0) and (xindex<=high(icols)) then result:=xfindsize(xindex,xclientwidth) else result:=0;
+   end;
 begin
 //defaults
 result:=0;
 
 try
+//init
 xok:=false;
 if omakeautoheight then makeautoheight;
+
 //get
 if canautoheight then
    begin
+
    for p:=0 to high(icols) do if zzok(icols[p],7202) and icols[p].visible and icols[p].static and icols[p].oautoheight then
       begin
-      v:=icols[p].getalignheight(xclientwidth);
+      //was: v:=icols[p].getalignheight(xclientwidth);
+      v:=icols[p].getalignheight( xcolumnwidth(p) );
       if (v>result) then result:=v;
-      xok:=true;//atleast one panel has a autoheight value we can use - 26feb2021
+      xok:=true;//atleast one panel has an autoheight value set we can use - 26feb2021
       end;//p
+
    end;
+
 //fallback
 if not xok then inherited getalignheight(xclientwidth);
+
 //min
 result:=frcmin32(result,ominheight);
+
 //external - 06jul2021
 if xfindheight(xclientwidth,int1) then result:=frcmin32(result,int1);
+
 except;end;
 end;
 
@@ -44888,7 +45170,7 @@ end;
 
 function tbasiccols.xfindsize(x,cw:longint):longint;//17nov2024
 var
-   int1:longint;
+   rcount,p,int1:longint;
 begin
 //defaults
 result:=0;
@@ -44896,11 +45178,14 @@ result:=0;
 try
 //range
 cw:=frcmin32(cw,0);
+
 //check
 if (cw<=0) then exit;
+
 //init
 x:=frcrange32(x,0,high(icols));
 int1:=isize[x];
+
 //get
 //.size as percentage of "cw"
 if (int1>=1) then
@@ -44908,6 +45193,7 @@ if (int1>=1) then
    int1:=frcrange32(int1,1,100);//1..100%
    result:=frcrange32(round((int1/100)*cw),1,cw);
    end
+
 //.size as fixed size + optional wration "fontwidth" scaling
 else if (int1<=-1) then
    begin
@@ -44919,6 +45205,20 @@ else if (int1<=-1) then
 
  //.apply an upper limit range in STATIC PIXELS if one is set:
 if (imaxsizePX[x]>=1) then result:=frcmax32(result,imaxsizePX[x]*vizoom);
+
+//.size as remainder -> 14jul2025: remcount code was missing, causing inital misalignment before delayed correction
+if (iremcount[x]>=1) then
+   begin
+
+   //get total rcount
+   rcount:=0;
+   for p:=0 to high(iremcount) do if (iremcount[p]>=1) then inc(rcount,iremcount[p]);
+
+   //set
+   result:=round( cw*(iremcount[x]/frcmin32(rcount,1)) );
+
+   end;
+
 except;end;
 end;
 
@@ -44976,6 +45276,14 @@ except;end;
 end;
 
 procedure tbasiccols._onalign(sender:tobject);
+begin
+
+//re-calculate all column widths/heights
+xsyncareas(clientinner,false);
+
+end;
+
+procedure tbasiccols.xsyncareas(xclientarea:twinrect;xcalconly:boolean);
 type
    tslotinfo=record
      slot:longint;
@@ -45007,7 +45315,7 @@ var
    if (da.bottom>ca.bottom) then da.bottom:=ca.bottom;
 
    //set
-   x.xsetclientarea(da);
+   if not xcalconly then x.xsetclientarea(da);//14jul2025
    end;
 
    procedure hcalc(xreverse,xvertical:boolean);
@@ -45018,7 +45326,7 @@ var
    xusedsize :=0;
    scount    :=0;
    rcount    :=0;
-   
+
    //find last slot
    if xreverse then xlast:=high(icols) else xlast:=0;
 
@@ -45094,7 +45402,7 @@ begin
 xfullarea :=ofullarea;
 xhsp      :=ihsp;
 xvsp      :=ivsp;
-ca        :=clientinner;
+ca        :=xclientarea;//was: clientinner
 cw        :=frcmin32(ca.right-ca.left+1,0);
 ch        :=frcmin32(ca.bottom-ca.top+1,0);
 
@@ -45105,7 +45413,9 @@ bcRighttoleft  :hcalc(true,false);
 bcToptobottom  :hcalc(false,true);
 bcBottomtotop  :hcalc(true,true);
 end;
+
 end;
+
 
 //## tbasiccells ###############################################################
 constructor tbasiccells.create(xparent:tobject);
@@ -45622,6 +45932,7 @@ if xmustpaint then paintnow;
 except;end;
 end;
 
+
 //## tbasicscroll ##############################################################
 constructor tbasicscroll.create(xparent:tobject);
 begin
@@ -45659,6 +45970,7 @@ itoolbar3:=nil;//optional
 igrad:=nil;//optional
 igrad2:=nil;//optional
 igrad3:=nil;//optional
+igrad4:=nil;//optional
 ihigh:=nil;//optional
 ihigh2:=nil;//optional
 istatus:=nil;//optional
@@ -45691,6 +46003,18 @@ try
 inherited destroy;
 if classnameis('tbasicscroll') then track__inc(satScroll,-1);
 except;end;
+end;
+
+procedure tbasicscroll.setnormal(x:boolean);//19jul2025
+begin
+inherited setnormal(x);
+iv.setnormal(x);
+end;
+
+procedure tbasicscroll.noscroll;//14jul2025
+begin
+scroll:=false;
+static:=true;
 end;
 
 procedure tbasicscroll.destroychildren;
@@ -45837,19 +46161,23 @@ if (ownlist.count>=1) then
    end;//p
    end;
 
+
 ipageindex:=frcmin32(dindex,0);//09jan2025
 
 
 //set -> must update parent incases of height changing -> requires BOTH align and paint triggers -> 02jun2021
 if xmustalign then
    begin
+
    if ofullalignpaint then gui.fullalignpaint
    else
       begin
       parentalignnow;
       parentpaintnow;
       end;
+
    end;
+
 except;end;
 end;
 
@@ -45955,14 +46283,17 @@ function tbasicscroll.getalignheight(xclientwidth:longint):longint;
 var
    int1:longint;
 begin
+
 if oautoheight then
    begin
    xcalcalign(false,xclientwidth,int1,result);
    result:=frcrange32(frcmin32(result,ominheight),0,gui.height);
    end
 else result:=frcmin32(frcmin32(clientheight,ominheight),0);
+
 //external - 06jul2021
 if xfindheight(xclientwidth,int1) then result:=frcmin32(result,int1);
+
 end;
 
 procedure tbasicscroll._onpaint(sender:tobject);
@@ -46075,20 +46406,20 @@ var
 begin
 try
 //init
-a         :=nil;
-xzoom     :=vizoom;
-xrightok  :=rightvisible;
-xrightmax :=irightmax;
-xrightgap :=irightgap*xzoom;
-xrightw   :=0;
-xoutclientheight:=0;
-xoutheight:=0;
-xstatic   :=istatic;
-xscroll   :=iscroll;
-bs        :=findbordersize;
-xrootca   :=clientarea;
-ca        :=xrootca;
-ch        :=low__aorb(maxheight,clientheight,xalignok);
+a                   :=nil;
+xzoom               :=vizoom;
+xrightok            :=rightvisible;
+xrightmax           :=irightmax;
+xrightgap           :=irightgap*xzoom;
+xrightw             :=0;
+xoutclientheight    :=0;
+xoutheight          :=0;
+xstatic             :=istatic;
+xscroll             :=iscroll;
+bs                  :=findbordersize;
+xrootca             :=clientarea;
+ca                  :=xrootca;
+ch                  :=low__aorb(maxheight,clientheight,xalignok);
 
 if xrightok then
    begin
@@ -46160,7 +46491,7 @@ if zzok(itoolbar3,7213) and itoolbar3.visible then
    dec(dy2,dh+itoolbar3.osepv);
    end;
 
-//.grad2 - (button-up for window) - 19aug2024
+//.grad2 - (botton-up for window) - 19aug2024
 if zzok(igrad2,7214) and igrad2.visible then
    begin
    tmpw:=low__aorb(fcw,cw,xrightmax);
@@ -46179,7 +46510,7 @@ if zzok(itoolbar2,7213) and itoolbar2.visible then
    dec(dy2,dh+itoolbar2.osepv);
    end;
 
-//.grad3 - (button-up for window) - 05jun2025
+//.grad3 - (botton-up for window) - 05jun2025
 if zzok(igrad3,7214) and igrad3.visible then
    begin
    tmpw:=low__aorb(fcw,cw,xrightmax);
@@ -46245,6 +46576,15 @@ if zzok(ihigh2,7217) and ihigh2.visible then
    //note: top+bottom fixed - 07oct2020
    //was: if xalignok and ihigh2.setbounds(bs,dy2-dh+1,cw,dh) then bol1:=true;//struc(x,y,w,h)
    if xalignok then ihigh2.setbounds(bs,dy2-dh,tmpw,dh);
+   dec(dy2,dh);
+   end;
+
+//.grad4 - (botton-up for window) - 13jul2025
+if zzok(igrad4,7214) and igrad4.visible then
+   begin
+   tmpw:=low__aorb(fcw,cw,xrightmax);
+   dh:=hlimit(igrad4.getalignheight(tmpw));
+   if xalignok then igrad4.setbounds(bs,dy2-dh,tmpw,dh);
    dec(dy2,dh);
    end;
 
@@ -46396,7 +46736,7 @@ if (x=nil) then result:=false
 else result:=
  (x=ihead) or (x=ihelp) or (x=imenu) or
  (x=itoolbar) or (x=itoolbar2) or (x=itoolbar3) or
- (x=igrad) or (x=igrad2) or (x=igrad3) or
+ (x=igrad) or (x=igrad2) or (x=igrad3) or (x=igrad4) or
  (x=ihigh) or (x=ihigh2) or (x=icols) or
  (x=istatus) or (x=istatus2) or
  (x=imainhelp) or
@@ -46645,6 +46985,16 @@ else
    end;
 end;
 
+function tbasicscroll.xnograd:boolean;//13jul2025
+begin
+result:=true;//pass-thru
+
+if xhavegrad  then xgrad.visible:=false;
+if xhavegrad2 then xgrad2.visible:=false;
+if xhavegrad3 then xgrad3.visible:=false;
+
+end;
+
 function tbasicscroll.xgrad:tbasicgradient;
 begin
 if zzok(igrad,7220) then result:=igrad
@@ -46672,6 +47022,16 @@ else
    begin
    igrad3:=tbasicgradient.create(self,'');
    result:=igrad3;
+   end;
+end;
+
+function tbasicscroll.xgrad4:tbasicgradient;
+begin
+if zzok(igrad4,7220) then result:=igrad4
+else
+   begin
+   igrad4:=tbasicgradient.create(self,'');
+   result:=igrad4;
    end;
 end;
 
@@ -46876,6 +47236,11 @@ end;
 function tbasicscroll.xhavegrad3:boolean;
 begin
 result:=zzok(igrad3,7235);
+end;
+
+function tbasicscroll.xhavegrad4:boolean;
+begin
+result:=zzok(igrad4,7235);
 end;
 
 function tbasicscroll.xhavestatus2:boolean;
@@ -50048,6 +50413,20 @@ else
    end;
 end;
 
+function tbasicnav.folderpending:boolean;
+begin
+result:=(imustfolder<>'');
+end;
+
+function tbasicnav.foldervalue:string;//14jul2025
+begin
+
+if (istyle=bnFav) or (istyle=bnFavlist) then result:=''
+else if (imustfolder<>'')               then result:=imustfolder
+else                                         result:=ilistfolder;
+
+end;
+
 function tbasicnav.xenhancednames(x:string):string;
 begin
 if (x<>'') then result:=x else result:='home';
@@ -51528,11 +51907,16 @@ var
    str1:string;
    xhoverok:boolean;
 
-   procedure xdrawbar(da:twinrect;xfadeout:boolean);
+   procedure xdrawbar(da:twinrect;xfadeout,xhover:boolean);
    var
       dfont:longint;
    begin
-   dfont:=low__aorb(s.font,int__dif24(s.font,-30),xfadeout);
+
+   case xhover of
+   true:dfont:=s.colhover;
+   else dfont:=low__aorb(s.font,int__dif24(s.font,-30),xfadeout);
+   end;//case
+   
    lds2(da,s.back,dfont,clnone,0,'g-50',false);
    if vimaintainhighlight then ldbEXCLUDE(true,da,false);
    end;
@@ -51549,7 +51933,6 @@ fnH2:=s.fnH;
 xhoverok:=(ihoveref>=ms64);
 
 //cls
-//lds(s.cs,s.back,s.r);
 lds2(s.cs,s.back,s.hover,s.back,0,'g-50',s.r);
 
 //status
@@ -51578,7 +51961,7 @@ da.top     :=s.ci.top;
 da.bottom  :=s.ci.bottom;
 da.left    :=dx;
 da.right   :=da.left-1+(low__aorb(3,5,olarge)*vizoom);
-xdrawbar(da,xhoverok);
+xdrawbar(da,xhoverok,false);
 
 //xhoverpos
 if xhoverok then
@@ -51588,15 +51971,15 @@ if xhoverok then
    da.bottom  :=s.ci.bottom;
    da.left    :=dx;
    da.right   :=da.left-1+(low__aorb(3,5,olarge)*vizoom);
-   xdrawbar(da,false);
+   xdrawbar(da,false,true);
 
    //caption
    str1:=#32#32+low__uptime(xhoverpos+1,(xlen>=3600000),(xlen>=60000),(xlen>=1000),true,true,#32);
    tw:=low__fonttextwidth2(fn2,str1);
    th:=low__fontmaxh(fn2);
    case (dx<=(s.cw div 2)) of
-   true:ldt1(s.back,s.ci,dx+10,s.ci.top+((s.ci.bottom-s.ci.top+1-th) div 2),s.font,str1,fn2,s.f,s.r);
-   else ldt1(s.back,s.ci,dx-tw-10,s.ci.top+((s.ci.bottom-s.ci.top+1-th) div 2),s.font,str1,fn2,s.f,s.r);
+   true:ldt1(s.back,s.ci,dx+10,s.ci.top+((s.ci.bottom-s.ci.top+1-th) div 2),s.colhover,str1,fn2,s.f,s.r);
+   else ldt1(s.back,s.ci,dx-tw-10,s.ci.top+((s.ci.bottom-s.ci.top+1-th) div 2),s.colhover,str1,fn2,s.f,s.r);
    end;//case
    end;
 
@@ -53603,6 +53986,7 @@ inherited create2(xparent,false);
 //options
 //.window head related
 omodified :=false;
+otag2     :=0;
 opartline :=0.3;
 oscaleh   :=1;//24mar2025
 oscalevpad:=1;//16may2025
@@ -53673,25 +54057,7 @@ iflash:=false;
 ilastflash:=sysflash;
 ipause:=false;
 
-for p:=0 to high(icap) do
-begin
-puse[p]:=false;
-ititle[p]:=false;
-isize[p]:=0;
-ipert[p]:=0;
-icap[p]:='';
-itep[p]:=tepnone;
-icode[p]:=0;
-icode2[p]:='';
-ibuthelp[p]:='';
-iref[p]:='';
-ienableds[p]:=false;
-ivisibles[p]:=false;
-imarked[p]:=false;
-ihighlight[p]:=false;
-iflasher[p]:=false;
-icountdown[p]:=0;//off
-end;//p
+for p:=0 to high(icap) do clear1(p);//13jul2025
 
 //controls
 bordersize:=0;//03dec2023
@@ -53711,6 +54077,73 @@ fonclick2:=nil;
 inherited destroy;
 if classnameis('tbasictoolbar') then track__inc(satToolbar,-1);
 except;end;
+end;
+
+procedure tbasictoolbar.copyitemsfrom(x:tbasictoolbar);//14jul2025
+begin
+copyitemsfrom2(x,false);
+end;
+
+procedure tbasictoolbar.copyitemsfrom2(x:tbasictoolbar;xallitems:boolean);//14jul2025
+begin
+copyitemsfrom3(x, low__aorb(tsiUser,0,xallitems), low__aorb(tsiUser,0,xallitems) );
+end;
+
+procedure tbasictoolbar.copyitemsfrom3(s:tbasictoolbar;dkeepcount,sfromindex:longint);//14jul2025
+var
+   dc,p:longint;
+begin
+
+//range
+dkeepcount :=frcrange32(dkeepcount,0,1+high(icolor));
+sfromindex :=frcrange32(sfromindex,0,high(icolor));
+dc         :=dkeepcount;
+
+//check
+if (sfromindex>=s.iaddcount) then exit;
+
+//get
+for p:=sfromindex to frcmax32(s.iaddcount,high(icolor)) do if (dc<=high(icolor)) then
+   begin
+
+   //get
+   puse[dc]        :=s.puse[p];
+   piw[dc]         :=s.piw[p];
+   pih[dc]         :=s.pih[p];
+   pit[dc]         :=s.pit[p];
+   ptw[dc]         :=s.ptw[p];
+   pth[dc]         :=s.pth[p];
+   ptf[dc]         :=s.ptf[p];
+   poa[dc]         :=s.poa[p];
+   pa[dc]          :=s.pa[p];
+
+   icolor[dc]      :=s.icolor[p];
+   icolorb[dc]     :=s.icolorb[p];
+   ititle[dc]      :=s.ititle[p];
+   icap[dc]        :=s.icap[p];
+   isize[dc]       :=s.isize[p];
+   ipert[dc]       :=s.ipert[p];
+   itep[dc]        :=s.itep[p];
+   icode[dc]       :=s.icode[p];
+   icode2[dc]      :=s.icode2[p];
+   ibuthelp[dc]    :=s.ibuthelp[p];
+   iref[dc]        :=s.iref[p];
+   ienableds[dc]   :=s.ienableds[p];
+   ivisibles[dc]   :=s.ivisibles[p];
+   imarked[dc]     :=s.imarked[p];
+   ihighlight[dc]  :=s.ihighlight[p];
+   iflasher[dc]    :=s.iflasher[p];
+   icountdown[dc]  :=s.icountdown[p];
+
+   //inc
+   inc(dc);
+   if (dc>high(icolor)) then break;
+
+   end;//p
+
+//set
+iaddcount:=dc;
+
 end;
 
 procedure tbasictoolbar.setcaption2(x:string);//27dec2024
@@ -53892,16 +54325,17 @@ begin
 istyle:=frcrange32(x,0,2);
 end;
 
-procedure tbasictoolbar._ontimer(sender:tobject);
+procedure tbasictoolbar._ontimer(sender:tobject);//20jul2025, 14jul2025
 var
    xmustalign,xmustpaint:boolean;
    int1,p:longint;
    xpp,str1:string;
-   xonce,xmustcount,bol1:boolean;
+   xvisible,xonce,xmustcount,bol1:boolean;
    a,b:tbasiccontrol;
 begin
 try
 //defaults
+xvisible  :=visible;
 xmustalign:=false;
 xmustpaint:=false;
 xmustcount:=false;
@@ -53930,22 +54364,22 @@ if (ms64>itimer250) or imustlink then
    //window state
    if iwmax or iwfull then xcmd(min32);
 
-
    //countdown
    if (ms64>=icountdown1000) then
       begin
-      xmustcount:=enabled and ocountdown and (not ipause);
+      xmustcount:=enabled and ocountdown and (not ipause) and xvisible;
       icountdown1000:=ms64+1000;
       end;
 
    //cellref
-   if not ipause then
+   //was: if (not ipause) then
+   if (not ipause) and xvisible then
       begin
       bol1:=false;
       xpp:=parentpage;
       xonce:=true;
 
-      for p:=0 to high(icap) do
+      for p:=0 to (iaddcount-1) do//was: high(icap) do - 20jul2025
       begin
 
       //countdown
@@ -53977,7 +54411,7 @@ if (ms64>itimer250) or imustlink then
       if (icode2[p]<>'') and strmatch(strcopy1(icode2[p],1,low__len(scpage)),scpage) then imarked[p]:=strmatch(strcopy1(icode2[p],low__len(scpage)+1,low__len(icode2[p])),xpp);
 
       //refs
-      str1:=intstr32(isize[p])+pcrefsep+bolstr(ititle[p])+bolstr(ihighlight[p])+bolstr(ienableds[p])+bolstr(ivisibles[p])+bolstr(iflasher[p])+bolstr(imarked[p])+pcrefsep+intstr32(itep[p])+pcrefsep+intstr32(low__len(icap[p]))+pcrefsep+icap[p]+pcrefsep+intstr32(icountdown[p])+pcrefsep+intstr32(low__len(ibuthelp[p]))+pcrefsep+ibuthelp[p];
+      str1:=intstr32(isize[p])+pcrefsep+bolstr(ititle[p])+bolstr(ihighlight[p])+bolstr(ienableds[p])+bolstr(ivisibles[p])+bolstr(iflasher[p])+bolstr(imarked[p])+pcrefsep+intstr32(icolor[p])+pcrefsep+intstr32(itep[p])+pcrefsep+intstr32(low__len(icap[p]))+pcrefsep+icap[p]+pcrefsep+intstr32(icountdown[p])+pcrefsep+intstr32(low__len(ibuthelp[p]))+pcrefsep+ibuthelp[p];
       if (str1<>iref[p]) then
          begin
          iref[p]:=str1;
@@ -53993,38 +54427,45 @@ if (ms64>itimer250) or imustlink then
          end;
 
       end;
+
    //control info
-   if low__setstr(iinforef,bolstr(omodified)+bolstr(xishead and (gui.state='f'))+intstr32(find__halign)+pcrefsep+intstr32(istyle)+pcrefsep+bnc(vitouch)+bnc(ocountdown)+pcrefsep+bnc(viround)+pcrefsep+bnc(owrap)+pcrefsep+bnc(enabled)+pcrefsep+bnc(inormal)+pcrefsep+intstr32(findbordersize)+pcrefsep+intstr32(vifontheight)+pcrefsep+intstr32(itepheight)+pcrefsep+intstr32(irowpad)+pcrefsep+intstr32(ibuttonpad)+pcrefsep+intstr32(frcmin32(ovpad,0))+pcrefsep+intstr32(ibuttonvpad)+insstr(bnc(olarge)+caption,otitle)) then
+   if xvisible and low__setstr(iinforef,bolstr(omodified)+bolstr(xishead and (gui.state='f'))+intstr32(find__halign)+pcrefsep+intstr32(istyle)+pcrefsep+bnc(vitouch)+bnc(ocountdown)+pcrefsep+bnc(viround)+pcrefsep+bnc(owrap)+pcrefsep+bnc(enabled)+pcrefsep+bnc(inormal)+pcrefsep+intstr32(findbordersize)+pcrefsep+intstr32(vifontheight)+pcrefsep+intstr32(itepheight)+pcrefsep+intstr32(irowpad)+pcrefsep+intstr32(ibuttonpad)+pcrefsep+intstr32(frcmin32(ovpad,0))+pcrefsep+intstr32(ibuttonvpad)+insstr(bnc(olarge)+caption,otitle)) then
       begin
       xmustalign:=true;
       xmustpaint:=true;
       end;
+
    //reset
    itimer250:=ms64+250;
    end;
 
 //.itimer500
-if (ms64>itimer500) then
+if xvisible and (ms64>itimer500) then
    begin
+
    //special built-in system links - 15mar2022
    if xfindbycode2b(scMixer,int1) then benabled[int1]:=low__canshowvol;//07mar2022
+
    if xfindbycode2b(scOntop,int1) then
       begin
       bhighlight[int1]:=viontop;
       bflash[int1]:=viontop;
       end;
+
    if xfindbycode2b(scMax,int1) then
       begin
       bmarked[int1]:=gui.state='f';
       bflash[int1]:=bmarked[int1];//25dec2024
       end;
+
    //reset
    itimer500:=ms64+500;
    end;
 
 //.aniPlay
-if (ianicount>=1) and (ianiplay64<>0) then
+if xvisible and (ianicount>=1) and (ianiplay64<>0) then
    begin
+
    if (ms64>ianiplay64) then//stopped
       begin
       ianiplay64:=0;//stop
@@ -54039,10 +54480,12 @@ if (ianicount>=1) and (ianiplay64<>0) then
       ianipos:=p;
       tep:=ianitep[p];//paint new icon
       end;
+
    end;
 
-//paint
-if xmustalign or xmustpaint then alignpaintnow__heightcheck(xmustalign,xmustpaint,clientwidth);
+//paint - 14jul2025
+//was: if xmustalign or xmustpaint then alignpaintnow__heightcheck(xmustalign,xmustpaint,clientwidth);
+if xvisible and (xmustalign or xmustpaint) then alignpaintnow__heightcheck(xmustalign,xmustpaint,clientwidth);
 except;end;
 end;
 
@@ -54150,17 +54593,17 @@ for p:=high(icap) downto 0 do if puse[p] and (xcode=icode[p]) and (xcode2=icode2
 except;end;
 end;
 
-function tbasictoolbar._onnotify(sender:tobject):boolean;
+function tbasictoolbar._onnotify(sender:tobject):boolean;//19jul2025
 var
    xwinstyle,xclickindex,int1:longint;
    xmustreset,xmustpaint:boolean;
    a:tbasiccontrol;
 begin
 //defaults
-result:=false;//not handled
-xmustpaint:=false;
-xmustreset:=false;
-xclickindex:=-1;
+result       :=false;//not handled
+xmustpaint   :=false;
+xmustreset   :=false;
+xclickindex  :=-1;
 
 try
 //focus
@@ -54198,6 +54641,10 @@ if ((idownindex=-1) or (idownindex=tsiAppicon) or (idownindex=tsiAppcap)) and gu
    xwinstyle:=wmcontrol;
    xwindow(a);
    if zzok(a,7195) then xwinstyle:=a.winstyle;
+
+   //drag on
+//   gui.mousedrag_enable;
+
    //get
    if zzok(a,7196) and (xwinstyle>wmcontrol) then
       begin
@@ -54205,29 +54652,15 @@ if ((idownindex=-1) or (idownindex=tsiAppicon) or (idownindex=tsiAppcap)) and gu
       app__turbo;//high speed timing
       //get
       case xwinstyle of
-      wmFullwin:begin
-         //mouse down
-         if not gui.mousewasdown then iformrect:=area__make(gui.left,gui.top,gui.width,gui.height);
-
-         //move                           //updated 22sep2020, 07sep2020
-         if ((gui.state='n') or (not gui.mainwindow)) and gui.screendraggingfine and gui.mouseleft then
-            begin
-            //debug only:  a.setbounds(iformrect.left+2*(iscreenmovexy.x-iscreendownxy.x),iformrect.top+10*(iscreenmovexy.y-iscreendownxy.y),iformrect.right,iformrect.bottom);
-{
-            if (not vilockposition) and (not vidragusingtheos) then
-               begin
-               gui.setbounds(iformrect.left+(gui.screenmovexy.x-gui.screendownxy.x),iformrect.top+(gui.screenmovexy.y-gui.screendownxy.y),iformrect.right,iformrect.bottom);
-               if not gui.dragging_fullwin then gui.dragstart_fullwin;//separate drag detector -> relates to exrternal OS and not our internal system - 15apr2021
-               end;
- }//xxxxxxxxxxx
-            end;
-         end;//begin
+      wmFullwin:;//handled by wndproc
       wmWindow..wmMax:begin
+
          //mouse down
          if not gui.mousewasdown then
             begin
             iformrect:=area__make(a.clientarea.left,a.clientarea.top,a.clientarea.right-a.clientarea.left+1,a.clientarea.bottom-a.clientarea.top+1);
             end;
+
          //move
          if gui.screendraggingfine then
             begin
@@ -54236,6 +54669,7 @@ if ((idownindex=-1) or (idownindex=tsiAppicon) or (idownindex=tsiAppcap)) and gu
             alignallnow;
             paintallnow;
             end;
+
          end;
       end;//case
       end;
@@ -54261,15 +54695,17 @@ if (not gui.mousedown) and gui.mousewasdown then
    idownindex:=-1;//release the button -> prevents painting of button down action whilst another dialog is ontop - 05sep2020
    ihoverindex:=-1;
    xmustpaint:=true;
+
+   setfocus;//14jul2025
    end;
 
 //xmustpaint
 if xmustpaint then paintnow;
 except;end;
 
-//click the button
+//click the button -> ignore drag status for "tsiClose" and "tsiAppIcon..tsiAppCap" -> makes toolbar buttons more usable under user load - 19jul2025
 try
-if gui.mouseupstroke and (xclickindex>=0) and enabled and xok(xclickindex) and ienableds[xclickindex] and ivisibles[xclickindex] and gui.mouseleft and (not gui.mousedragging) then
+if gui.mouseupstroke and (xclickindex>=0) and enabled and xok(xclickindex) and ienableds[xclickindex] and ivisibles[xclickindex] and gui.mouseleft and ( (not gui.mousedragging) or ((xclickindex>tsiAppcap) and (xclickindex<>tsiClose)) ) then
    begin
    xmustreset:=true;
    xclickbutton(xclickindex);
@@ -54289,20 +54725,23 @@ if xmustreset then
 except;end;
 end;
 
-function tbasictoolbar.canmovewindow:boolean;
+function tbasictoolbar.canmovewindow:boolean;//20jul2025, 14jul2025
 var
    a:tpoint;
    i:longint;
 begin
-a:=translatexy(low__getcursorposb);
+a:=translatexy(low__getcursorposb);//not a screen buffer coordinate, but a clientspace coordinate (0..clientwidth-1, 0..clientheight-1) - 20jul2025
 
-if (a.x>=0) and (a.x<(paintarea.right-paintarea.left+1)) and (a.y>=0) and (a.y<=(paintarea.bottom-paintarea.top+1)) then
+//was: if area__within2(paintarea,a) then
+if area__within2(clientspace,a) then
    begin
+
    i:=xfindb(a.x,a.y);
    result:=(i=-1) or (i=tsiAppicon) or (i=tsiAppcap);
 
    //unhighlight item on toolbar - 18jan2025
    if result and low__setint(ihoverindex,-1) then paintnow;
+
    end
 else result:=false;
 
@@ -55027,7 +55466,7 @@ if (xminrowcount>=1) and (xlinecount<xminrowcount) then
 
 
 //finish
-result:=dy+insint(lh,lusecount>=1);
+result:=dy+insint(lh,lusecount>=1);//lusecount => number of items used on the last line (current line)
 
 //at least one whole lineheight tall - 12jan2025
 result:=frcmin32(result,lh+xshiftby);
@@ -55065,7 +55504,7 @@ var
    s:tclientinfo;
    ppa,doa,da:twinrect;
    atransparent,asyscolors,dbold,dflash,xflash,denabled,ddown,xhavefocus,xactive:boolean;
-   v,aw,ah,p,sp,hpad,pad1,pad2,xshiftby:longint;
+   dcolor,dcolorb,v,aw,ah,p,sp,hpad,pad1,pad2,xshiftby:longint;
 
    function teaOK(xindex:longint):boolean;
    var
@@ -55111,6 +55550,12 @@ if puse[p] then
    denabled      :=s.e and ( (p<tsiUser) or ienableds[p] );
    dflash        :=xflash and (p>=tsiUser) and iflasher[p];
 
+   dcolor        :=icolor[p];//optional custom color - 13jul2025
+   if (dcolor=clnone) then dcolor:=s.font;
+
+   dcolorb       :=icolorb[p];//optional 2nd custom color - 13jul2025
+   if (dcolorb=clnone) then dcolorb:=s.line;//used as a border
+
    if ddown and (p<>tsiAppicon) and (p<>tsiAppcap) then
       begin
       doa:=low__shiftarea(doa,xshiftby,xshiftby);
@@ -55146,7 +55591,7 @@ if puse[p] then
          //.draw using direct TEP data -> faster and simplier -> fallback to app icon "tepIcon24" when supplied tep is too tall to fit - 25may2025
          if tepinfo(iapptep,false,aw,ah,atransparent,asyscolors) then
             begin
-            v:=low__aorb(clnone,s.font,asyscolors);//05jun2025
+            v:=low__aorb(clnone,dcolor,asyscolors);//05jun2025
 
             case (ah<=teph) of
             true:ldis(doa,doa.left+((doa.right-doa.left+1-aw) div 2),doa.top+((doa.bottom-doa.top+1-ah) div 2),v,iapptep,false,false,s.r);
@@ -55157,9 +55602,9 @@ if puse[p] then
          end
       else if (p>=tsiMenu) and (p<=tsiClose) then
          begin
-         ldis(da,da.left+((da.right-da.left+1-piw[p]) div 2),da.top+((da.bottom-da.top+1-pih[p]) div 2),low__aorb(s.font,clwhite,xhavefocus and (p=tsiClose) ),pit[p],false,false,s.r);
+         ldis(da,da.left+((da.right-da.left+1-piw[p]) div 2),da.top+((da.bottom-da.top+1-pih[p]) div 2),low__aorb(dcolor,clwhite,xhavefocus and (p=tsiClose) ),pit[p],false,false,s.r);
          end
-      else ldis2(da,da.left,da.top+((da.bottom-da.top+1-pih[p]) div 2),s.font,clnone,pit[p],denabled and xhavefocus,not denabled,s.r);
+      else ldis2(da,da.left,da.top+((da.bottom-da.top+1-pih[p]) div 2),dcolor,dcolorb,pit[p],denabled and xhavefocus,not denabled,s.r);//13jul2025
       end;
 
    //text
@@ -55215,7 +55660,7 @@ if (a.winstyle=wmfullwin) then
       begin
       if gui.mainwindow then siCloseprompt(gui) else gui.state:='h';
       //check
-      if gui__closing then goto skipend;
+      if app__closeinited then goto skipend;
       end;
    end;//case
    end
@@ -55299,6 +55744,7 @@ result:=-1;
 try
 //check
 if not xok(iaddcount) then exit;
+
 //get
 icap[iaddcount]:=xcap;
 if (xtep<>itep[iaddcount]) then
@@ -55306,6 +55752,7 @@ if (xtep<>itep[iaddcount]) then
    itep[iaddcount]:=xtep;
    tepinfo(xtep,false,piw[iaddcount],pih[iaddcount],bol1,bol2);
    end;
+
 ititle[iaddcount]        :=false;
 isize[iaddcount]         :=xsize;//30may2021
 icountdown[iaddcount]    :=xcountdown;
@@ -55317,7 +55764,9 @@ ivisibles[iaddcount]     :=xvisible;
 ihighlight[iaddcount]    :=false;
 ipert[iaddcount]         :=0;//07jul2021
 
+//set
 result:=iaddcount;
+
 //inc
 inc(iaddcount);
 except;end;
@@ -55335,33 +55784,40 @@ if oheadalign then result:=viheadalign
 else               result:=ihalign;
 end;
 
-procedure tbasictoolbar.clear;//22sep2020
+procedure tbasictoolbar.clear;//13jul2025, 22sep2020
 var
    p:longint;
 begin
-try
 iaddcount:=tsiUser;
-for p:=low__aorb(0,tsiUser,xishead) to high(icap) do
+for p:=low__aorb(0,tsiUser,xishead) to high(icap) do clear1(p);
+end;
+
+procedure tbasictoolbar.clear1(p:longint);//13jul2025
 begin
-puse[p]     :=false;
-piw[p]      :=0;
-pih[p]      :=0;
-icap[p]     :='';
-ititle[p]   :=false;
-isize[p]    :=0;//30may2021
-ipert[p]    :=0;//07jul2021
-itep[p]     :=tepnone;
-icode[p]    :=0;
-icode2[p]   :='';
-ibuthelp[p] :='';
-iref[p]     :='';
-ienableds[p]:=false;
-ivisibles[p]:=false;
-imarked[p]  :=false;
-ihighlight[p]:=false;
-icountdown[p]:=0;//off
-end;//p
-except;end;
+
+if (p>=0) and (p<=high(icolor)) then
+   begin
+   puse[p]         :=false;
+   piw[p]          :=0;
+   pih[p]          :=0;
+   icolor[p]       :=clnone;//off -> use system font color by default - 13jul2025
+   icolorb[p]      :=clnone;//off -> use system font color by default - 13jul2025
+   ititle[p]       :=false;
+   icap[p]         :='';
+   isize[p]        :=0;//30may2021
+   ipert[p]        :=0;//07jul2021
+   itep[p]         :=tepnone;
+   icode[p]        :=0;
+   icode2[p]       :='';
+   ibuthelp[p]     :='';
+   iref[p]         :='';
+   ienableds[p]    :=false;
+   ivisibles[p]    :=false;
+   imarked[p]      :=false;
+   ihighlight[p]   :=false;
+   icountdown[p]   :=0;//off
+   end;
+
 end;
 
 function tbasictoolbar.addsep:longint;
@@ -55535,6 +55991,26 @@ begin
 if xok(x) then result:=imarked[x] else result:=false;
 end;
 
+procedure tbasictoolbar.xsetcolor(x,y:longint);
+begin
+if uok(x) then icolor[x]:=y;
+end;
+
+function tbasictoolbar.xgetcolor(x:longint):longint;
+begin
+if xok(x) then result:=icolor[x] else result:=clnone;
+end;
+
+procedure tbasictoolbar.xsetcolorb(x,y:longint);
+begin
+if uok(x) then icolorb[x]:=y;
+end;
+
+function tbasictoolbar.xgetcolorb(x:longint):longint;
+begin
+if xok(x) then result:=icolorb[x] else result:=clnone;
+end;
+
 procedure tbasictoolbar.xsetflash(x:longint;y:boolean);
 begin
 if uok(x) then iflasher[x]:=y;
@@ -55604,6 +56080,34 @@ var
    int1:longint;
 begin
 if xfindbycode2b(x,int1) then result:=imarked[int1] else result:=false;
+end;
+
+procedure tbasictoolbar.xsetcolor2(x:string;y:longint);
+var
+   int1:longint;
+begin
+if xfindbycode2b(x,int1) then icolor[int1]:=y;
+end;
+
+function tbasictoolbar.xgetcolor2(x:string):longint;
+var
+   int1:longint;
+begin
+if xfindbycode2b(x,int1) then result:=icolor[int1] else result:=clnone;
+end;
+
+procedure tbasictoolbar.xsetcolor2b(x:string;y:longint);
+var
+   int1:longint;
+begin
+if xfindbycode2b(x,int1) then icolorb[int1]:=y;
+end;
+
+function tbasictoolbar.xgetcolor2b(x:string):longint;
+var
+   int1:longint;
+begin
+if xfindbycode2b(x,int1) then result:=icolorb[int1] else result:=clnone;
 end;
 
 procedure tbasictoolbar.xsethighlight2(x:string;y:boolean);
@@ -57130,6 +57634,7 @@ end;
 
 procedure tbasicint.__onvol(sender:tobject;var xval:longint;xwrite:boolean);
 begin
+
 case omade of
 made_midivol       :if xwrite then mid_setvol(xval)         else xval:=mid_vol;
 made_wavevol       :if xwrite then wav_setvol(xval)         else xval:=wav_vol;
@@ -57665,6 +58170,8 @@ ohelplabel    :='';
 ohelpbar      :='';
 ounit         :='';
 osep          :=#32#32;
+ilastlabel    :='';
+icommitref    :=0;
 icanmorelessonup:=false;
 
 //start
@@ -57770,6 +58277,8 @@ if (xmin<>imin) or (xmax<>imax) or (xdef<>readdef) or (xval<>readval) then
       writeval(xval);
       if assigned(fonvalue2) then fonvalue2(self,readval);//26feb2021
       low__iroll(ivalid,1);
+
+      icommitref:=ms64+1000;//1 sec - 11jul2025
       end;
 
    low__iroll(ipaintid,1);
@@ -57848,6 +58357,23 @@ if (ms64>=itimer250) then
       xmustpaint:=true;//fixed - 28jul2021
       end;
 
+   //detect changes in label - 11jul2025
+   if assigned(ffindlabel) and low__setstr(ilastlabel,xfindlabel) then xmustpaint:=true;
+
+   //value commit event - 11jul2025
+   if (icommitref<>0) and (not gui.mousedown) and (ms64>=icommitref) then
+      begin
+
+      //fire event
+      if assigned(foncommitvalue) then foncommitvalue(self);
+
+      //turn off
+      icommitref:=0;
+
+      end;
+
+
+   //reset
    itimer250:=ms64+250;
    end;
 
@@ -57908,6 +58434,7 @@ lds(s.cs,s.back,s.r);
 
 //label
 z:=xfindlabel;
+ilastlabel:=z;
 if (z<>'') then
    begin
    tw:=low__fonttextwidth2(s.fn,z);
@@ -58140,10 +58667,9 @@ result:=icaption+osep+k64(val)+ounit;
 if assigned(ffindlabel) then ffindlabel(self,result);
 end;
 
-procedure tsimpleint.xclicklabel;
+procedure tsimpleint.xclicklabel;//11jul2025
 begin
-if assigned(fclicklabel) then fclicklabel(self)
-else                          setparams(imin,imax,readdef,readdef);
+if (not assigned(fclicklabel)) or (not fclicklabel(self)) then setparams(imin,imax,readdef,readdef);
 end;
 
 

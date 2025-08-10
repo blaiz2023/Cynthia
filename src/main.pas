@@ -1,6 +1,7 @@
 unit main;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define bmp} {$define ico} {$define gif} {$define snd} {$endif}
@@ -8,7 +9,7 @@ interface
 {$ifdef con2} {$define bmp} {$define ico} {$define gif} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin, gossio, gossimg, gossnet;
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+{$align on}{$O+}{$W-}{$I-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -29,9 +30,9 @@ uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. app code (main.pas)
-//## Version.................. 1.00.4830
+//## Version.................. 1.00.4900 (+8)
 //## Items.................... 5
-//## Last Updated ............ 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
+//## Last Updated ............ 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
 //## Lines of Code............ 3,600
 //##
 //## main.pas ................ app code
@@ -47,7 +48,7 @@ uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | tapp                   | tbasicapp         | 1.00.4405 | 03jul2025   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
+//## | tapp                   | tbasicapp         | 1.00.4467 | 11aug2025   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 03jul2025, 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
 //## | ttracks                | tbasiccontrol     | 1.00.042  | 03jul2025   | Indicate midi track activity.  Supports mute/unmute per track.  Supports upto 512 tracks. - 14feb2025
 //## | tchannels              | tbasiccontrol     | 1.00.082  | 03jul2025   | Indicate average volume and peak average volume per channel.  Supports mute/unmute for all 16 channels. - 14feb2025
 //## | tnotes                 | tbasiccontrol     | 1.00.122  | 03jul2025   | Indicate note activity.  Supports mute/unmute for all 128 notes. - 14feb2025
@@ -345,10 +346,10 @@ xname:=strlow(xname);
 
 //get
 if      (xname='slogan')              then result:=info__app('name')+' by Blaiz Enterprises'
-else if (xname='width')               then result:='1500'
-else if (xname='height')              then result:='1000'
-else if (xname='ver')                 then result:='1.00.4830'
-else if (xname='date')                then result:='03jul2025'
+else if (xname='width')               then result:='1600'
+else if (xname='height')              then result:='1020'
+else if (xname='ver')                 then result:='1.00.4900'
+else if (xname='date')                then result:='11aug2025'
 else if (xname='name')                then result:='Cynthia'
 else if (xname='web.name')            then result:='cynthia'//used for website name
 else if (xname='des')                 then result:='Play midi files'
@@ -363,7 +364,6 @@ else if (xname='screensizelimit%')    then result:='98'//95% of screen area
 else if (xname='realtimehelp')        then result:='0'//1=show realtime help, 0=don't
 else if (xname='hint')                then result:='1'//1=show hints, 0=don't
 
-
 //.links and values
 else if (xname='linkname')            then result:=info__app('name')+' by Blaiz Enterprises.lnk'
 else if (xname='linkname.vintage')    then result:=info__app('name')+' (Vintage) by Blaiz Enterprises.lnk'
@@ -373,12 +373,6 @@ else if (xname='author.name')         then result:='Blaiz Enterprises'
 else if (xname='portal.name')         then result:='Blaiz Enterprises - Portal'
 else if (xname='portal.tep')          then result:=intstr32(tepBE20)
 //.software
-else if (xname='software.tep') then
-   begin
-   if      (sizeof(program_icon20h)>=2) then result:=intstr32(tepIcon20)
-   else if (sizeof(program_icon24h)>=2) then result:=intstr32(tepIcon24)
-   else                                      result:=intstr32(tepNext20);
-   end
 else if (xname='url.software')        then result:='https://www.blaizenterprises.com/'+info__app('web.name')+'.html'
 else if (xname='url.software.zip')    then result:='https://www.blaizenterprises.com/'+info__app('web.name')+'.zip'
 //.urls
@@ -396,44 +390,6 @@ else if (xname='license')             then result:='MIT License'
 else if (xname='copyright')           then result:='© 1997-'+low__yearstr(2025)+' Blaiz Enterprises'
 else if (xname='splash.web')          then result:='Web Portal: '+app__info('url.portal')
 
-//.program values -> defaults and fallback values
-else if (xname='focused.opacity')     then result:='255'//range: 50..255
-else if (xname='unfocused.opacity')   then result:='255'//range: 30..255
-else if (xname='opacity.speed')       then result:='9'//range: 1..10 (1=slowest, 10=fastest)
-
-else if (xname='head.center')         then result:='0'//1=center window title, 0=left align window title
-else if (xname='head.align')          then result:='1'//0=left, 1=center, 2=right -> head based toolbar alignment
-else if (xname='high.above')          then result:='0'//highlight above, 0=off, 1=on
-
-else if (xname='modern')              then result:='1'//range: 0=legacy, 1=modern
-else if (xname='scroll.size')         then result:='20'//scrollbar size: 5..72
-
-else if (xname='bordersize')          then result:='7'//0..72 - frame size
-else if (xname='sparkle')             then result:='7'//0..20 - default sparkle level -> set 1st time app is run, range: 0-20 where 0=off, 10=medium and 20=heavy)
-else if (xname='brightness')          then result:='100'//60..130 - default brightness
-
-else if (xname='ecomode')             then result:='0'//1=economy mode on, 0=economy mode off
-else if (xname='emboss')              then result:='0'//0=off, 1=on
-else if (xname='color.name')          then result:='black 8'//white 5'//default color scheme name
-else if (xname='back.name')           then result:=''//default background name
-else if (xname='frame.name')          then result:='narrow'//default frame name
-else if (xname='frame.max')           then result:='1'//0=no frame when maximised, 1=frame when maximised
-//.font
-else if (xname='font.name')           then result:='Arial'//default GUI font name
-else if (xname='font.size')           then result:='10'//default GUI font size
-//.font2
-else if (xname='font2.use')           then result:='1'//0=don't use, 1=use this font for text boxes (special cases)
-else if (xname='font2.name')          then result:='Courier New'
-else if (xname='font2.size')          then result:='12'
-//.help
-else if (xname='help.maxwidth')       then result:='500'//pixels - right column when help shown
-
-//.paid/store support
-else if (xname='paid')                then result:='0'//desktop paid status ->  programpaid -> 0=free, 1..N=paid - also works inconjunction with "system_storeapp" and it's cost value to determine PAID status is used within help etc
-else if (xname='paid.store')          then result:='1'//store paid status
-//.anti-tamper programcode checker - updated dual version (program EXE must be secured using "Blaiz Tools") - 11oct2022
-else if (xname='check.mode')          then result:='-91234356'//disable check
-//else if (xname='check.mode')          then result:='234897'//enable check
 else
    begin
    //nil
@@ -674,6 +630,10 @@ if system_debug then dbstatus(38,'Debug 010 - 21may2021_528am');//yyyy
 //io__sourecode_checkall(['']);
 
 
+//prevent app from closing immediately -> we control the shutdown process
+app__closepaused:=true;
+
+
 //required graphic support checkers --------------------------------------------
 //needers - 26sep2021
 need_jpeg;
@@ -771,7 +731,6 @@ begin
 scroll:=false;
 xhead;
 xgrad;
-
 xhead.add('Nav',tepNav20,0,'nav.toggle','Navigation Panel | Toggle navigation panel (play folder / play list)');
 xhead.add('Play Folder',tepFolder20,0,'show.folder','Play midis in a folder');
 xhead.add('Play List',tepNotes20,0,'show.list','Play midis in a playlist');
@@ -908,7 +867,7 @@ with rootwin.xcols.cols2[2,1,false] do
 begin
 ntitlebar(false,'Midi Information','Midi information');
 
-iinfo:=nlistx('','Midi technnical and playback information',19,19,__oninfo);
+iinfo:=nlistx('','Midi technnical and playback information',22,22,__oninfo);//11aug2025
 iinfo.otab:=tbL100_L500;
 iinfo.oscaleh:=0.70;
 
@@ -1931,9 +1890,11 @@ var
    bol1:boolean;
 begin
 try
+
 //timer100
 if (ms64>=itimer100) and iloaded then
    begin
+
    //play management
    case showplaylist of
    false:if mm_playmanagement('mid',imode.val,xintroms,imuststop,imustplay,iplaying,bol1,imustpertpos,imustpos,ilastpos,ilastfilename,inav,nil,'',ijump) and bol1 then xfillinfo;
@@ -1942,6 +1903,7 @@ if (ms64>=itimer100) and iloaded then
 
    //speed
    if (not gui.mousedown) and (mid_speed<>ispeed.val) then mid_setspeed(ispeed.val);
+
    //style
    if (not gui.mousedown) and synth_showstyle and (mid_style<>istyle.val) then mid_setstyle(istyle.val);
 
@@ -1967,11 +1929,13 @@ if (ms64>=itimer100) and iloaded then
 //infotimer
 if (ms64>=iinfotimer) then
    begin
+
    //info
-   if low__setstr(iinforef,intstr32(vimididevice)+'|'+bnc(xbox__info(-1).connected)+bnc(mid_deviceactive)+bnc(mid_keepopen)+bnc(mid_loop)+bnc(mid_playing)+'|'+k64(mid_midbytes)+'|'+intstr32(mid_transpose)+'|'+intstr32(mid_speed)+'|'+intstr32(mid_tracks)+'|'+intstr32(mid_format)+'|'+k64(iinfoid)+'|'+k64(mid_pos)+'|'+intstr32(iintro)+'|'+k64(mid_len)+'|'+k64(xintroms)+'|'+ilasterror+'|'+ilastfilename) then iinfo.paintnow;
+   if low__setstr(iinforef,intstr32(mid_datarate)+'|'+intstr32(vimididevice)+'|'+bnc(xbox__info(-1).connected)+bnc(mid_deviceactive)+bnc(mid_keepopen)+bnc(mid_loop)+bnc(mid_playing)+'|'+k64(mid_midbytes)+'|'+intstr32(mid_transpose)+'|'+intstr32(mid_speed)+'|'+intstr32(mid_tracks)+'|'+intstr32(mid_format)+'|'+k64(iinfoid)+'|'+k64(mid_pos)+'|'+intstr32(iintro)+'|'+k64(mid_len)+'|'+k64(xintroms)+'|'+ilasterror+'|'+ilastfilename) then iinfo.paintnow;
 
    //reset
    iinfotimer:=ms64+100;
+
    end;
 
 //timer350
@@ -2019,6 +1983,15 @@ if system_debug and system_debugRESIZE then
 
 
 skipend:
+
+//can close audio system and app safely -> tell system it's safe to shutdown now - 10aug2025
+if app__closeinited and mm_safetohalt then
+   begin
+
+   app__closepaused:=false;
+
+   end;
+
 except;end;
 end;
 
@@ -2067,7 +2040,7 @@ var
    end;
 begin
 //xbox
-for ci:=0 to xbox__lastindex do
+for ci:=0 to xbox__lastindex(false) do
 begin
 
 //.turn off motors even if we've stopped using the xbox controller
@@ -2165,6 +2138,12 @@ var
    begin
    if xhavefile then result:=x else result:=xdef;
    end;
+
+   function s(xcount:longint):string;
+   begin
+   result:=insstr('s',xcount<>1);
+   end;
+
 begin
 result:=true;
 
@@ -2216,11 +2195,37 @@ case xindex of
    xcaption:='Technical';
    xtitle:=true;
    end;
-1:xcaption:='Name'+#9+xfilter(io__extractfilename(ilastfilename),'-');
-2:xcaption:='Folder'+#9+xfilter(io__extractfilepath(ilastfilename),'-');
-3:xcaption:='Size'+#9+xfilter(low__b(xfilesize,true)+'  ( '+low__mb(xfilesize,true)+' )','-');
-4:xcaption:='File'+#9+xfilter(k64(1+xfileindex)+' / '+k64(xfilecount),'-');
-5:begin
+
+1:begin
+
+   case mid_deviceactive of
+   true:str1:='Online (method '+mid_openmethod+')';
+   else str1:='Offline'+insstr(' - failed to open at least one midi device', mid_playing and (mid_outdevicecount>=1) );
+   end;//case
+
+   xcaption:='Device Status'+#9+str1;
+
+   end;
+
+2:begin
+
+   int1:=mid_outdevicecount;
+
+   case (int1>=1) of
+   true:str1:=k64(int1)+' midi playback device'+s(int1)+' present';
+   else str1:='ERROR: No midi playback devices present - no sound';
+   end;//case
+
+   xcaption:='Device Count'+#9+str1;
+
+   end;
+3:xcaption:='Resolution'+#9+xlagstr+' ms'+insstr('  ( Timing Boost )',not mid_usingtimer);//05mar2022
+
+4:xcaption:='Name'+#9+xfilter(io__extractfilename(ilastfilename),'-');
+5:xcaption:='Folder'+#9+xfilter(io__extractfilepath(ilastfilename),'-');
+6:xcaption:='Size'+#9+xfilter(low__b(xfilesize,true)+'  ( '+low__mb(xfilesize,true)+' )','-');
+7:xcaption:='File'+#9+xfilter(k64(1+xfileindex)+' / '+k64(xfilecount),'-');
+8:begin
    int1:=mid_format;
    case int1 of
    0:str1:='Single Track';
@@ -2229,34 +2234,36 @@ case xindex of
    end;
    xcaption:='Format'+#9+xfilter(intstr32(int1)+' / '+str1,'-');
    end;
-6:xcaption:='Tracks'+#9+xfilter(k64(mid_tracks),'-');
-7:xcaption:='Messages'+#9+xfilter(k64(mid_msgssent)+' / '+k64(mid_msgs),'-');
-8:xcaption:='Resolution'+#9+xlagstr+' ms'+insstr('  ( Timing Boost )',not mid_usingtimer);//05mar2022
-9:xcaption:='Device'+#9+low__aorbstr('Offline','Online',mid_deviceactive);//15apr2021
+9:xcaption:='Tracks'+#9+xfilter(k64(mid_tracks),'-');
+10:xcaption:='Messages'+#9+xfilter(k64(mid_msgssent)+' / '+k64(mid_msgs),'-');
+11:xcaption:='Msg Rate'+#9+k64(mid_msgrate)+' msgs/sec';
+12:xcaption:='Date Rate'+#9+k64(mid_datarate)+' bytes/sec';
+
+
 //playback
-10:begin
+13:begin
    xtep:=tepnone;
    xcaption:='Playback';
    xtitle:=true;
    end;
-11:xcaption:='Elapsed'+#9+low__uptime(xpos,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
-12:xcaption:='Remaining'+#9+low__uptime(xlen-xpos,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
-13:xcaption:='Total'+#9+low__uptime(xlen,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
-14:begin
+14:xcaption:='Elapsed'+#9+low__uptime(xpos,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
+15:xcaption:='Remaining'+#9+low__uptime(xlen-xpos,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
+16:xcaption:='Total'+#9+low__uptime(xlen,(xlen>=3600000),(xlen>=60000),true,true,true,#32);
+17:begin
    int1:=frcmin32(mid_lenfull-mid_len,0);
    xcaption:='Trim'+#9+low__aorbstr('Off',low__uptime(int1,false,false,false,true,true,#32)+' of silence',mid_trimtolastnote or (mid_lenfull<>mid_len));
    end;
-15:xcaption:='Intro Mode'+#9+low__aorbstr('Off','First '+k64(xintro div 1000)+' seconds',xintro>0);
-16:xcaption:='Speed'+#9+k64(mid_speed)+'%';
-17:xcaption:='State'+#9+low__aorbstr('Stopped','Playing',mid_playing);
-18:begin
+18:xcaption:='Intro Mode'+#9+low__aorbstr('Off','First '+k64(xintro div 1000)+' seconds',xintro>0);
+19:xcaption:='Speed'+#9+k64(mid_speed)+'%';
+20:xcaption:='State'+#9+low__aorbstr('Stopped','Playing',mid_playing);
+21:begin
    bol1:=false;
    if xbox__init then
       begin
       int1:=0;
       str1:='';
 
-      for p:=0 to xbox__lastindex do if xbox__info(p).connected then
+      for p:=0 to xbox__lastindex(false) do if xbox__info(p).connected then
          begin
          inc(int1);
          str1:=str1+insstr(' + ',str1<>'')+intstr32(p);

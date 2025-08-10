@@ -9,7 +9,6 @@ uses
   {$IFDEF HASAMIGA}
   athreads,
   {$ENDIF}
-  Interfaces,// this includes the LCL widgetset
   main,
   gossdat,
   gossgui,
@@ -18,7 +17,10 @@ uses
   gossnet,
   gossroot,
   gosssnd,
-  gosswin;
+  gosswin,
+  gosszip,
+  gossjpg,
+  gossgame;
   { you can add units after this }
 
 

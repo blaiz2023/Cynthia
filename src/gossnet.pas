@@ -1,6 +1,7 @@
 unit gossnet;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
@@ -8,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gossroot, gossio, gosswin;
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -29,9 +30,9 @@ uses gossroot, gossio, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. network (gossnet.pas)
-//## Version.................. 4.00.950 (+10)
+//## Version.................. 4.00.955 (+11)
 //## Items.................... 6
-//## Last Updated ............ 19jun2025, 07apr2025, 15mar2025, 20feb2025, 18dec2024, 15nov2024, 18aug2024, 04may2024, 23apr2024
+//## Last Updated ............ 09aug2025, 19jun2025, 07apr2025, 15mar2025, 20feb2025, 18dec2024, 15nov2024, 18aug2024, 04may2024, 23apr2024
 //## Lines of Code............ 2,700+
 //##
 //## main.pas ................ app code
@@ -45,6 +46,8 @@ uses gossroot, gossio, gosswin;
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
@@ -53,7 +56,7 @@ uses gossroot, gossio, gosswin;
 //## | tnetbasic              | tnetmore          | 1.00.081  | 18aug2024   | Helper object for server connection servicing, 13apr2024: added vmustlog, 23dec2023: created
 //## | dns__*                 | family of procs   | 1.00.070  | 05apr2025   | DNS message handlers
 //## | net__*                 | family of procs   | 1.00.420  | 05apr2025   | Create and maintain tcp server and inbound client connections, 15mar2025, 09aug2024, 01par2024: added ssPert support in net__encodeurl(), 06mar2024: queue size fo servers, 30jan2024: Created
-//## | ipsec__*               | family of procs   | 1.00.280  | 19jun2025   | Track client IP hits, errors and current ban status, 07apr2025: notthislink(BadBot) tracking, 20feb2025: added ipsec->post2 support, 18aug2024, 03may2024: fixed scanfor/banfor range oversight in ipsec__update(), 07jan2024: created
+//## | ipsec__*               | family of procs   | 1.00.284  | 09aug2025   | Track client IP hits, errors and current ban status, 19jun2025, 07apr2025: notthislink(BadBot) tracking, 20feb2025: added ipsec->post2 support, 18aug2024, 03may2024: fixed scanfor/banfor range oversight in ipsec__update(), 07jan2024: created
 //## | log__*                 | family of procs   | 1.00.086  | 18jun2025   | Web traffic log for server traffic, 09aug2024, 03apr2024: using filterstr, 01apr2024: optional "__" in "date__logname" only when logname present, 07mar2024: fixed alternative folder, 07jan2024: created
 //## ==========================================================================================================================================================================================================================
 //## Performance Note:
@@ -114,6 +117,7 @@ type
     post2:longint;//e.g. number of "tools-*" post requests, e.g. to "tools-iconmaker.html" - 20feb2025
     conn:longint;//number of simultaneous connections
     notthislink:longint;//number of times a Bad Bot attempted to access secret "notthislink" file
+    banbymask:longint;//09aug2025
     badrequest:longint;//number of times a bad request is made, e.g. a 502 (Bad Gateway) or 400 (Bad Request) - 18jun2025
     badmail:longint;//19jun2025
     //.bandwidth in bytes consumed both for in and out data transfers
@@ -360,13 +364,14 @@ function ipsec__incBad(xslot:longint):boolean;
 function ipsec__incPost(xslot:longint):boolean;
 function ipsec__incPost2(xslot:longint):boolean;//20feb2025
 function ipsec__incNotThisLink(xslot:longint):boolean;//07apr2025
+function ipsec__incBanByMask(xslot:longint):boolean;//09aug2025
 function ipsec__incConn(xslot:longint;xinc:boolean):boolean;//sim. connection tracking
 function ipsec__incBytes(xslot:longint;xbytes:comp):boolean;
 function ipsec__banned(xslot:longint):boolean;
 function ipsec__update(xslot:longint):boolean;//03may2024
 function ipsec__clearall:boolean;
 function ipsec__clearslot(xslot:longint):boolean;//03may2024
-function ipsec__slot(xslot:longint;var xaddress:string;var xmins,xconn,xpost,xpost2,xbad,xhits,xbadrequest,xbadmail,xnotthislink:longint;var xbytes:comp;var xbanned:boolean):boolean;
+function ipsec__slot(xslot:longint;var xaddress:string;var xmins,xconn,xpost,xpost2,xbad,xhits,xbadrequest,xbadmail,xbanbymask,xnotthislink:longint;var xbytes:comp;var xbanned:boolean):boolean;
 function ipsec__slotBytes(xslot:longint):comp;//18aug2024
 
 //log procs --------------------------------------------------------------------
@@ -437,8 +442,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gossnet.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.950'
-else if (xname='date')       then result:='19jun2025'
+if      (xname='ver')        then result:='4.00.955'
+else if (xname='date')       then result:='09aug2025'
 else if (xname='name')       then result:='Network'
 else
    begin
@@ -2240,6 +2245,12 @@ result:=true;
 if ipsec__slotok(xslot) and (system_ipsec_slot[xslot].notthislink<max32) then low__iroll(system_ipsec_slot[xslot].notthislink,1);
 end;
 
+function ipsec__incBanByMask(xslot:longint):boolean;//09aug2025
+begin
+result:=true;
+if ipsec__slotok(xslot) and (system_ipsec_slot[xslot].banbymask<max32) then low__iroll(system_ipsec_slot[xslot].banbymask,1);
+end;
+
 function ipsec__incBadrequest(xslot:longint):boolean;//18jun2025
 begin
 result:=true;
@@ -2321,6 +2332,8 @@ if ipsec__slotok(xslot) then
       if (system_ipsec_badmaillimit>=1) and (system_ipsec_slot[xslot].badmail>=system_ipsec_badmaillimit) then bol1:=true;
       //.data limit
       if (system_ipsec_datalimit>=1) and (system_ipsec_slot[xslot].bytes>=system_ipsec_datalimit) then bol1:=true;
+      //.banbymask - 09aug2025
+      if (system_ipsec_slot[xslot].banbymask>=1) then bol1:=true;
       //.notthislink
       if (system_ipsec_slot[xslot].notthislink>=1) then bol1:=true;
 
@@ -2361,6 +2374,7 @@ if (xslot>=low(system_ipsec_slot)) and (xslot<system_ipsec_limit) then
    post2:=0;
    conn:=0;
    notthislink:=0;
+   banbymask:=0;//09aug2025
    badrequest:=0;
    badmail:=0;//19jun2025
    //.bandwidth consumed
@@ -2372,7 +2386,7 @@ if (xslot>=low(system_ipsec_slot)) and (xslot<system_ipsec_limit) then
    end;//if
 end;
 
-function ipsec__slot(xslot:longint;var xaddress:string;var xmins,xconn,xpost,xpost2,xbad,xhits,xbadrequest,xbadmail,xnotthislink:longint;var xbytes:comp;var xbanned:boolean):boolean;
+function ipsec__slot(xslot:longint;var xaddress:string;var xmins,xconn,xpost,xpost2,xbad,xhits,xbadrequest,xbadmail,xbanbymask,xnotthislink:longint;var xbytes:comp;var xbanned:boolean):boolean;
 var
    p:longint;
 begin
@@ -2387,6 +2401,7 @@ xhits:=0;
 xbytes:=0;
 xbadrequest:=0;//18jun2025
 xbadmail:=0;//19jun2025
+xbanbymask:=0;
 xnotthislink:=0;
 xbanned:=false;
 
@@ -2402,6 +2417,7 @@ if ipsec__slotok(xslot) then
    xpost2        :=system_ipsec_slot[xslot].post2;
    xbadrequest   :=system_ipsec_slot[xslot].badrequest;//18jun2025
    xbadmail      :=system_ipsec_slot[xslot].badmail;//19jun2025
+   xbanbymask    :=system_ipsec_slot[xslot].banbymask;//09aug2025
    xnotthislink  :=system_ipsec_slot[xslot].notthislink;
    xbad          :=system_ipsec_slot[xslot].bad;
    xhits         :=system_ipsec_slot[xslot].hits;

@@ -1,6 +1,7 @@
 unit gosssnd;
 
 interface
+{$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
 {$ifdef gui2} {$define gui}  {$define jpeg} {$endif}
 {$ifdef gui} {$define snd} {$endif}
@@ -8,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gossroot, gosswin;
-{$B-} {generate short-circuit boolean evaluation code -> stop evaluating logic as soon as value is known}
+{$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
@@ -29,10 +30,10 @@ uses gossroot, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. sound/audio/midi/chimes (gosssnd.pas)
-//## Version.................. 4.00.8594 (+82)
+//## Version.................. 4.00.8800 (+89)
 //## Items.................... 10
-//## Last Updated ............ 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
-//## Lines of Code............ 8,300+
+//## Last Updated ............ 11aug2025, 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
+//## Lines of Code............ 8,600+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -45,16 +46,18 @@ uses gossroot, gosswin;
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossgame.pas ............ game support (optional)
+//## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | tbasicmidi             | tobjectex         | 1.00.5471 | 18feb2025   | Midi Engine for realtime reliable midi playback (supports midi formats 0/1 in tick mode only) for file formats .mid, .midi and .rmi- 22nov2024, 16mar2022, 23feb2022, 30sep2021, 21may2021, 21may2021: thread safe version -> all attempts to use high level thread safe locking and syncing failed over the Windows 95 to Windows 10 range -> tried Windows message queues also failed, instead built a managed thread system for FAST rock-solid inter-thread communication via "systhread__*" family of procs, 19feb2022, 10may2021, 20apr2021: thread error hunt begins, 15apr2021, 04apr2021, 30mar2021, 22feb2021
+//## | tbasicmidi             | tobjectex         | 1.00.5608 | 11aug2025   | Midi Engine for realtime reliable midi playback (supports midi formats 0/1 in tick mode only) for file formats .mid, .midi and .rmi- 18feb2025, 22nov2024, 16mar2022, 23feb2022, 30sep2021, 21may2021, 21may2021: thread safe version -> all attempts to use high level thread safe locking and syncing failed over the Windows 95 to Windows 10 range -> tried Windows message queues also failed, instead built a managed thread system for FAST rock-solid inter-thread communication via "systhread__*" family of procs, 19feb2022, 10may2021, 20apr2021: thread error hunt begins, 15apr2021, 04apr2021, 30mar2021, 22feb2021
 //## | tbasicchimes           | tobjectex         | 1.00.2011 | 29apr2025   | Centralised system chiming + audio alerts support via midi - 15nov2022
 //## | tsnd32                 | tobjectex         | 1.00.220  | 30sep2021   | 32bit slot based audio stream storage and manipulation handler - 14jul2021
 //## | taudiobasic            | tobjectex         | 1.00.300  | 19feb2022   | Audio playback and recording - 20jul2024: updated, 14apr2017: updated, 25JUN2009: created and operational
 //## | tmm                    | tobjectex         | 1.00.600  | 20jul2024   | Managed multimedia playback for audio files - 20jul2024: tweaked for gossamer, 25mar2016: updated, 23may2013: created
-//## | mid_*                  | family of procs   | 1.00.030  | 22nov2024   | Indirect control of midi subsystem
+//## | mid_*                  | family of procs   | 1.00.092  | 11aug2025   | Indirect control of midi subsystem - 22nov2024
 //## | chm_*                  | family of procs   | 1.00.030  | 22nov2024   | Indirect control of chiming subsystem
 //## | mm_*                   | family of procs   | 1.00.030  | 22nov2024   | Indirect control of Microsoft Windows MCI subsystem
 //## | snd_*                  | family of procs   | 1.00.010  | 22nov2024   | Support procs for tsnd32
@@ -75,10 +78,11 @@ type
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//mmmmmmmmmmmmmmmmmmmmmmmmmmmm
    tbasicmidi=class(tobjectex)
    private
-    itimer100,itimer500,iopenref:comp;
-    imidtrimmed,ithreadignore,ithreadtimerbusy,itimereventbusy,ipdobusy,imustplaydata,imustplayfile,ikeepopen,iloop,imuststop,imustplay,iplaying:boolean;
+    itimer1000,itimer100,iopenref:comp;
+    ihalt,imidtrimmed,ithreadignore,ithreadtimerbusy,itimereventbusy,ipdobusy,imustplaydata,imustplayfile,ikeepopen,iloop,imuststop,imustplay,iplaying:boolean;
     imustopen:longint;//0=ready, 1=busy, 2=timer must load
-    inewvol,inewvol2,iresetvol,isysthreadSLOT,ivol,ivol2,ichangedidB,iphandle,ilastid,iid,ibytes,imidbytes,ilastspeed2,ilastspeed,itranspose,ispeed,ispeed2,imidformat,imidtracks,imidmsgs:longint;
+    iopenmethod:string;
+    idatarate,inewvol,inewvol2,iresetvol,isysthreadSLOT,ivol,ivol2,ichangedidB,iphandle,ilastid,iid,ibytes,imidbytes,ilastspeed2,ilastspeed,itranspose,ispeed,ispeed2,imidformat,imidtracks,imidmsgs:longint;
     //lag support
     ilag,ilastlag,ilagref,iref1000:comp;
     //midi track data handlers -> these point a track(0..255) to a list of "time.4 + dpos.4" items within "imidref" where "dpos.4" points to the actual midi msg to be processed and "time.4" refers to the TOTAL TIME in MS to have transpired until THIS midi msg IS to be processed (not time is a 32bit time, limit of 21 days) - 15feb2021
@@ -113,13 +117,21 @@ type
     procedure setnewpertpos(x:double);
     function getpos:longint;
     function getpertpos:double;
+    function gettranspose:longint;
    public
+
     //options
     oautostop:boolean;//default=false=remains playing
     otrimtolastnote:boolean;//default=false, true=trim playable midi to last audible note
+
     //create
     constructor create;
     destructor destroy; override;//02mar2022
+
+    //halt -> use to shut internal operations with Win32 procs for a clean and proper shutdown manner - 10aug2025
+    function halted:boolean;//10aug2025
+    function halt:boolean;
+
     //information
     function usingtimer:boolean;
     function seeking:boolean;//true=midi is in process of updating "pos" to new value, false=read to set new pos - 30mar2021
@@ -133,6 +145,7 @@ type
     function canopen:boolean;
     function canclose:boolean;
     procedure open;
+    property openmethod:string read iopenmethod;//holds the method used to open midi device, typically "1", 0=failed, 1..N=successful - 10aug2025
     procedure close;
     procedure autoopen;
     procedure setpos(x:longint);
@@ -155,7 +168,7 @@ type
     property pertpos:double read getpertpos write setnewpertpos;//06mar2022
     property len:longint read ilen;
     property lenfull:longint read ilenfull;//untrimmed length - 11jan2025
-    property transpose:longint read itranspose write inewtranspose;
+    property transpose:longint read gettranspose write inewtranspose;//11aug2025
     property speed:longint read ispeed write inewspeed;
     property speed2:longint read ispeed2 write inewspeed2;//02mar2022
     property style:longint read istyle write setstyle;
@@ -165,10 +178,13 @@ type
     property vol:longint read ivol write setvol;
     property vol2:longint read ivol2 write setvol2;
     property lag:comp read ilag;
+    property datarate:longint read idatarate;//bytes per second - 11aug2025
     procedure threadtimer(sender:tobject);//16oct2021
+
     //lyrics support
     function lcount:longint;
     function lfind(xpos:longint;xshowsep:boolean):string;//find lyrics - 24feb2022
+
    end;
 
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//ccccccccccccccccccc
@@ -524,6 +540,10 @@ var
    mmsys_mid_mutetrack :array[0..511] of boolean;//default=false
    mmsys_mid_mutetrack_hasvol:array[0..511] of boolean;
    mmsys_mid_enhanced  :boolean=false;
+   mmsys_mid_msgoutcount:longint;//11aug2025
+   //.midi msg buffers for max. stability - 11aug2025
+   mmsys_mid_msgout    :tint4;
+   mmsys_mid_msgflush  :tint4;
 
    //.wav
    mmsys_wav_devicetime:comp=0;//not init'ed yet - 18apr2021
@@ -551,6 +571,7 @@ function info__snd(xname:string):string;//information specific to this unit of c
 
 //sound procs ------------------------------------------------------------------
 //.core
+function mm_safetohalt:boolean;
 procedure mm_init;
 procedure mm_shut;
 function mm_ok:boolean;
@@ -577,6 +598,8 @@ function wav_len44:longint;
 
 //.midi support
 function mid_ok:boolean;
+function mid_outdevicecount:longint;//0=no midi output devices - 10aug2025
+function mid_openmethod:string;//10aug2025
 procedure mid_devicelist;
 procedure mid_enhance(x:boolean);
 function mid_enhanced:boolean;
@@ -624,6 +647,8 @@ function mid_format:longint;
 function mid_tracks:longint;
 function mid_msgs:longint;//total number of messages in midi
 function mid_msgssent:longint;//number of message sent to midi hardware
+function mid_msgrate:longint;//messages per second
+function mid_datarate:longint;//bytes per second
 function mid_lag:longint;
 function mid_bytes:longint;//size of midi in bytes
 function mid_midbytes:longint;//size of midi in bytes
@@ -710,8 +735,7 @@ function waveInClose(hWaveIn: HWAVEIN): MMRESULT;
 //.midi - out - 20JAN2011
 function midiOutOpen(lphMidiOut:PHMIDIOUT; uDeviceID: UINT; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
 function midiOutClose(hMidiOut: HMIDIOUT): MMRESULT;
-function midiOutShortMsg2(hMidiOut:HMIDIOUT;xmsg,xval1,xval2,xval3:byte):MMRESULT;
-function midioutflush(xhandle:hmidiout):boolean;
+function midioutflush(xhandle:PHMIDIOUT):boolean;//11aug2025
 //.volume support
 function low__getvol:longint;//0..100% - 29mar2021,07OCT2010
 procedure low__setvol(x:longint);//0..100% - 29mar2021, 07OCT2010
@@ -756,7 +780,8 @@ implementation
 
 uses gossio {$ifdef snd},gossgui{$endif};
 
-{midi reference:
+{
+midi reference:
 -----------------------------------------------------------------------------------------------------
 MIDI COMMAND       DATA BYTE 2            DATA BYTE 3            TYPE
 -----------------------------------------------------------------------------------------------------
@@ -814,6 +839,7 @@ result:=0;
 if (mmsys_wave<>nil) then mmsys_wave.onmessage(m,w,l);
 end;
 
+
 //info procs -------------------------------------------------------------------
 function app__info(xname:string):string;
 begin
@@ -833,8 +859,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosssnd.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.8594'
-else if (xname='date')       then result:='29apr2025'
+if      (xname='ver')        then result:='4.00.8800'
+else if (xname='date')       then result:='11aug2025'
 else if (xname='name')       then result:='Sound'
 else
    begin
@@ -846,6 +872,17 @@ end;
 
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//rrrrrrrrrrrrrrrrrrrrrrrrrrrrr
 //-- "mm" multimedia support ---------------------------------------------------
+function mm_safetohalt:boolean;
+begin
+
+//defaults
+result:=true;
+
+//check
+if result and (mmsys_midi<>nil) then result:=mmsys_midi.halt and mmsys_midi.halted;
+                      
+end;
+
 procedure mm_init;
 label
    skipend;
@@ -1436,6 +1473,16 @@ if (mmsys_mid_devicetime=0) or (ms64>=mmsys_mid_devicetime) then
 except;end;
 end;
 
+function mid_outdevicecount:longint;//0=no midi output devices
+begin
+result:=win____midiOutGetNumDevs;
+end;
+
+function mid_openmethod:string;//10aug2025
+begin
+if mm_inited then result:=mm_midi.openmethod else result:='';
+end;
+
 function mid_canstop:boolean;
 begin
 result:=mm_inited and mm_midi.canstop;
@@ -1661,6 +1708,7 @@ true:result:=mmsys_mid_basevol;//linux -> no separate midi/wave volume handler -
 //was: false:if (result>=100) then result:=100+frcrange32(mmsys_mid_basevol-100,0,100) else mmsys_mid_basevol:=100;//windows
 else if (result>=100) then result:=100+frcrange32(mmsys_mid_basevol-100,0,100) else mmsys_mid_basevol:=result;//windows
 end;//case
+
 except;end;
 end;
 
@@ -1784,6 +1832,16 @@ end;
 function mid_msgssent:longint;//number of message sent to midi hardware
 begin
 if mm_inited then result:=mm_midi.msgssent else result:=0;
+end;
+
+function mid_msgrate:longint;//messages per second
+begin
+if mm_inited then result:=(mm_midi.datarate div 4) else result:=0;
+end;
+
+function mid_datarate:longint;//bytes per second
+begin
+if mm_inited then result:=mm_midi.datarate else result:=0;
 end;
 
 function mid_lag:longint;
@@ -2329,6 +2387,7 @@ var
    int1:longint;
 begin
 try
+
 //range
 case viwine of
 true :mmsys_mid_basevol:=frcrange32(x,  0,200);//linux
@@ -2337,51 +2396,43 @@ end;
 
 a.wrds[0]:=frcrange32(frcrange32(x,0,100)*round(maxword/100),0,maxword);//left
 a.wrds[1]:=a.wrds[0];//right
+
 //wave
 if (win____waveoutgetdevcaps(wave_mapper,@woc,sizeof(woc))=MMSYSERR_NOERROR) and ((woc.dwSupport and WAVECAPS_VOLUME)=WAVECAPS_VOLUME) then
    begin
    win____waveOutSetVolume(wave_mapper,a.val);
    end;
+
 //midi
 int1:=mid_deviceindex-1;
 if (win____midioutgetdevcaps(int1,@moc,sizeof(moc))=MMSYSERR_NOERROR) and ((moc.dwSupport and MIDICAPS_VOLUME)=MIDICAPS_VOLUME) then
    begin
    win____midiOutSetVolume(int1,a.val);
    end;
+
 except;end;
 end;
 
 function midiOutOpen(lphMidiOut:PHMIDIOUT; uDeviceID: UINT; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
 begin
-result:=0;
 try
+
 result:=win____midiOutOpen(lphMidiOut,uDeviceID,dwCallback,dwInstance,dwFlags);
 if (result=0) then track__inc(satMidiopen,1);
+
 except;end;
 end;
 
 function midiOutClose(hMidiOut: HMIDIOUT): MMRESULT;
 begin
-result:=0;
 try
+
 result:=win____midiOutClose(hMidiOut);
 if (result=0) then track__inc(satMidiopen,-1);
+
 except;end;
 end;
 
-function midiOutShortMsg2(hMidiOut:HMIDIOUT;xmsg,xval1,xval2,xval3:byte):MMRESULT;
-var
-   a:tint4;
-begin
-result:=0;
-try
-a.bytes[0]:=xmsg;
-a.bytes[1]:=xval1;
-a.bytes[2]:=xval2;
-a.bytes[3]:=xval3;
-result:=win____midiOutShortMsg(hMidiOut,a.val);
-except;end;
-end;
 {
 function midiOutData2(hMidiOut:HMIDIOUT;xdata:array of byte):boolean;
 var
@@ -2450,7 +2501,7 @@ except;end;
 end;
 {}
 
-function midioutflush(xhandle:hmidiout):boolean;
+function midioutflush(xhandle:PHMIDIOUT):boolean;//11aug2025
 var//Note: Takes about 140ms to execute - 26may2021
    p2,p:byte;
    xcount:longint;
@@ -2460,13 +2511,26 @@ var//Note: Takes about 140ms to execute - 26may2021
    result:=false;
 
    try
-   result:=(xhandle<>0) and (0=midiOutShortMsg2(xhandle,xmsg,xval1,xval2,xval3));
+
+   //use global buffer for maximum stability
+   mmsys_mid_msgflush.bytes[0]:=xmsg;
+   mmsys_mid_msgflush.bytes[1]:=xval1;
+   mmsys_mid_msgflush.bytes[2]:=xval2;
+   mmsys_mid_msgflush.bytes[3]:=xval3;
+
+   result:=(xhandle^<>0) and (0=win____midiOutShortMsg(xhandle^,mmsys_mid_msgflush.val));
+
+   if (mmsys_mid_msgoutcount<max32) then inc(mmsys_mid_msgoutcount,1);
+
    inc(xcount);
    if (xcount>=1000) then
       begin
+
       xcount:=0;
       win____sleep(20);
+
       end;
+
    except;end;
    end;
 begin
@@ -2474,10 +2538,10 @@ begin
 result:=false;
 xcount:=0;
 
-//check
-if (xhandle=0) then exit;
-
 try
+//check
+if (xhandle=nil) or (xhandle^=0) then exit;
+
 //controller messages
 for p:=$b0 to $bf do
 begin
@@ -2511,10 +2575,11 @@ end;
 //.status
 low__irollone(mmsys_mid_ref);
 low__irollone(mmsys_mid_notesref);
+
 for p:=0 to high(mmsys_mid_notevol) do for p2:=0 to high(mmsys_mid_notevol[p]) do
    begin
-   mmsys_mid_notevol[p][p2]:=0;
-   mmsys_mid_notevolout[p][p2]:=0;
+   mmsys_mid_notevol[p][p2]    :=0;
+   mmsys_mid_notevolout[p][p2] :=0;
    end;
 
 for p:=0 to high(mmsys_mid_noteref) do mmsys_mid_noteref[p]:=-1;
@@ -2525,6 +2590,7 @@ for p:=0 to high(mmsys_mid_notecount) do mmsys_mid_notecount[p]:=0;//12feb2025
 
 //successful
 result:=true;
+
 except;end;
 end;
 
@@ -3179,7 +3245,7 @@ end;
 
 //## tbasicmidi ################################################################
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxx//mmmmmmmmmmmmmmmmmmmmmmmmmm
-function mmsys__simpletimer__proc(lpParam:pointer):dword; stdcall;//21nov2024
+function mmsys__simpletimer__proc(lpParam:pointer):dword; stdcall;//11aug2025, 21nov2024
 label
    skipend;
 const
@@ -3196,21 +3262,26 @@ var
       str1:string;
    begin
    try
+
    //.lag tracker
    systhread__synclag(xslot,win____timeGettime);
+
    //.need to reply to an external "push" request - 08oct2021
    if systhread__mustreply(xslot,int1,str1) then
       begin
       xusertimerEnabled:=(int1<>0);
       systhread__reply(xslot,1,'Done');
       end;
+
    //.timer event
    if xusertimerEnabled then
       begin
       if (mmsys_midi<>nil) then mmsys_midi.threadtimer(nil);
       end;
+
    //.throttle back to a slower mode WHEN not using FAST - 05mar2022
    if not systhread__fast(xslot) then win____sleep(100);
+
    except;end;
    end;
 begin
@@ -3231,18 +3302,24 @@ win____sleep(10);
 end;
 
 //init
-xmuststop:=false;
-xusetimer:=systhread_usingtimer[xslot];
-xinterval:=frcmin32(systhread_timerms[xslot],1);
+xmuststop :=false;
+xusetimer :=systhread_usingtimer[xslot];
+xinterval :=frcmin32(systhread_timerms[xslot],1);
+
 win____SetThreadPriority(systhread_handle[xslot], THREAD_PRIORITY_TIME_CRITICAL);//this thread is full speed
+
 xusertimerEnabled:=true;
+
 win____timeBeginPeriod(frcmax32(2*xinterval,30));//fast GLOBAL OS based timer - apply
+
 //excute thread code
 repeat
+
 if xusetimer then
    begin
    msgreturn:=win____getmessage(msg,0,0,0);
    if (msg.message=WM_MULTIMEDIA_TIMER) then xevent;
+
    //.windows messages
    win____translateMessage(msg);
    win____dispatchMessage(msg);
@@ -3252,21 +3329,25 @@ else
    win____sleep(xinterval);
    xevent;
    end;
+
 until (xusetimer and (longint(msgreturn)<=0)) or xmuststop or systhread_muststop[xslot];
 
 //done
 skipend:
 except;end;
 try
+
 //fast GLOBAL OS based timer - release
 win____timeEndPeriod(frcmax32(2*xinterval,30));//fast GLOBAL OS based timer - apply
+
 //delete timer
 systhread__stoptimer(xslot);
+
 //thread is finished
 track__inc(satThread,-1);//11jan2025
 systhread_running[xslot]:=false;
-result:=0;
 win____exitthread(0);
+
 except;end;
 end;
 
@@ -3290,6 +3371,9 @@ ithreadtimerbusy:=false;
 itimereventbusy:=false;
 ithreadignore  :=false;
 ipdobusy       :=false;
+ihalt          :=false;//triggers internal halt of playback for a safe shutdown - 10aug2025
+iopenmethod    :='';//open method that succeeded, 0=failed, 1..N=successful
+idatarate      :=0;
 iresetvol      :=0;
 ilag           :=0;
 ilastlag       :=0;
@@ -3297,7 +3381,7 @@ ilagref        :=0;
 iref1000       :=0;
 isysthreadSLOT :=-1;
 itimer100      :=ms64;
-itimer500      :=ms64;
+itimer1000     :=ms64;
 imustplaydata  :=false;
 imustplayfile  :=false;
 ivol           :=100;
@@ -3338,10 +3422,14 @@ istyle         :=0;//GM
 iid            :=0;
 ilastid        :=-1;
 iopenref       :=ms64;
+
 for p:=0 to high(ilistdata) do ilistdata[p]:=nil;
+
 ilyrics        :=str__new8;//24feb2022
 ilyricsref     :=str__new8;
+
 flush;
+
 //external init
 idata         :=str__new8;//used for delayed "open" caching of user midi data
 idata2        :=str__new8;//used for delayed "open" caching of user midi data
@@ -3360,27 +3448,45 @@ var
    p:longint;
 begin
 try
+
 //disconnect thread - 02mar2022
 systhread__stop(isysthreadSLOT);
+
 //timer
 low__timerdel(self,__ontimer);//disconnect our timer event from the system timer
+
 //vars
-iplaying:=false;
+iplaying :=false;
 resetvols;
-ilen:=0;
-ilenfull:=0;
+ilen     :=0;
+ilenfull :=0;
 close;
+
 //was here: systhread__stop(isysthreadSLOT);
 //controls
 for p:=0 to high(ilistdata) do freeobj(@ilistdata[p]);
+
 str__free(@ilyrics);//24feb2022
 str__free(@ilyricsref);
 str__free(@idata);
 str__free(@idata2);
+
 if classnameis('tbasicmidi') then track__inc(satMidi,-1);
+
 //self
 inherited destroy;
 except;end;
+end;
+
+function tbasicmidi.halted:boolean;//10aug2025
+begin
+result:=ihalt and (not iplaying) and (iphandle=0);
+end;
+
+function tbasicmidi.halt:boolean;
+begin
+result:=true;//pass-thru
+ihalt :=true;
 end;
 
 function tbasicmidi.usingtimer:boolean;
@@ -3449,7 +3555,8 @@ end;
 procedure tbasicmidi.threadtimer(sender:tobject);
 begin
 //check
-if ithreadtimerbusy then exit else ithreadtimerbusy:=true;
+if ihalt or ithreadtimerbusy then exit else ithreadtimerbusy:=true;
+
 //play notes
 if iplaying then
    begin
@@ -3457,13 +3564,19 @@ if iplaying then
    syncpos;//required
    pdo;//2(true);
    end;
+
 //not busy
 ithreadtimerbusy:=false;
 end;
 
+function tbasicmidi.gettranspose:longint;
+begin
+if (inewtranspose<>min32) then result:=inewtranspose else result:=itranspose;
+end;
+
 procedure tbasicmidi.__ontimerevent(sender:tobject;xfast:boolean);//._ontimer
 label
-   skipend,redo;
+   doclosing,skipend,redo;
 var
    str1,e:string;
    int1,int2,int3:longint;
@@ -3474,10 +3587,13 @@ var
       int1:longint;
       str1:string;
    begin
+
    //check - already locked
    if ithreadignore then exit else ithreadignore:=true;
+
    //make thread wait
    systhread__push(isysthreadSLOT,0,'',int1,str1);
+
    end;
 begin
 try
@@ -3487,8 +3603,12 @@ if itimereventbusy then exit else itimereventbusy:=true;
 
 //slow -------------------------------------------------------------------------
 //.itimer100
-if (ms64>itimer100) then
+if (ms64>itimer100) or ihalt then
    begin
+
+   //ihalt
+   if ihalt then goto doclosing;
+
    //iresetvol
    if (iresetvol<100) then iresetvol:=frcrange32(iresetvol+25,0,100);
 
@@ -3591,14 +3711,16 @@ if (ms64>itimer100) then
    //newtranspose (off=min32, range=-127..0..127)
    if (inewtranspose<>min32) then
       begin
+
+      //pause thread
       xpause;
-      int1:=frcrange32(inewtranspose,-127,127);
+
+      //get
+      if low__setint(itranspose,frcrange32(inewtranspose,-127,127)) then restart;//only required if something critical in playback has changed - 14feb2025
+
+      //reset
       inewtranspose:=min32;//off
-      if (itranspose<>int1) then
-         begin
-         itranspose:=int1;
-         restart;//only required if something critical in playback has changed - 14feb2025
-         end;
+
       end;
 
    //newpertpos - 06mar2022
@@ -3648,7 +3770,8 @@ if (ms64>itimer100) then
       end;
 
    //muststop
-   if imuststop then
+doclosing:
+   if imuststop or ihalt then
       begin
       xpause;
       imuststop:=false;
@@ -3657,7 +3780,7 @@ if (ms64>itimer100) then
       end;
 
    //mustplay
-   if imustplay then
+   if imustplay and (not ihalt) then
       begin
       xpause;
       imustplay:=false;
@@ -3683,21 +3806,21 @@ if (ms64>itimer100) then
       end;
 
    //auto-close
-   if (not iplaying) and (not ikeepopen) and canclose and (ms64>=iopenref) then
+   if (not iplaying) and (ihalt or (not ikeepopen)) and canclose and (ihalt or (ms64>=iopenref)) then
       begin
       xpause;
       close;
       end;
 
    //auto-open
-   if (ikeepopen or iplaying) and canopen then
+   if (not ihalt) and (ikeepopen or iplaying) and canopen then
       begin
       xpause;
       open;
       end;
 
    //loop
-   if iplaying and iloop and (ilen>=1) and (ipos>=ilen) then
+   if (not ihalt) and iplaying and iloop and (ilen>=1) and (ipos>=ilen) then
       begin
       xpause;
       setpos(0);
@@ -3729,21 +3852,47 @@ if (ms64>itimer100) then
    if app__turboOK then itimer100:=ms64 else itimer100:=ms64+100;
    end;
 
+
+//.itimer1000
+if (ms64>=itimer1000) then
+   begin
+   
+   //get
+   case (mmsys_mid_msgoutcount>=1) of
+   true:idatarate:=( idatarate + (mmsys_mid_msgoutcount*4) ) div 2;
+   else idatarate:=0;
+   end;//case
+   
+   mmsys_mid_msgoutcount :=0;
+
+   //reset
+   itimer1000            :=ms64+1000;
+
+   end;
+
+
 skipend:
 except;end;
 try
+
 //unpause
 if ithreadignore then
    begin
+
    //fade-in special case:
    if (ipos<=0) then iresetvol:=100;//start at full power at beginning of track - 22feb2022
+
    //reset playback lag
    resetlag;
+
    //re-enable high-speed timer - 21feb2022
-   try;systhread__push(isysthreadSLOT,1,'',int1,str1);except;end;
+   systhread__push(isysthreadSLOT,1,'',int1,str1);
+
    //off
    ithreadignore:=false;
+
    end;
+
 itimereventbusy:=false;
 except;end;
 end;
@@ -3775,21 +3924,24 @@ var
    a:tcmp8;
 begin
 //defaults
-result:=false;
-xtimems:=0;
-xmsg :=0;
-xval1:=0;
-xval2:=0;
-xval3:=0;
+result   :=false;
+xtimems  :=0;
+xmsg     :=0;
+xval1    :=0;
+xval2    :=0;
+xval3    :=0;
 
 try
 //check
 if (xindex<0) or (xindex>high(ilistdata)) or (ilistdata[xindex]=nil) then exit;
+
 //init
 if (xmsgindex<0) then xpos:=0 else xpos:=xmsgindex*12;
+
 //get
 if (ilistdata[xindex].len>=1) and (xpos>=0) and ((xpos+11)<ilistdata[xindex].len) then
    begin
+
    //comp(8)
    a.bytes[0]:=ilistdata[xindex].pbytes[xpos+0];
    a.bytes[1]:=ilistdata[xindex].pbytes[xpos+1];
@@ -3799,12 +3951,15 @@ if (ilistdata[xindex].len>=1) and (xpos>=0) and ((xpos+11)<ilistdata[xindex].len
    a.bytes[5]:=ilistdata[xindex].pbytes[xpos+5];
    a.bytes[6]:=ilistdata[xindex].pbytes[xpos+6];
    a.bytes[7]:=ilistdata[xindex].pbytes[xpos+7];
-   xtimems:=div32(a.val,1000);//convert from usec to ms - 18may2021
+
+   xtimems   :=div32(a.val,1000);//convert from usec to ms - 18may2021
+
    //int(4)
-   xmsg :=ilistdata[xindex].pbytes[xpos+8];
-   xval1:=ilistdata[xindex].pbytes[xpos+9];
-   xval2:=ilistdata[xindex].pbytes[xpos+10];
-   xval3:=ilistdata[xindex].pbytes[xpos+11];
+   xmsg      :=ilistdata[xindex].pbytes[xpos+8];
+   xval1     :=ilistdata[xindex].pbytes[xpos+9];
+   xval2     :=ilistdata[xindex].pbytes[xpos+10];
+   xval3     :=ilistdata[xindex].pbytes[xpos+11];
+
    //successful
    result:=true;
    end;
@@ -3812,56 +3967,67 @@ except;end;
 end;
 
 procedure tbasicmidi.pdo;
-label//Special Note: iresetvol allows for a gentle fading in to full volume and avoids any sudden loud notes - 21feb2022
-   skipend,redo;
+label//Special Note: iresetvol allows for a gentle fading in to full volume and avoids any sudden loud notes - 11aug2025, 21feb2022
+   redo;
 var
    ti,int1,xvol,rvol,xmaxp,xsongms32,xtimems32,p:longint;
    xmsg,xval1,xval2,xval3:byte;
-   a:tint4;
 begin
 try
+
 //check
-if (ilistlimit<=0) or (iphandle=0) then exit;
-if ipdobusy then exit else ipdobusy:=true;
+if ihalt or (ilistlimit<=0) or (iphandle=0) or ipdobusy then exit else ipdobusy:=true;
+
 //range
 xmaxp:=ilistlimit-1;
 if (xmaxp>high(ilistdata)) then xmaxp:=high(ilistdata);
+
 //reset vol -> gently fade volume back up to 100% after a "resetvols" - 21feb2022
 rvol:=iresetvol;
 if (rvol<0) then rvol:=0 else if (rvol>100) then rvol:=100;
+
 //.vol -> 3 separate volume levels generate a final, single volume level - 23mar2022
 int1:=mmsys_mid_basevol;
 if (int1<0) then int1:=0 else if (int1>200) then int1:=200;
+
 xvol:=(ivol*ivol2*int1) div 10000;//note: close to 32bit upper math limit
 if (xvol>200) then xvol:=200;
+
 //init
 //was: xsonguSEC:=trunc(ipos*1000.0);//current song position in "ms" -> "uSEC"
 xsongms32:=ipos;
 synclag;
+
 //get
 for p:=0 to xmaxp do
 begin
+
 redo:
 
-//was:
-//if (ilistcount[p]>=1) and (ilistpos[p]<ilistcount[p]) and get(p,ilistpos[p],xtimems32,xmsg,xval1,xval2,xval3) then
 if (ilistcount[p]>=1) and (ilistpos[p]<ilistcount[p]) and get(p,ilistpos[p],xtimems32,xmsg,xval1,xval2,xval3) then
    begin
+
    //get
    if (xtimems32<xsongms32) or ((not idisablenotes) and (xtimems32<=xsongms32)) then
       begin
+
       //inc
       inc(ilistpos[p]);
+
       //disable notes
       if idisablenotes and (xmsg>=$80) and (xmsg<=$9F) then goto redo;//skip over all NOTE ON and NOTE OFF msgs
+
       //get
       if (iphandle<>0) then
          begin
+
          if (xvol<>100) or (rvol<>100) then
             begin
+
             case xmsg of//3b messages - note off / note on
-            $80..$9F:if (xval2>=1) then xval2:=byte(frcrange32(round(longint(xval2)*(xvol/100)*(rvol/100)),1,127));
+            $80..$9F:if (xval2>=1) then xval2:=byte(frcrange32( round(longint(xval2)*(xvol/100)*(rvol/100)) ,1,127));
             end;//case
+
             end;
 
          //midi state changed
@@ -3870,20 +4036,25 @@ if (ilistcount[p]>=1) and (ilistpos[p]<ilistcount[p]) and get(p,ilistpos[p],xtim
          //ehanced features
          if mmsys_mid_enhanced then
             begin
+
             //track index
             if (imidformat=1) then ti:=frcrange32(p-1,0,high(mmsys_mid_mutetrack)) else ti:=frcrange32(p,0,high(mmsys_mid_mutetrack));
 
             //transpose - 14feb2025
             if (itranspose<>0) then
                begin
+
                case xmsg of
-               $80..$8F,$90..$9F,$A0..$AF:xval1:=frcrange32(xval1+itranspose,0,127);
+               $80..$8F,$90..$9F,$A0..$AF:xval1:=frcrange32( longint(xval1)+itranspose ,0,127);
                end;//case
+
                end;
 
             //optional track, channel and note mutes - 08feb2025, 09jan2025
             case xmsg of
+
             $80..$8F:begin//note off
+
                mmsys_mid_notevol[xmsg-$80][xval1]:=0;//note off
                if mmsys_mid_mutetrack[ti] or mmsys_mid_mutech[xmsg-$80] or mmsys_mid_mutenote[xval1] then xval2:=0;
 
@@ -3894,8 +4065,11 @@ if (ilistcount[p]>=1) and (ilistpos[p]<ilistcount[p]) and get(p,ilistpos[p],xtim
                if (mmsys_mid_notecount[xval1]>0) then dec(mmsys_mid_notecount[xval1]);
 
                low__irollone(mmsys_mid_notesref);
+
                end;
+
             $90..$9F:begin//note on
+
                mmsys_mid_notevol[xmsg-$90][xval1]:=xval2;//note on
                if (xval2>=1) then mmsys_mid_mutetrack_hasvol[ti]:=true;//upto host to reset this var
 
@@ -3912,33 +4086,41 @@ if (ilistcount[p]>=1) and (ilistpos[p]<ilistcount[p]) and get(p,ilistpos[p],xtim
                else if (mmsys_mid_notecount[xval1]<max32) then inc(mmsys_mid_notecount[xval1]);
 
                low__irollone(mmsys_mid_notesref);
+
                end;
             end;//case
 
             end;//if
 
-         a.bytes[0]:=xmsg;
-         a.bytes[1]:=xval1;
-         a.bytes[2]:=xval2;
-         a.bytes[3]:=xval3;
-         if (0<>win____MidiOutShortMsg(iphandle,a.val)) then break;//break on error - 18apr2021
+         //use global buffer for maximum stability
+         mmsys_mid_msgout.bytes[0]:=xmsg;
+         mmsys_mid_msgout.bytes[1]:=xval1;
+         mmsys_mid_msgout.bytes[2]:=xval2;
+         mmsys_mid_msgout.bytes[3]:=xval3;
+
+         if (0<>win____MidiOutShortMsg(iphandle,mmsys_mid_msgout.val)) then break;//break on error - 18apr2021
+
+         if (mmsys_mid_msgoutcount<max32) then inc(mmsys_mid_msgoutcount,1);
 
          end;
+
       //loop
       goto redo;
       end;
-   end;
-end;//p
-skipend:
-except;end;
 
+   end;
+
+end;//p
+
+except;end;
+//unlock
 ipdobusy:=false;
 end;
 
 procedure tbasicmidi.resetvols;
 begin
 iresetvol:=20;//hush playback of notes for first Xms so a gradual fade-in of full volume can be achieved
-midioutflush(iphandle);
+midioutflush(@iphandle);
 end;
 
 function tbasicmidi.canplaymidi:boolean;
@@ -3972,18 +4154,17 @@ begin
 result:=(iphandle<>0);
 end;
 
-procedure tbasicmidi.open;
+procedure tbasicmidi.open;//10aug2025
 begin
 moretime;
-if (iphandle=0) then openhandle;
+openhandle;
 resetvols;
 moretime;
 end;
 
 procedure tbasicmidi.close;
 begin
-if (iphandle<>0) then closehandle;
-iphandle:=0;
+closehandle;
 end;
 
 procedure tbasicmidi.autoopen;
@@ -4036,14 +4217,18 @@ begin//Re-syncs midi playback at the new location
 try
 moretime;
 idisablenotes:=true;
+
 //stop all sound
 resetvols;
+
 //start tracks from beginning
 if (ilistlimit>=1) then for p:=0 to (ilistlimit-1) do ilistpos[p]:=0;
+
 //run notes through midi interface up to the point where we want to start
 pdo;//do here whilst high-speed timer has been paused (__ontimer->xwait) because fade in of "iresetvol" may already climb back up to 100% BEFORE the paused high-speed timer restarts execution due to communication lag betweeen US the host and the timer - 21feb2022
+
 except;end;
-try;idisablenotes:=false;except;end;
+idisablenotes:=false;
 end;
 
 function tbasicmidi.canstop:boolean;
@@ -4072,37 +4257,101 @@ var
    p:longint;
 begin
 try
+
 for p:=0 to high(ilistdata) do
 begin
+
 if (ilistdata[p]<>nil) then ilistdata[p].clear;
-ilistpos[p]:=0;
-ilistcount[p]:=0;
+
+ilistpos[p]   :=0;
+ilistcount[p] :=0;
+
 end;//p
+
 ilyrics.clear;
 ilyricsref.clear;
-ilistlimit:=0;
-ipos:=0;
-ilen:=0;//no midi song loaded -> nothing to play
-ilenfull:=0;
-ibytes:=0;
-imidbytes:=0;
+ilistlimit :=0;
+ipos       :=0;
+ilen       :=0;//no midi song loaded -> nothing to play
+ilenfull   :=0;
+ibytes     :=0;
+imidbytes  :=0;
+
 except;end;
 end;
 
 procedure tbasicmidi.closehandle;
 begin
-try
+
 if (iphandle<>0) then
    begin
+
+   //stop notes
    win____midioutreset(iphandle);
+
+   //close
    midiOutClose(iphandle);
+
+   //reset
+   iphandle     :=0;
+   iopenmethod  :='';
    end;
-except;end;
+
 end;
 
 procedure tbasicmidi.openhandle;//must be in VCL thread for it to work on ALL machines - 19may2021
+var
+   v:string;
+   p:longint;
+
+   procedure m(xmethod,xdeviceindex,xval:longint);
+   begin
+   if (iphandle<>0) then v:=k64(xmethod)+'.'+k64(xdeviceindex);
+   end;
+
 begin
-try;midioutopen(@iphandle,UINT(ideviceindex-1),0,0,callback_null);except;end;
+try
+//defaults
+v:='';//no method succeeded in opening midi device
+
+//try #1
+if (iphandle=0) then m(1,ideviceindex,midioutopen(@iphandle,UINT(ideviceindex-1),0,0,callback_null));
+
+//try #2
+if (iphandle=0) then m(2,ideviceindex,midioutopen(@iphandle,UINT(ideviceindex-1),0,app__hinstance,callback_null));
+
+//try #3
+if (iphandle=0) then m(3,ideviceindex,midioutopen(@iphandle,UINT(ideviceindex-1),app__wproc.window,0,CALLBACK_WINDOW));
+
+//try #4
+if (iphandle=0) then m(4,ideviceindex,midioutopen(@iphandle,UINT(ideviceindex-1),app__wproc.window,app__hinstance,CALLBACK_WINDOW));
+
+
+//try all devices
+for p:=0 to frcmin32(win____midiOutGetNumDevs-1,0) do
+begin
+
+//check
+if (iphandle<>0) then break;
+
+//try #5
+if (iphandle=0) then m(5,p,midioutopen(@iphandle,UINT(p),0,0,callback_null));
+
+//try #6
+if (iphandle=0) then m(6,p,midioutopen(@iphandle,UINT(p),0,app__hinstance,callback_null));
+
+//try #7
+if (iphandle=0) then m(7,p,midioutopen(@iphandle,UINT(p),app__wproc.window,0,CALLBACK_WINDOW));
+
+//try #8
+if (iphandle=0) then m(8,p,midioutopen(@iphandle,UINT(p),app__wproc.window,app__hinstance,CALLBACK_WINDOW));
+
+end;//p
+
+//set
+iopenmethod:=v;
+
+except;end;
 end;
 
 function tbasicmidi.lcount:longint;
@@ -4176,15 +4425,14 @@ procedure tbasicmidi.xplaydata2(xtrimtolastnote:boolean);//11jan2025
 label
    skipone,skiptrack,skipdone,skipend;
 var
-   xdata:tstr8;
    llastms,xtimediv,xtempo,xtmp,mlen,xdatlen,xdatpos,xdatend,xlistcount,int1,p:longint;
    xformat,xtrackcount:word;
    xtickcount,xprevtimeuSEC,xtimeuSEC,xlastnotetimeuSEC,xprevtotaluSEC,xtotaluSEC:comp;//high-resolution time tracker - 18feb2021
-   xtimeuSEC_test:extended;
    xtimeformat:twrd2;
    xlastnoteonce,xcasiopackets,xresult,bol1:boolean;
    xrunningstatus,xmsg,mtype,byt1,byt2,byt3:byte;
    //track1 tick-tempo mapper
+   xdata:tstr8;
    xtickcount8:tstr8;//tickcount at which tempo changes
    xticktemp4:tstr8;//tempo values
    xcount8:longint;
@@ -4210,91 +4458,103 @@ var
 
    function xfindval1(xpos:longint;var x:byte):boolean;
    begin
+
    if zzok(xdata,4510) and (xpos>=0) and (xpos<xdatlen) and (xpos<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.byt1[xpos];
+      result :=true;
+      x      :=xdata.byt1[xpos];
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xval1(var x:byte):boolean;
    begin
+
    if zzok(xdata,4510) and (xdatpos>=0) and (xdatpos<xdatlen) and (xdatpos<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.byt1[xdatpos];
+      result :=true;
+      x      :=xdata.byt1[xdatpos];
       inc(xdatpos,1);
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xval2(var x:word):boolean;
    begin
+
    if zzok(xdata,4511) and (xdatpos>=0) and ((xdatpos+1)<xdatlen) and ((xdatpos+1)<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.wrd2[xdatpos];
+      result :=true;
+      x      :=xdata.wrd2[xdatpos];
       inc(xdatpos,2);
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xval2R(var x:word):boolean;
    begin
+
    if zzok(xdata,4510) and (xdatpos>=0) and ((xdatpos+1)<xdatlen) and ((xdatpos+1)<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.wrd2R[xdatpos];
+      result :=true;
+      x      :=xdata.wrd2R[xdatpos];
       inc(xdatpos,2);
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xval4(var x:longint):boolean;
    begin
+
    if zzok(xdata,4511) and (xdatpos>=0) and ((xdatpos+3)<xdatlen) and ((xdatpos+3)<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.int4[xdatpos];
+      result :=true;
+      x      :=xdata.int4[xdatpos];
       inc(xdatpos,4);
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xval4R(var x:longint):boolean;
    begin
+
    if zzok(xdata,4512) and (xdatpos>=0) and ((xdatpos+3)<xdatlen) and ((xdatpos+3)<=xdatend) then
       begin
-      result:=true;
-      x:=xdata.int4R[xdatpos];
+      result :=true;
+      x      :=xdata.int4R[xdatpos];
       inc(xdatpos,4);
       end
    else
       begin
-      result:=false;
-      x:=0;
+      result :=false;
+      x      :=0;
       end;
+
    end;
 
    function xvarlen(var x:longint):boolean;
@@ -4302,25 +4562,33 @@ var
       vc,v1,v2,v3,v4:byte;
    begin
    //defaults
-   result:=false;
-   x:=0;
+   result :=false;
+   x      :=0;
 
    try
    //get
    vc:=0;
+
    if xval1(v1) then
       begin
+
       inc(vc);
       if (v1>=128) and xval1(v2) then
          begin
+
          inc(vc);
          if (v2>=128) and xval1(v3) then
             begin
+
             inc(vc);
             if (v3>=128) and xval1(v4) then inc(vc);//v4
+
             end;//v3
+
          end;//v2
+
       end;//v1
+
    //set
    case vc of
    1:x:=v1;
@@ -4331,7 +4599,9 @@ var
 
    //successful
    if (x<0) then x:=0;
+
    result:=(vc>=1) and (vc<=4);
+
    except;end;
    end;
 
@@ -4339,18 +4609,23 @@ var
    var
       xcount:longint;
    begin
+
    if (xtempo<1) then xtempo:=1;
-   xcount:=xtickcount8.len div 8;
-   xtickcount8.cmp8[xcount*8]:=xtickcount;
-   xticktemp4.int4[xcount*4]:=xtempo;
+
+   xcount                     :=xtickcount8.len div 8;
+   xtickcount8.cmp8[xcount*8] :=xtickcount;
+   xticktemp4.int4[xcount*4]  :=xtempo;
+
    end;
 
    procedure xaddms;//supports single tempo, simple non-overlapping tempo usage, and complex overlapping tempo usage (where a note starts with one tempo and finishes with another or several tempos) - 22feb2022
    var
       p,i,t:longint;
    begin
+
    //check
    if (int1<=0) then exit;
+
 
    //no tempo entries -> use default tempo
    if (xcount8<=0) then
@@ -4362,28 +4637,38 @@ var
       exit;
       end;
 
+
    //tick range does NOT overlap tempo boundaries so do it all at ONCE - 23feb2022
    for i:=0 to (xcount8-1) do
    begin
+
    if ((xtickcount+1)>=xlist8[i]) and ( (i>=(xcount8-1)) or ((xtickcount+int1)<xlist8[i+1]) ) then
       begin
+
       xtickcount:=xtickcount+int1;
-      //was: xtimeuSEC:=xtimeuSEC+round((xlist4[i]/xtimediv)*int1);
       mid__timeusec__add(xtimeuSEC,xlist4[i],xtimediv,int1);//22nov2024
       exit;
+
       end;
+
    end;//i
+
 
    //tick range overlaps one or MORE tempo boundaries (ranges over several tempo values) - 23feb2022
    for p:=0 to (int1-1) do
    begin
-   xtickcount:=xtickcount+1;
-   t:=xtempo;
+
+   xtickcount :=xtickcount+1;
+   t          :=xtempo;
+
    //.scan thru tempo list
    for i:=0 to (xcount8-1) do if (xtickcount>=xlist8[i]) then t:=xlist4[i] else break;
+
    //was: xtimeuSEC:=xtimeuSEC+round((t/xtimediv));
    mid__timeusec__add(xtimeuSEC,t,xtimediv,1);//22nov2024
+
    end;//p
+
    end;
 
    procedure ladd(xpos,xlen:longint);
@@ -4391,41 +4676,47 @@ var
       xms,xcount:longint;
    begin
    try
+
    //check
    if (xlen<=0) then exit;
+
    //init
-   xcount:=ilyricsref.len div 12;
-   xms:=div32(xtimeuSEC,1000);
+   xcount :=ilyricsref.len div 12;
+   xms    :=div32(xtimeuSEC,1000);
+
    //get
    if (xms>llastms) then
       begin
+
       ilyricsref.int4[(xcount*12)+0]:=xms;
       ilyricsref.int4[(xcount*12)+4]:=ilyrics.len;
       ilyricsref.int4[(xcount*12)+8]:=xlen;
+
       end;
+
    ilyrics.add3(xdata,xpos,xlen);
+
    except;end;
    end;
 begin
+
 //defaults
-xresult     :=false;
-xdatlen     :=0;
-xdatpos     :=0;
-xdatend     :=max32;
-xdata       :=nil;
-xlistcount  :=-1;
-xtickcount8 :=nil;
-xticktemp4  :=nil;
-xtimediv    :=120;
-xtotaluSEC  :=0;//overall length of midi in uSEC
-xcount8     :=0;//set at start of track 1 (xlistcount=1 when format=1)
-llastms     :=-1;//none
-xlastnotetimeuSEC:=0;//last time a note was changed/hearable etc - used to detect the "real" end of a midi where some midis may go on for hours or even days with no sound - 09jan2025
-xlastnoteonce:=false;
+xresult           :=false;
+xdatlen           :=0;
+xdatpos           :=0;
+xdatend           :=max32;
+xlistcount        :=-1;
+xdata             :=nil;
+xtickcount8       :=nil;
+xticktemp4        :=nil;
+xtimediv          :=120;
+xtotaluSEC        :=0;//overall length of midi in uSEC
+xcount8           :=0;//set at start of track 1 (xlistcount=1 when format=1)
+llastms           :=-1;//none
+xlastnotetimeuSEC :=0;//last time a note was changed/hearable etc - used to detect the "real" end of a midi where some midis may go on for hours or even days with no sound - 09jan2025
+xlastnoteonce     :=false;
 
 try
-//stop threadtimer
-//was: systhread__push(isysthreadSLOT,0,'',int1,str1);
 
 //flush
 flush;
@@ -4434,22 +4725,26 @@ flush;
 if not str__lock(@idata) then goto skipend;
 
 //copy "tmp" to "dat"
-xdata:=str__new8;
+xdata       :=str__new8;
+
 xdata.add(idata);
-xdatlen:=xdata.len;
 idata.clear;
-xtickcount8:=str__new8;
-xticktemp4:=str__new8;
+
+xdatlen     :=xdata.len;
+xtickcount8 :=str__new8;
+xticktemp4  :=str__new8;
 
 //get
 //.riff ".rmi" file wrapper support -> RIFF wrapper packs ".mid" file inside with a 20 byte preceeding header structure in format "RIFF.4+len.4+RMIDdata+len.4+<midi file in full>" = OK = 30mar2021
 if xsame_autoinc([uuR,uuI,uuF,uuF]) then
    begin
-   if not xval4(int1) then goto skipend;
+   if not xval4(int1)              then goto skipend;
+
    xdatlen:=xdatpos+int1;//include what we have read so far + all that is to come still + BUT exclude any trailing junk - 30mar2021
+
    if not xsame([uuR,uuM,uuI,uuD]) then goto skipend;
    if not xsame([lld,lla,llt,lla]) then goto skipend;
-   if not xval4(int1) then goto skipend;
+   if not xval4(int1)              then goto skipend;
    end;
 
 //.main midi header
@@ -4459,11 +4754,11 @@ if not xsame([uuM,uuT,llh,lld]) then goto skipend;
 if (not xval4R(int1)) or (int1<>6) then goto skipend;//must be "6" -> 32bit number handling check - 15feb2021
 
 //.format
-if not xval2R(xformat) then goto skipend;
-if not xval2R(xtrackcount) then goto skipend;
-if not xval2R(xtimeformat.val) then goto skipend;
-if (xformat<0) or (xformat>2) then goto skipend;//should always be 0,1 or 2(rarely used)
-if (xtrackcount<=0) then goto skipend;
+if not xval2R(xformat)          then goto skipend;
+if not xval2R(xtrackcount)      then goto skipend;
+if not xval2R(xtimeformat.val)  then goto skipend;
+if (xformat<0) or (xformat>2)   then goto skipend;//should always be 0,1 or 2(rarely used)
+if (xtrackcount<=0)             then goto skipend;
 
 //.convert time into ms for easy system processing -> bit15 decides time format -> false=normal "ticks", true=SMTPE
 case (15 in xtimeformat.bits) of
@@ -4480,15 +4775,20 @@ end;//case
 //read all tracks --------------------------------------------------------------
 while true do
 begin
+
 //.reset end limiter
 xdatend:=max32;
+
 //.check
 if ((xlistcount+1)>=xtrackcount) then goto skipdone;
+
 //.track header
 bol1:=xsame([uuM,uuT,llr,llk]);
+
 //.track length
 if not xval4R(int1) then goto skipend;
 if (not bol1) or (int1<1) then goto skiptrack;//skip over unknown chunk types, we support "MTrk" chunks only -> all others are jumped over - 16feb2021
+
 //.list count -> each list stores a full track
 inc(xlistcount);
 if (xlistcount>high(ilistdata)) then goto skipdone;//too many lists
@@ -4503,14 +4803,15 @@ else ilistdata[xlistcount].clear;//04may2021
 //Important Note:
 //calculate Delta Tick Value => current.tempo / timeDive => uSec per Delta Tick (correct as of 22feb2022)
 //example: tempo=500,000 (60 bpm) and timeDiv=120 then delta.tick.usec = 500,000/120 = 8,333 usec = 8.3 ms - correct!
+
 //init
-xtempo:=500000;//500K = default tempo value FOR EACH track of a multi-track midi too -> uSec per quarter note -> 120 BPM (beats per minute musical notation = (120/60) * 0.25 (quarter note) * 1,000,000 usec = 500,000 usec OK) - 18feb2021
-xtickcount:=0;//track tickcount (overall number of ticks on the track BEFORE tempo)
-xtimeuSEC:=0;//track microseconds with TEMPO applied
-xtimeuSEC_test:=0;
-xdatend:=xdatpos+(int1-1);//limit HOW much this track can read
-xrunningstatus:=0;//on=128..255
-xcasiopackets:=false;//24feb2022
+xtempo         :=500000;//500K = default tempo value FOR EACH track of a multi-track midi too -> uSec per quarter note -> 120 BPM (beats per minute musical notation = (120/60) * 0.25 (quarter note) * 1,000,000 usec = 500,000 usec OK) - 18feb2021
+xtickcount     :=0;//track tickcount (overall number of ticks on the track BEFORE tempo)
+xtimeuSEC      :=0;//track microseconds with TEMPO applied
+xdatend        :=xdatpos+(int1-1);//limit HOW much this track can read
+xrunningstatus :=0;//on=128..255
+xcasiopackets  :=false;//24feb2022
+
 //.rapid access to tickcount/tempo cache - 23feb2022
 if (xlistcount>=1) and (xformat>=1) then
    begin
@@ -4673,37 +4974,45 @@ if (ilistlimit>=1) then
    ibytes:=int1;
    end;
 except;end;
+
+//free
 try
 str__free(@xdata);
 str__free(@xtickcount8);
 str__free(@xticktemp4);
 except;end;
+
 try
+
 //sync system
-ilen:=div32(xtotaluSEC,1000);//uSEC -> milliseconds
-ilenfull:=ilen;//this is the untrimmed length in milliseconds
+ilen     :=div32(xtotaluSEC,1000);//uSEC -> milliseconds
+ilenfull :=ilen;//this is the untrimmed length in milliseconds
 
 //.trim to last note - 09jan2025
 if xtrimtolastnote then ilen:=frcmax32(ilen, div32(xlastnotetimeuSEC,1000) + 2000 );//uSEC -> milliseconds
 
-imidtrimmed:=(ilen<>ilenfull);
-imidformat:=low__insint(xformat,xresult);
-imidtracks:=low__insint(frcmin32(ilistlimit-low__insint(1,imidformat=1),0),xresult);//for information purposes only - "format #1 we don't count track #0" - 24feb2021
-imidbytes:=xdatlen;//always return size of midi datastream error or no error - 29mar2021
+imidtrimmed  :=(ilen<>ilenfull);
+imidformat   :=low__insint(xformat,xresult);
+imidtracks   :=low__insint(frcmin32(ilistlimit-low__insint(1,imidformat=1),0),xresult);//for information purposes only - "format #1 we don't count track #0" - 24feb2021
+imidbytes    :=xdatlen;//always return size of midi datastream error or no error - 29mar2021
+
 low__irollone(mmsys_mid_dataref);//11jan2025
+
 //.msgs
 int1:=0;
+
 if (ilistlimit>=1) then
    begin
+
    for p:=0 to frcmax32(ilistlimit-1,high(ilistdata)) do if (ilistcount[p]>=1) then inc(int1,ilistcount[p]);
+
    end;
+
 imidmsgs:=int1;
+
 except;end;
-try
+//unlock
 str__uaf(@idata);
-//start threadtimer
-//was: systhread__push(isysthreadSLOT,1,'',int1,str1);
-except;end;
 end;
 
 //## tbasicchimes ##############################################################
