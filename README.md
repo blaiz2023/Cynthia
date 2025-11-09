@@ -48,7 +48,7 @@ Features
 * Portable
 * Smart Source Code (Borland Delphi 3 and Lazarus 2) 
 # Download
-Download the 32 bit Microsoft Windows binary <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above.
+Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above.
 
 # Images
 <img src="images/cynthia-screenshot2.jpg">
