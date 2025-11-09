@@ -47,6 +47,7 @@ Features
 * Options Window - Easily change app color, font, and settings
 * Portable
 * Smart Source Code (Borland Delphi 3 and Lazarus 2) 
+
 # Download
 Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above.
 
