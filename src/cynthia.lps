@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+<ProjectSession>
+ <PathDelim Value="\"/>
+ <Version Value="12"/>
+ <BuildModes Active="Default"/>
+ <Units>
+ <Unit>
+  <Filename Value="cynthia.lpr"/>
+  <IsPartOfProject Value="True"/>
+  <IsVisibleTab Value="True"/>
+  <EditorIndex Value="1"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="main.pas"/>
+  <EditorIndex Value="2"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossdat.pas"/>
+  <EditorIndex Value="3"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossgui.pas"/>
+  <EditorIndex Value="4"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossimg.pas"/>
+  <EditorIndex Value="5"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossio.pas"/>
+  <EditorIndex Value="6"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossnet.pas"/>
+  <EditorIndex Value="7"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossroot.pas"/>
+  <EditorIndex Value="8"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gosssnd.pas"/>
+  <EditorIndex Value="9"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gosswin.pas"/>
+  <EditorIndex Value="10"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gosszip.pas"/>
+  <EditorIndex Value="11"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossjpg.pas"/>
+  <EditorIndex Value="12"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gossgame.pas"/>
+  <EditorIndex Value="13"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gosswin2.pas"/>
+  <EditorIndex Value="14"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ <Unit>
+  <Filename Value="gamefiles.pas"/>
+  <EditorIndex Value="15"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
+ </Units>
+ <RunParams>
+  <FormatVersion Value="2"/>
+  <Modes ActiveMode=""/>
+ </RunParams>
+</ProjectSession>
+</CONFIG>
