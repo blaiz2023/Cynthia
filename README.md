@@ -3,6 +3,8 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 
 <img src="images/cynthia-screenshot.jpg">
 
+[![Cynthia in Action](https://img.youtube.com/vi/IDEOQUboTvQ/0.jpg)](https://www.youtube.com/watch?v=IDEOQUboTvQ)
+
 # Features
 * Dual play systems - Play Folder and Play List
 * Comes with 25 built-in sample midis on a virtual disk
