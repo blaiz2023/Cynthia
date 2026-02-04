@@ -56,16 +56,7 @@ Features
 * Custom built midi playback engine for high playback stability
 * Simple and easy to use
 * Options Window - Easily change app color, font, and settings
-* Portable
-
-Codebase - Technical Changes
-* Optimised for 2K display
-* Functional on 4K display
-* High-speed render procs for general render improvements of 300%+
-* Higher background render rate to 60fps
-* Active GUI Scaling (60% - 200% of OS scaling, realtime adaptive)
-* Automatic MSIX handling (MS Store app/MSIX bundle)
-* Source code supports both 32bit and 64bit</description>
+* Portable</description>
     <summary>Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap.</summary>
     <copyright>2026 Blaiz Enterprises</copyright>
     <tags>cynthia play midi music m3u playlist folder mid rmi multiple</tags>
