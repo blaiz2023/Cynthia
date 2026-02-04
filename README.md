@@ -45,7 +45,6 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Multi-Device Options (per midi device): Time Shift - adjust playback timing to compensate for midi device lag from -500 ms to +500 ms, Device Volume - adjust output volume from 0% to 200%, Output Channels - select which midi channels to play through the device
 * Automatic Midi Device(s) Resync - detects OS changes in midi device ordering/names and corrects in realtime
 * Custom built midi playback engine for high playback stability
-* Automatic compact mode for display on small/low resolution screens
 * Simple and easy to use
 * Options Window - Easily change app color, font, and settings
 * Portable
