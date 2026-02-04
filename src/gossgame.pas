@@ -7,6 +7,7 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gosswin2, gossroot, gossio, gosswin, gossimg, gossgui {$ifdef snd},gosssnd{$endif} {$ifdef gamecore},gamefiles{$endif};
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
@@ -14,7 +15,7 @@ uses gosswin2, gossroot, gossio, gosswin, gossimg, gossgui {$ifdef snd},gosssnd{
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -47,6 +48,7 @@ uses gosswin2, gossroot, gossio, gosswin, gossimg, gossgui {$ifdef snd},gosssnd{
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
@@ -967,7 +969,7 @@ type
     constructor create(xstereo:boolean);
     destructor destroy; override;
     procedure xtimer(sender:tobject);
-    function onmessage(m,w,l:longint):longint;
+    function onmessage(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;
 
     //information
     property online:boolean read getonline;
@@ -1019,7 +1021,7 @@ const
    fps__5fps                        =5*fps__slotsperfps;
 var
    //started
-   system_started                  :boolean=false;//04jul2025
+   system_started_game             :boolean=false;//04jul2025
    game_subframes                  :boolean=false;
    game_filecount                  :longint=0;//number of game files detected from "gamefiles.pas"
    game_errorcount                 :longint=0;//tracks "file not found" errors etc
@@ -1468,7 +1470,7 @@ begin
 try
 
 //check
-if system_started then exit else system_started:=true;
+if system_started_game then exit else system_started_game:=true;
 
 
 //init flash
@@ -1611,7 +1613,7 @@ var
 begin
 try
 //check
-if not system_started then exit else system_started:=false;
+if not system_started_game then exit else system_started_game:=false;
 
 
 //disconnect
@@ -3029,8 +3031,8 @@ var
 
    function pm(const xname:string):boolean;//partial match
    begin
-   result:=strmatch(strcopy1(n,1,low__len(xname)),xname);
-   if result then v:=strcopy1(n,low__len(xname)+1,low__len(n));
+   result:=strmatch(strcopy1(n,1,low__len32(xname)),xname);
+   if result then v:=strcopy1(n,low__len32(xname)+1,low__len32(n));
    end;
 
    function ival(xvalue,xby,xmin,xmax:longint):longint;
@@ -3124,7 +3126,7 @@ else if (xaction=gmaSelect) or (xaction=gmaLess) or (xaction=gmaMore) then
    else if pm('remap.xbox.input.') then
       begin
 
-      if game__inputlabel__sortindex(strint(v),int1) then
+      if game__inputlabel__sortindex(strint32(v),int1) then
          begin
 
          game__fetchinput__mapsto(xssNative0, int1,int2);
@@ -3136,7 +3138,7 @@ else if (xaction=gmaSelect) or (xaction=gmaLess) or (xaction=gmaMore) then
    else if pm('remap.mouse.input.') then
       begin
 
-      if game__inputlabel__sortindex(strint(v),int1) then
+      if game__inputlabel__sortindex(strint32(v),int1) then
          begin
 
          game__fetchinput__mapsto(xssMouse, int1,int2);
@@ -3233,7 +3235,7 @@ else if (xaction=gmaSelect) or (xaction=gmaLess) or (xaction=gmaMore) then
    else if pm('capturekey.') and bselect then
       begin
 
-      game_capturekeyindex:=strint(v);
+      game_capturekeyindex:=strint32(v);
       xbox__lastrawkeycount(true);
 
       if xbox__keymap2( xbox__keyfilter(game_capturekeyindex) ,str1,int1) then
@@ -3534,7 +3536,7 @@ dcount :=0;
 lp     :=1;
 
 //get
-for p:=1 to low__len(x) do if (x[p-1+stroffset]=',') then
+for p:=1 to low__len32(x) do if (x[p-1+stroffset]=',') then
    begin
 
    v   :=strcopy1(x,lp,p-lp);
@@ -3561,7 +3563,7 @@ dcount :=0;
 lp     :=1;
 
 //get
-for p:=1 to low__len(x) do if (x[p-1+stroffset]=',') then
+for p:=1 to low__len32(x) do if (x[p-1+stroffset]=',') then
    begin
 
    v   :=strcopy1(x,lp,p-lp);
@@ -5602,7 +5604,7 @@ begin
 x64:=ms64;
 
 //check
-if not system_started then exit;
+if not system_started_game then exit;
 
 //get
 if xforce or (x64>=game_flash64) then
@@ -8947,7 +8949,7 @@ for i:=0 to high(icore.progress) do if (icore.progress[i]>dprogressval) then dpr
 
 
 //cls
-ss.lds( s.cs , s.back, false);
+ss.ffillArea( s.cs , s.back, false);
 
 
 //pallete cells
@@ -9002,13 +9004,13 @@ if (da.right>=s.cs.left) and (da.left<=s.cs.right) then
       end;//case
 
       //.static color (main)
-      ss.lds( da ,c32__int(r32) ,false);
+      ss.ffillArea( da ,c32__int(r32) ,false);
 
       //.show both static colors
       int1:=2*s.zoom;
 
-      ss.lds( area__make(da.left+int1,da.bottom-(10*s.zoom), da.left + ((da.right-da.left+1) div 2) ,da.bottom) , c32__int(e32) ,false);
-      ss.lds( area__make( da.left + ((da.right-da.left+1) div 2) ,da.bottom-(10*s.zoom),da.right-int1,da.bottom) , c32__int(o32) ,false);
+      ss.ffillArea( area__make(da.left+int1,da.bottom-(10*s.zoom), da.left + ((da.right-da.left+1) div 2) ,da.bottom) , c32__int(e32) ,false);
+      ss.ffillArea( area__make( da.left + ((da.right-da.left+1) div 2) ,da.bottom-(10*s.zoom),da.right-int1,da.bottom) , c32__int(o32) ,false);
 
       //.label
       if dprogresson then t:=ilist.cells[i].cap2 else t:=ilist.cells[i].cap;
@@ -9023,8 +9025,8 @@ if (da.right>=s.cs.left) and (da.left<=s.cs.right) then
       //.progress indicator
       if dprogresson then
          begin
-         ss.lds( area__make(da.left, da.bottom - (5*s.zoom) ,da.right,da.bottom - (4*s.zoom)-1) ,s.back ,false);
-         ss.lds( area__make(da.left, da.bottom - (4*s.zoom) ,da.right,da.bottom) ,s.colhover ,false);
+         ss.ffillArea( area__make(da.left, da.bottom - (5*s.zoom) ,da.right,da.bottom - (4*s.zoom)-1) ,s.back ,false);
+         ss.ffillArea( area__make(da.left, da.bottom - (4*s.zoom) ,da.right,da.bottom) ,s.colhover ,false);
          end;
 
       //.foreground and background indicators
@@ -9059,7 +9061,7 @@ if (da.right>=s.cs.left) and (da.left<=s.cs.right) then
       //draw cell gap ----------------------------------------------------------
 
       //.background
-      ss.lds(da, low__aorb(s.hover,s.colhover,dprogressval>0),false);
+      ss.ffillArea(da, low__aorb(s.hover,s.colhover,dprogressval>0),false);
 
       //.label
       tw :=low__fonttextwidth2(s.fn, ilist.cells[i].cap );
@@ -9070,10 +9072,6 @@ if (da.right>=s.cs.left) and (da.left<=s.cs.right) then
    end;//if
 
 end;//i
-
-
-//restore corner colors
-xparentcorners;
 
 except;end;
 end;
@@ -9606,13 +9604,13 @@ if clip__canpastetext then
    begin
    n:=clip__pastetextb;
 
-   if strmatch(icolorsetsheader,strcopy1(n,1,low__len(icolorsetsheader))) then
+   if strmatch(icolorsetsheader,strcopy1(n,1,low__len32(icolorsetsheader))) then
       begin
 
       //init
       xprimeundo;
 
-      n         :=strcopy1(n,low__len(icolorsetsheader)+1,low__len(n))+',';
+      n         :=strcopy1(n,low__len32(icolorsetsheader)+1,low__len32(n))+',';
       xcount    :=-1;
       lp        :=1;
       ci        :=xnextindex;//next color index
@@ -9622,7 +9620,7 @@ if clip__canpastetext then
       if (ci>=0) then
          begin
 
-         for p:=1 to low__len(n) do if (n[p-1+stroffset]=',') then
+         for p:=1 to low__len32(n) do if (n[p-1+stroffset]=',') then
          begin
          str1:=strcopy1(n,lp,p-lp);
 
@@ -9775,13 +9773,13 @@ if clip__canpastetext then
    begin
    n:=clip__pastetextb;
 
-   if strmatch(icolorsetsheader,strcopy1(n,1,low__len(icolorsetsheader))) then
+   if strmatch(icolorsetsheader,strcopy1(n,1,low__len32(icolorsetsheader))) then
       begin
 
       //init
       xprimeundo;
 
-      n          :=strcopy1(n,low__len(icolorsetsheader)+1,low__len(n))+',';
+      n          :=strcopy1(n,low__len32(icolorsetsheader)+1,low__len32(n))+',';
       xcount     :=-1;
       lp         :=1;
       ci         :=xnextindex;//next color index
@@ -9790,7 +9788,7 @@ if clip__canpastetext then
       if (ci>=0) then
          begin
 
-         for p:=1 to low__len(n) do if (n[p-1+stroffset]=',') then
+         for p:=1 to low__len32(n) do if (n[p-1+stroffset]=',') then
          begin
          str1:=strcopy1(n,lp,p-lp);
 
@@ -9884,15 +9882,15 @@ if clip__canpastetext then
    fi:=icore.findex;
 
    n:=clip__pastetextb;
-   if strmatch(icolorsetsheader,strcopy1(n,1,low__len(icolorsetsheader))) then
+   if strmatch(icolorsetsheader,strcopy1(n,1,low__len32(icolorsetsheader))) then
       begin
 
       xprimeundo;
-      n:=strcopy1(n,low__len(icolorsetsheader)+1,low__len(n))+',';
+      n:=strcopy1(n,low__len32(icolorsetsheader)+1,low__len32(n))+',';
       int1:=0;
       lp:=1;
 
-      for p:=1 to low__len(n) do if (n[p-1+stroffset]=',') then
+      for p:=1 to low__len32(n) do if (n[p-1+stroffset]=',') then
          begin
          str1:=strcopy1(n,lp,p-lp);
 
@@ -10132,7 +10130,7 @@ ypad2:=10*s.zoom;
 //lds(cs,random(max16),false);
 
 //cls
-lds(s.cs,s.back,false);
+ffillArea(s.cs,s.back,false);
 
 //check
 if (icore=nil) then goto skipend;
@@ -10367,7 +10365,7 @@ xgrad4;
 with xhigh2 do
 begin
 itoolpal:=xtoolbar;
-itoolpal.osquareframe:=true;
+//?????itoolpal.osquareframe:=true;
 
 maketoolpalette(false,itoolpal);
 ipal:=tpal8.create(client,itex,itex.pcore);
@@ -10769,8 +10767,8 @@ var
 
    function pm(const xname:string):boolean;//partial match
    begin
-   result:=strmatch(strcopy1(n,1,low__len(xname)),xname);
-   if result then v:=strcopy1(n,low__len(xname)+1,low__len(n));
+   result:=strmatch(strcopy1(n,1,low__len32(xname)),xname);
+   if result then v:=strcopy1(n,low__len32(xname)+1,low__len32(n));
    end;
 begin//use for testing purposes only - 15mar2020
 //defaults
@@ -11141,7 +11139,7 @@ procedure ttex.xcreatetools;
    i:=xindex;
 
    //.name
-   for p:=1 to frcmax32(low__len(xname),sizeof(itoollist.tools[i].name)) do itoollist.tools[i].name[p-1]:=xname[p-1+stroffset];
+   for p:=1 to frcmax32(low__len32(xname),sizeof(itoollist.tools[i].name)) do itoollist.tools[i].name[p-1]:=xname[p-1+stroffset];
    //.info
    itoolcap[i]                      :=xname;//cap
    itoolcmd[i]                      :='tool.'+intstr32(i);
@@ -11333,7 +11331,7 @@ case tool of
 ttcZoom:begin
 
    x.benabled2['zoomin']       :=xok;
-   x.benabled2['zoomto.0']     :=xok;;
+   x.benabled2['zoomto.0']     :=xok;
    x.benabled2['zoomto.1']     :=xok;
    x.benabled2['zoomto.2']     :=xok;
    x.benabled2['zoomto.4']     :=xok;
@@ -11429,8 +11427,8 @@ var
 
    function pm(const xname:string):boolean;//partial match
    begin
-   result:=strmatch(strcopy1(n,1,low__len(xname)),xname);
-   if result then v:=strcopy1(n,low__len(xname)+1,low__len(n));
+   result:=strmatch(strcopy1(n,1,low__len32(xname)),xname);
+   if result then v:=strcopy1(n,low__len32(xname)+1,low__len32(n));
    end;
 begin//use for testing purposes only - 15mar2020
 //defaults
@@ -11452,9 +11450,9 @@ else if m('dither')           then dither:=not dither
 else if m('wrap')             then wrap:=not wrap
 else if m('fast')             then fast:=not fast
 else if m('zoomin')           then zoomin:=not zoomin
-else if pm('zoomto.')         then xzoomto(strint(v))
-else if pm('movexy.')         then movexy:=strint(v)
-else if pm('movestyle.')      then movestyle:=strint(v)
+else if pm('zoomto.')         then xzoomto(strint32(v))
+else if pm('movexy.')         then movexy:=strint32(v)
+else if pm('movestyle.')      then movestyle:=strint32(v)
 else if m('useonce')          then useonce:=not useonce
 //.hand
 else if m('handto.left')      then scrollx:=0
@@ -11470,7 +11468,7 @@ else if m('handto.center')    then
 else if m('sel.clear')        then selclear
 else if m('sel.all')          then selall
 else if m('sel.invert')       then selinv
-else if pm('selmode.')        then selmode:=strint(v)
+else if pm('selmode.')        then selmode:=strint32(v)
 //.other
 else if m('new.prompt')       then newprompt
 else if m('redo')             then redo
@@ -11557,7 +11555,7 @@ end;
 
 procedure ttex.xsyncbytes;
 begin
-ibytes:=low__len(pic8__todata(icore));
+ibytes:=low__len32(pic8__todata(icore));
 end;
 
 procedure ttex.disconnect;
@@ -12481,20 +12479,20 @@ var
    dline:=nil;
    try
    //check
-   if (str__len(@a)<=0) then goto skipend;
+   if (str__len32(@a)<=0) then goto skipend;
    //init
    s:=str__new8;
    dline:=str__new8;
    str__add(@s,@a);
    str__clear(@a);
-   slen:=str__len(@s);
+   slen:=str__len32(@s);
    //start
    str__sadd(@a,':array[0..'+intstr32(slen-1)+'] of byte=('+rcode);
    //content
    for p:=1 to slen do
    begin
    str__sadd(@dline,intstr32(byte(s.bytes1[p]))+insstr(',',p<slen));
-   if (str__len(@dline)>=990) then//was 1015 for Win95 Delphi 3 but lowered to 990 for Win11 Notepad - 19jul2024
+   if (str__len32(@dline)>=990) then//was 1015 for Win95 Delphi 3 but lowered to 990 for Win11 Notepad - 19jul2024
       begin
       str__add(@a,@dline);
       str__sadd(@a,rcode);
@@ -12935,7 +12933,7 @@ function ttex.getdata__forundo:string;
 
    procedure vadd(const xdata:string);
    begin
-   result:=result+str__from32(low__len(xdata))+xdata;
+   result:=result+str__from32(low__len32(xdata))+xdata;
    end;
    
 begin
@@ -14031,7 +14029,7 @@ if ofileinuse or obadfile then
    ea.bottom   :=ea.top + s.fnH;
 
    //background
-   lds( area__grow2(ea,30,12), clred, s.r);
+   ffillArea( area__grow2(ea,30,12), clred, s.r);
 
    //text
    ldt(ea,ea.left,ea.top,clwhite,t,s.fn,s.f,s.r);
@@ -14143,7 +14141,7 @@ begin
 imastervolume100:=frcrange32(x,0,100);
 end;
 
-function tsndgen.onmessage(m,w,l:longint):longint;
+function tsndgen.onmessage(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;
 begin
 result:=0;
 

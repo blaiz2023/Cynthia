@@ -7,6 +7,7 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gosswin2, gossroot {$ifdef laz}, zbase, zdeflate, zinflate{$endif};
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
@@ -14,7 +15,7 @@ uses gosswin2, gossroot {$ifdef laz}, zbase, zdeflate, zinflate{$endif};
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -47,6 +48,7 @@ uses gosswin2, gossroot {$ifdef laz}, zbase, zdeflate, zinflate{$endif};
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
@@ -248,7 +250,7 @@ tsize:=4096;
 try
 //lock
 if not str__lock(@s) then exit;
-slen:=str__len(@s);
+slen:=str__len32(@s);
 if (slen<=0) then
    begin
    result:=true;
@@ -280,7 +282,7 @@ begin
 //.read more data
 if (strm.avail_in<=0) and (spos<slen) then
    begin
-   if not block__fastinfo(@s,spos,smem,smin,smax) then goto skipend;
+   if not block64__fastinfo32(@s,spos,smem,smin,smax) then goto skipend;
    strm.next_in:=smem;
    strm.avail_in:=smax-smin+1;
    inc(spos,smax-smin+1);
@@ -358,7 +360,7 @@ tsize:=4096;
 try
 //lock
 if not str__lock(@s) then exit;
-slen:=str__len(@s);
+slen:=str__len32(@s);
 if (slen<=0) then
    begin
    result:=true;
@@ -390,7 +392,7 @@ begin
 //.read more data
 if (strm.avail_in<=0) and (spos<slen) then
    begin
-   if not block__fastinfo(@s,spos,smem,smin,smax) then goto skipend;
+   if not block64__fastinfo32(@s,spos,smem,smin,smax) then goto skipend;
    strm.next_in:=pbyte(smem);
    strm.avail_in:=smax-smin+1;
    inc(spos,smax-smin+1);

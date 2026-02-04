@@ -22,7 +22,8 @@ uses
   gossjpg,
   gossgame,
   gosswin2,
-  gamefiles;
+  gamefiles,
+  gossfast;
   { you can add units after this }
 
 

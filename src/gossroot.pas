@@ -7,15 +7,16 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
+uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin;
 {$ifdef d3laz} const stroffset=1; {$else} const stroffset=0; {$endif}  {0 or 1 based string index handling}
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -31,10 +32,10 @@ uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. root (gossroot.pas)
-//## Version.................. 4.00.6386 (+498)
+//## Version.................. 4.00.6761 (+820)
 //## Items.................... 49
-//## Last Updated ............ 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
-//## Lines of Code............ 31,200+
+//## Last Updated ............ 01feb2026, 31jan2026, 05jan2026, 23dec2025, 19dec2025, 18dec2025, 15dec2025, 13dec2025, 10dec2025, 08dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
+//## Lines of Code............ 33,600+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -48,13 +49,14 @@ uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | app__*                 | family of procs   | 1.00.445  | 23oct2025   | App related procs - 28sep2025, 07sep2025, 19aug2025, 15jul2025, 19jun2025, 18feb2025, 29jan2025, 27nov2024
+//## | app__*                 | family of procs   | 1.00.475  | 13dec2025   | App related procs - 23oct2025, 28sep2025, 07sep2025, 19aug2025, 15jul2025, 19jun2025, 18feb2025, 29jan2025, 27nov2024
 //## | dialog__*              | family of procs   | 1.00.070  | 10oct2025   | MS Dialogs
 //## | printer__*             | family of procs   | 1.00.050  | 26apr2025   | Printer related procs
 //## | font__*                | family of procs   | 1.00.070  | 26apr2025   | Font related procs
@@ -62,9 +64,9 @@ uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
 //## | new__*                 | family of procs   | 1.00.010  | 30apr2024   | Creation procs -> create objects using less source code
 //## | track__*               | family of procs   | 1.00.023  | 07sep2025   | Type instance tracking - 28aug2025, 17apr2024
 //## | monitors__*            | family of procs   | 1.00.432  | 26sep2025   | Multi-monitor support - 18feb2025, 06jan2025, 05dec2024
-//## | low__*                 | low level procs   | 1.00.179  | 29sep2025   | Support procs - 03sep2025, 25jul2025, 01apr2025, 06jan2025, 01may2024
+//## | low__*                 | low level procs   | 1.00.186  | 04dec2025   | Support procs - 29sep2025, 03sep2025, 25jul2025, 01apr2025, 06jan2025, 01may2024
 //## | low__b64*              | family of procs   | 1.00.030  | 17apr2024   | Base64 encoding/decoding
-//## | float__*, int__*       | family of procs   | 1.00.052  | 12dec2024   | Float and integer string-to-number and number-to-string conversion routines - 12dec2024: float__tostr_divby(),  01nov2024
+//## | float__*, int__*       | family of procs   | 1.00.052  | 12dec2024   | Float and longint32 string-to-number and number-to-string conversion routines - 12dec2024: float__tostr_divby(),  01nov2024
 //## | block__*               | family of procs   | 1.00.095  | 17apr2024   | Block based memory management procs
 //## | str__*                 | family of procs   | 1.00.240  | 30aug2025   | Procs for working with both tstr8 and tstr9 objects, 04may2025, 17apr2025, 16mar2025, 22nov2024, 11aug2024: str__pbytes0 and str__setpbytes0, 25jul2024: str__tob64/fromb64, 17apr2024
 //## | mem__*                 | family of procs   | 1.00.052  | 01sep2025   | Heap based management procs - 27aug2025, 27aug2025, 17apr2024
@@ -78,7 +80,7 @@ uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
 //## | tbasicthread           | tobject           | 1.00.480  | 02nov2025   | Tri-proc (one tri-mode), 1ms wake, 1-10ms host responsive, dedicated push-pull code transaction, and 2-stage failure fallback - 13sep2025, 07sep2025, 02sep2025, 27aug2025, 20aug2025, 15aug2025
 //## | tbasictimer            | tbasicthread      | 1.00.021  | 15aug2025   | High speed timer
 //## | tbasictimer2           | tbasicthread      | 1.00.011  | 15aug2025   | High speed timer with integrated thread level oncreate/ontimer/ondestroy events
-//## | twproc                 | tobject           | 1.00.021  | 04may2024   | Window based window message handler - 09feb2024: fixed destroy(), 23dec2023
+//## | twproc                 | tobject           | 1.00.022  | 18dec2025   | Window based window message handler - 18dec2025: 32/64 bit support, 04may2024, 09feb2024: fixed destroy(), 23dec2023
 //## | tstr8                  | tobjectex         | 1.00.791  | 23oct2025   | 8bit binary memory handler - memory as one chunk - 29aug2025, 28may2025, 15may2025, 25feb2024: splice() proc, 26dec2023, 27dec2022, 20mar2022, 27dec2021, 28jul2021, 30apr2021, 14feb2021, 28jan2021, 21aug2020
 //## | tstr9                  | tobjectex         | 1.00.268  | 15mar2025   | 8bit binary memory handler - memory as a stream of randomly allocated memory blocks - 07mar2024: softclear2(), 25feb2024: splice() proc, 07feb2024: Optimised for speed, 04feb2024: Created
 //## | tvars8                 | tobject           | 1.00.245  | 12may2025   | 8bit binary replacement for "tdynamicvars" and "tdynamictext" -> simple, fast, and lighter with full binary support (no string used) - 28jun2024, 26jun2024: updated, 15jan2024, 31jan2022, 02jan2022, 16aug2020
@@ -88,20 +90,20 @@ uses {$ifdef laz}classes,{$endif} gosswin2, gosswin;
 //## | tdynamicbyte           | tdynamiclist      | 1.00.010  | 09feb2024   | Dynamic array of byte (1b/item) - 09feb2024: removed "protected" for "public", 21jun2006
 //## | tdynamicword           | tdynamiclist      | 1.00.012  | 10aug2024   | Dynamic array of word (2b/item) - 10aug2024: removed "protected" for "public",
 //## | tdynamicinteger        | tdynamiclist      | 1.00.023  | 09feb2024   | Dynamic array of longint (4b/item) - 09feb2024: removed "protected" for "public", 10jan2012
-//## | tdynamicdatetime       | tdynamiclist      | 1.00.010  | 09feb2024   | Dynamic array of tdatetime (8b/item) - 09feb2024: removed "protected" for "public", 25dec2023, 21jun2006
+//## | tdynamicdatetime       | tdynamiclist      | 1.00.011  | 18dec2025   | Dynamic array of tdatetime (8b/item) - 09feb2024, 09feb2024: removed "protected" for "public", 25dec2023, 21jun2006
 //## | tdynamiccurrency       | tdynamiclist      | 1.00.014  | 09feb2024   | Dynamic array of currency (8b/item) - 09feb2024: removed "protected" for "public", 21jun2006
 //## | tdynamiccomp           | tdynamiclist      | 1.00.010  | 09feb2024   | Dynamic array of comp (8b/item) - 09feb2024: removed "protected" for "public", 20oct2012
-//## | tdynamicpointer        | tdynamiclist      | 1.00.010  | 09feb2024   | Dynamic array of pointer - 09feb2024: removed "protected" for "public", 21jun2006
-//## | tdynamicstring         | tdynamiclist      | 1.00.050  | 01may2025   | Dynamic array of string - 09feb2024: removed "protected" for "public", 29jul2017, 6oct2005
+//## | tdynamicpointer        | tdynamiclist      | 1.00.011  | 18dec2025   | Dynamic array of pointer - 18dec2025: 32/64 bit support, 09feb2024, 09feb2024: removed "protected" for "public", 21jun2006
+//## | tdynamicstring         | tdynamiclist      | 1.00.051  | 18dec2025   | Dynamic array of string - 18dec2025: 32/64 bit support, 01may2025, 09feb2024: removed "protected" for "public", 29jul2017, 6oct2005
 //## | tlitestrings           | tobjectex         | 1.00.170  | 07sep2015   | Dynamic array of STRING, lite and fast for best RAM usage
 //## | tdynamicname           | tdynamicstring    | 1.00.025  | 31mar2024   | Dynamic array of STRING with quick lookup system - 31mar2024: updated with comp and to fit new code, 05apr2005: created
 //## | tdynamicnamelist       | tdynamicname      | 1.00.045  | 09apr2024   | Dynamically tracks a list of names - 09apr2024: find(), 08feb2020: updated, 30aug2007: created
 //## | tdynamicvars           | tobject           | 1.00.200  | 09apr2024   | Dynamic list of name/value pairs, large capacity, rapid lookup system - 09apr2024: added/removed procs to be more inline with tfastvars, 15jun2019: updated, 20oct2018: updated, 13apr2018: updated, 04JUL2013: created
 //## | tdynamicstr8           | tdynamiclist      | 1.00.040  | 25jul2024   | Dynamic array of tstr8 - 25jul2024: isnil(), 09feb2024: removed "protected" for "public", 01jan2024, 28dec2023
-//## | tdynamicstr9           | tobjectex         | 1.00.155  | 17feb2024   | Dynamic array of tstr9 using memory blocks, 17feb2024: created
-//## | tintlist               | tobjectex         | 1.00.155  | 20feb2024   | Dynamic array of longint/pointer using memory blocks, 20feb2024: mincount() fixed, 17feb2024: created
-//## | tcmplist               | tobjectex         | 1.00.055  | 18jun2025   | Dynamic array of comp/double/datetime using memory blocks, 18jun2025: fixed index tracking, 20feb2024, 20feb2024: mincount() fixed, 17feb2024: created
-//## | tmemstr                | tstream           | 1.00.030  | 25jul2024   | tstringstream replacement - accepts tstr8 and tstr9 handlers -> for compatibility with Lazarus stream based handlers
+//## | tdynamicstr9           | tobjectex         | 1.00.156  | 18dec2025   | Dynamic array of tstr9 using memory blocks, 18dec2025: 32/64 support,17feb2024: created
+//## | tintlist32             | tobjectex         | 1.00.160  | 18dec2025   | Dynamic array of longint using memory blocks, 18dec2025: removed "pointer" support inline with 32/64 bit support, 20feb2024, 20feb2024: mincount() fixed, 17feb2024: created
+//## | tintlist64             | tobjectex         | 1.00.060  | 18dec2025   | Dynamic array of pointer/comp/double/datetime using memory blocks, 18dec2025: 32/64 bit support, 18jun2025: fixed index tracking, 20feb2024, 20feb2024: mincount() fixed, 17feb2024: created
+//## | tmemstr                | tstream           | 1.00.032  | 01feb2026   | tstringstream replacement - accepts tstr8 and tstr9 handlers -> for compatibility with Lazarus stream based handlers - 25jul2024
 //## | tflowcontrol           | tobjectex         | 1.00.172  | 06apr2025   | Helper object for switching through modular code blocks for running in a non-threaded enviroment
 //## ==========================================================================================================================================================================================================================
 //## Performance Note:
@@ -165,7 +167,7 @@ const
    {$endif}
 
    //memory block size
-   system_blocksize          =8192;//do not set below 4096 -> required by tintlist/tstr9 for a large data range
+   system_blocksize          =8192;//do not set below 4096 -> required by tintlist32/tintlist64/tstr9 for a large data range
 
    //message loop sleep delay in milliseconds
    system_timerinterval    =15;//15 ms - 28apr2024
@@ -216,94 +218,130 @@ const
    basNoLocks     =2;//use host thread without locks -> safe for proc2 in host thread to use enter1..leave1 without deadlock
    basMax         =2;
 
+
    //.nurmerical support
-   rcode          =#13#10;
-   r10            =#10;
-   maxcore        =999;//number of GUI controls the tbasicsystem can handle - 28jun2022
-   minwinsize     =32;//32px
-   osRed          =0;
-   osGreen        =256;
-   osBlue         =256*256;
-   pcRefsep       ='_';
-   pcSymSafe      ='-';//used to replace unsafe filename characters
-   crc_seed       =-306674912;//was $edb88320 - avoid constant range error
-   crc_against    =-1;//was $ffffffff
-   onemb          =1024000;
-   maxheight      =1000000;//1m -> used for max clientheight calculations - 21feb2021
-   mincur         =-922337203685477.5807;//note: 0.5808 exceeds range
-   maxcur         =922337203685477.5807;
-   maxcmp32       =4294967294.0;//actual max is 4294967295, but ".0" rounds it up, hence the "..294.0" - 16dec2016
+   rcode                =#13#10;
+   r10                  =#10;
+   maxcore              =999;//number of GUI controls the tbasicsystem can handle - 28jun2022
+   minwinsize           =32;//32px
+   pcRefsep             ='_';
+   pcSymSafe            ='-';//used to replace unsafe filename characters
+   crc_seed             =-306674912;//was $edb88320 - avoid constant range error
+   crc_against          =-1;//was $ffffffff
+   onemb                =1024000;
+   maxheight            =1000000;//1m -> used for max clientheight calculations - 21feb2021
+
+   //.8bit unsigned range
+   min8                 =0;
+   max8                 =255;
+
    //.12bit unsigned range
-   min12          =0;
-   max12          =4095;
+   min12                =0;
+   max12                =4095;
+
    //.16bit unsigned range
-   min16          =0;
-   max16          =65535;//16bit
+   min16                =0;
+   max16                =65535;//16bit
+
    //.32bit signed range
-   min32          =-2147483647-1;//makes -2147483648 -> avoids constant range error
-   max32          =2147483647;
+   min32                =-2147483647-1;//makes -2147483648 -> avoids constant range error for D3
+   max32                = 2147483647;
+
+   //.64bit currency range
+   mincur               =-922337203685477.49;//Laz4.4 - 12dec2025
+   maxcur               = 922337203685477.49;
+
    //.64bit signed range
-   min64          =-999999999999999999.0;//18 whole digits - 1 million terabytes
-   max64          = 999999999999999999.0;//18 whole digits - 1 million terabytes
+   {$ifdef d3}
+   min64                =-999999999999999999.0;//18 whole digits - 1 million terabytes - 12dec2025
+   max64                = 999999999999999999.0;//18 whole digits - 1 million terabytes
+   {$else}
+   min64                =-999999999999999999;//Laz2.2+
+   max64                = 999999999999999999;
+   {$endif}
 
-   maxword        =max16;
-   maxport        =max16;
-   maxpointer     =(max32 div sizeof(pointer))-1;
-   maxrow         =(max16*10);//safe range (0..655,350) - 28dec2023
-   maxpixel       =max32 div 50;//safe even for large color sets such as "tcolor96" - 29apr2020
+   //.misc slot ranges
+   maxport              =max16;
+   maxrow               =max16 * 10;//safe range (0..655,350) - 28dec2023
+   maxpixel             =max32 div 50;//safe even for large color sets such as "tcolor96" - 29apr2020
 
-   
+   //.slot ranges for various bit width types -> not exact upperlimit, intervals of maxslot128
+   {$ifdef 64bit}
+   maxslot8             = 992000000000000000;//1b
+   maxslot16            = 496000000000000000;//2b
+   maxslot32            = 248000000000000000;//4b
+   maxslot64            = 124000000000000000;//8b
+   maxslot128           = 62000000000000000; //16b
+   maxslot3264          = maxslot64;//8b for 64bit
+   {$else}
+   maxslot8             = 2147483616;//1b
+   maxslot16            = 1073741808;//2b
+   maxslot32            = 536870904; //4b
+   maxslot64            = 268435452; //8b
+   maxslot128           = 134217726; //16b
+   maxslot3264          = maxslot32;//4b for 32bit
+   {$endif}
+
+
    //message box ---------------------------------------------------------------
-   mbCustom           =$0;
-   mbError            =$10;
-   mbInformation      =$40;
-   mbWarning          =$30;
-   mbrYes             =6;
-   mbrNo              =7;
+   mbCustom             =$0;
+   mbError              =$10;
+   mbInformation        =$40;
+   mbWarning            =$30;
+   mbrYes               =6;
+   mbrNo                =7;
 
-   MB_OK              = $00000000;
-   MB_OKCANCEL        = $00000001;
-   MB_ABORTRETRYIGNORE = $00000002;
-   MB_YESNOCANCEL     = $00000003;
-   MB_YESNO           = $00000004;
-   MB_RETRYCANCEL     = $00000005;
+   MB_OK                = $00000000;
+   MB_OKCANCEL          = $00000001;
+   MB_ABORTRETRYIGNORE  = $00000002;
+   MB_YESNOCANCEL       = $00000003;
+   MB_YESNO             = $00000004;
+   MB_RETRYCANCEL       = $00000005;
+
 
    //.bitmap header sizes and their meanings
-   hsOS2              =12;
-   hsW95              =40;
-   hsV04_nocolorspace =56;//Gimp
-   hsV04              =108;
-   hsV05              =124;
+   hsOS2                =12;
+   hsW95                =40;
+   hsV04_nocolorspace   =56;//Gimp
+   hsV04                =108;
+   hsV05                =124;
 
    //.bitmap compression formats
-   BI_RGB 	  =0;//uncompressed
-   BI_RLE8 	  =1;//run-length encoded (RLE) format for bitmaps with 8 bpp.
-   BI_RLE4        =2;//run-length encoded (RLE) format for bitmaps with 4 bpp
-   BI_BITFIELDS   =3;//variable bit color encoding, using 3xDWORD "bit-masks" that tell decoder where each color component's data is stored
-   BI_JPEG        =4;//jpeg image
-   BI_PNG         =5;//png image
+   BI_RGB 	        =0;//uncompressed
+   BI_RLE8 	        =1;//run-length encoded (RLE) format for bitmaps with 8 bpp.
+   BI_RLE4              =2;//run-length encoded (RLE) format for bitmaps with 4 bpp
+   BI_BITFIELDS         =3;//variable bit color encoding, using 3xDWORD "bit-masks" that tell decoder where each color component's data is stored
+   BI_JPEG              =4;//jpeg image
+   BI_PNG               =5;//png image
 
-   //.common integer values
-   int_255_255_255=255 + (255*256) + (255*256*256);
-   int_240_240_240=240 + (240*256) + (240*256*256);
-   int_192_192_192=192 + (192*256) + (192*256*256);
-   int_128_128_128=128 + (128*256) + (128*256*256);
-   int_127_127_127=127 + (127*256) + (127*256*256);
-   int_64_64_64   =64  + (64*256)  + (64*256*256);
-   int_32_32_32   =32  + (32*256)  + (32*256*256);
-   int_20_20_20   =20  + (20*256)  + (20*256*256);
-   int_10_10_10   =10  + (10*256)  + (10*256*256);
-   int_1_1_1      =1   + (1*256)   + (1*256*256);
-   int_1_0_0      =1   + (0*256)   + (0*256*256);
-   int_0_1_0      =0   + (1*256)   + (0*256*256);
-   int_0_0_1      =0   + (0*256)   + (1*256*256);
-   col_white24    =int_255_255_255;
-   col_grey24     =int_127_127_127;
-   col_black24    =0;
+
+   //.common longint32 values
+   int_255_255_255      =255 + (255*256) + (255*256*256);
+   int_240_240_240      =240 + (240*256) + (240*256*256);
+   int_192_192_192      =192 + (192*256) + (192*256*256);
+   int_128_128_128      =128 + (128*256) + (128*256*256);
+   int_127_127_127      =127 + (127*256) + (127*256*256);
+   int_64_64_64         =64  + (64*256)  + (64*256*256);
+   int_32_32_32         =32  + (32*256)  + (32*256*256);
+   int_20_20_20         =20  + (20*256)  + (20*256*256);
+   int_10_10_10         =10  + (10*256)  + (10*256*256);
+   int_1_1_1            =1   + (1*256)   + (1*256*256);
+   int_1_0_0            =1   + (0*256)   + (0*256*256);
+   int_0_1_0            =0   + (1*256)   + (0*256*256);
+   int_0_0_1            =0   + (0*256)   + (1*256*256);
+
+   col_white24          =int_255_255_255;
+   col_grey24           =int_127_127_127;
+   col_black24          =0;
+
 
    //.corner ratio's -> main form only
-   viCornerA=10;
-   viCornerB=13;
+   viCornerA            =10;
+   viCornerB            =13;
+
+
+   //.msix dependency tags
+   msixMIDI             ='M';//31jan2026
 
    //system teps ---------------------------------------------------------------
    //text images / small images
@@ -462,6 +500,7 @@ const
    tepCode20               =152;//09nov2025
    tepUnit20               =153;
    tepCompress20           =154;
+   tepColorPals20          =155;//wide (20px H x 40px W) and supports dual color (xtepcolor/xtepcolor2) - 04dec2025
 
    //.file format teps
    tepXXX20                =170;
@@ -532,11 +571,11 @@ const
    tepNewfolder24          =510;
    tepIcon20               =511;//actual program icon at 20h - 26sep2022
 
-   systepHeight20 =20;//standard tep height - 19mar2021
-   teaMaxsize20x20=2027;//400 colors at 20w x 20h = 2,027 (32bit) 12apr2025, was: 1,612 bytes - 06apr2021
+   systepHeight20          =20;//standard tep height - 19mar2021
+   teaMaxsize20x20         =2027;//400 colors at 20w x 20h = 2,027 (32bit) 12apr2025, was: 1,612 bytes - 06apr2021
 
-   tepSysstart20  =100000;//start of dynamically allocated TEA's (max dimensions 20w x 20h) - 06apr2021
-   tepSysstop20   =199999;//end of dynamically allocated TEA's  -> total of 100,000 images allowed
+   tepSysstart20           =100000;//start of dynamically allocated TEA's (max dimensions 20w x 20h) - 06apr2021
+   tepSysstop20            =199999;//end of dynamically allocated TEA's  -> total of 100,000 images allowed
 
    //.colors
    clTopLeft      =-1;
@@ -571,19 +610,22 @@ const
    corMax         =4;
 
    //system references
-   WM_USER              =$0400;//anything below this is reserved
-   MM_WOM_DONE          = $3BD;
-   wm_onmessage_net     =WM_USER + $0001;//route window message for socket based communications to the net__* subsystem
-   wm_onmessage_mm      =WM_USER + $0002;//multimedia message -> route to snd unit - 22jun2024
-   wm_onmessage_wave    =WM_USER + $0003;//wave message -> route to snd unit
-   wm_onmessage_netraw  =WM_USER + $0004;//raw/unmanaged networking - 04apr2025
-   wm_onmessage_nn      =WM_USER + $0005;//route window message for socket based communications to the nn__* subsystem - 01oct2025
+   WM_USER                =$0400;//anything below this is reserved
+   MM_WOM_DONE            = $3BD;
+   wm_onmessage_net       =WM_USER + $0001;//route window message for socket based communications to the net__* subsystem
+   wm_onmessage_mm        =WM_USER + $0002;//multimedia message -> route to snd unit - 22jun2024
+   wm_onmessage_wave      =WM_USER + $0003;//wave message -> route to snd unit
+   wm_onmessage_netraw    =WM_USER + $0004;//raw/unmanaged networking - 04apr2025
+   wm_onmessage_nn        =WM_USER + $0005;//route window message for socket based communications to the nn__* subsystem - 01oct2025
+
+   background_speed_limit =60;//07jan2026
+
 
    //System Stats Counters -----------------------------------------------------
    track_limit           =200;
 
    track_Overview_start   =1;
-   track_Overview_finish  =23+track_Overview_start;
+   track_Overview_finish  =29+track_Overview_start;//10dec2025
 
    track_Core_start       =track_Overview_finish+3;//allow for blank line and title
    track_Core_finish      =56+track_Core_start;
@@ -597,30 +639,36 @@ const
 
    //.overview -> use "track__inc()" proc
    satUpTime           =0+track_Overview_start;
-   satDPIawareV2       =1+track_Overview_start;
-   satGUIresources     =2+track_Overview_start;
-   satDLLload          =3+track_Overview_start;
-   satAPIload          =4+track_Overview_start;
-   satAPIcalls         =5+track_Overview_start;
-   satMemory           =6+track_Overview_start;
-   satMemoryCount      =7+track_Overview_start;
-   satMemoryCreateCount=8+track_Overview_start;
-   satMemoryFreeCount  =9+track_Overview_start;
+   satVer              =1+track_Overview_start;
+   satCodebase         =2+track_Overview_start;
+   satScale            =3+track_Overview_start;
+   satDPIawareV2       =4+track_Overview_start;
+   satMSIXmode         =5+track_Overview_start;
+   satMSIXtags         =6+track_Overview_start;
+   satGUIresources     =7+track_Overview_start;
+   satDLLload          =8+track_Overview_start;
+   satAPIload          =9+track_Overview_start;
+   satAPIcalls         =10+track_Overview_start;
+   satRenderRate       =11+track_Overview_start;
+   satMemory           =12+track_Overview_start;
+   satMemoryCount      =13+track_Overview_start;
+   satMemoryCreateCount=14+track_Overview_start;
+   satMemoryFreeCount  =15+track_Overview_start;
 
-   satErrors           =10+track_Overview_start;
-   satThreadFixes      =11+track_Overview_start;//02nov2025
-   satMaskcapture      =12+track_Overview_start;
-   satPartpaint        =13+track_Overview_start;
-   satFullpaint        =14+track_Overview_start;
-   satPartalign        =15+track_Overview_start;
-   satFullalign        =16+track_Overview_start;
-   satDragcount        =17+track_Overview_start;
-   satDragcapture      =18+track_Overview_start;
-   satDragpaint        =19+track_Overview_start;
-   satSizecount        =20+track_Overview_start;
-   satSysFont          =21+track_Overview_start;
-   satTotalCore        =22+track_Overview_start;//sources value from "satCoreTotal"
-   satTotalGUI         =23+track_Overview_start;//sources value from "satGUITotal"
+   satErrors           =16+track_Overview_start;
+   satThreadFixes      =17+track_Overview_start;//02nov2025
+   satMaskcapture      =18+track_Overview_start;
+   satPartpaint        =19+track_Overview_start;
+   satFullpaint        =20+track_Overview_start;
+   satPartalign        =21+track_Overview_start;
+   satFullalign        =22+track_Overview_start;
+   satDragcount        =23+track_Overview_start;
+   satDragcapture      =24+track_Overview_start;
+   satDragpaint        =25+track_Overview_start;
+   satSizecount        =26+track_Overview_start;
+   satSysFont          =27+track_Overview_start;
+   satTotalCore        =28+track_Overview_start;//sources value from "satCoreTotal"
+   satTotalGUI         =29+track_Overview_start;//sources value from "satGUITotal"
 
    //.core
    satCoreTotal        =0+track_Core_start;
@@ -675,8 +723,8 @@ const
    satHashtable        =49+track_Core_start;
    satNetbasic         =50+track_Core_start;
    satWproc            =51+track_Core_start;
-   satIntlist          =52+track_Core_start;
-   satCmplist          =53+track_Core_start;
+   satIntlist32        =52+track_Core_start;
+   satIntlist64        =53+track_Core_start;
    satTBT              =54+track_Core_start;
    satBasicapp         =55+track_Core_start;
    satImageexts        =56+track_Core_start;
@@ -1413,14 +1461,13 @@ const
    glseTextEncrypt     =2;
    glseTextDecrypt     =3;
 
+
 type
    TValueType        = (vaNull, vaList, vaInt8, vaInt16, vaInt32, vaExtended, vaString, vaIdent, vaFalse, vaTrue, vaBinary, vaSet, vaLString, vaNil, vaCollection);
-   tmultiptr         = longint;
    pobject           =^tobject;
-   tpointer          =^pointer;
    tnotifyevent      =procedure(sender:tobject) of object;
    tthreadproc2      =function(sender:tobject;const xcode:longint;var xreplycode:longint;const xWithinThread:boolean):boolean of object;//01sep2025
-   twinmsg           =function(m,w,l:longint):longint of object;//07jul2025
+   twinmsg           =function(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result of object;//07jul2025
    tevent            =tnotifyevent;//procedure(sender:tobject) of object;
    tdrivelist        =array[0..25] of boolean;//0=A, 1=B, 2=C..25=Z
    tobjectex         =class;
@@ -1434,8 +1481,8 @@ type
    tdynamicstring    =class;
    tdynamicstr8      =class;
    tdynamicstr9      =class;
-   tintlist          =class;
-   tcmplist          =class;
+   tintlist32        =class;//18dec2025, 14dec2025
+   tintlist64        =class;//18dec2025, 14dec2025
    tpulleventfunc    =function(n:string;var v:string;var int1:longint;var bol1:boolean):boolean;
    tfindlistimage    =procedure(sender:tobject;xformat:string;xindex:longint;var xcount,xtranscol:longint;var ximage:tobject) of object;
    tstorageproc      =function (xindex:longint;var xdata:pointer;var xdatalen:longint;var xcompressed:boolean;var xpathname:string):boolean;//21mar2025
@@ -1476,26 +1523,29 @@ type
    pcolorrows96  =^tcolorrows96; tcolorrows96=array[0..maxrow] of pcolorrow96;
 
    //.reference arrays
-   pbitboolean   =^tbitboolean;  tbitboolean=set of 0..7;
-   pdlbitboolean =^tdlbitboolean;tdlbitboolean=array[0..((max32 div sizeof(tbitboolean))-1)] of tbitboolean;
-   pdlbyte       =^tdlbyte;      tdlbyte=array[0..((max32 div sizeof(byte))-1)] of byte;
-   pdlchar       =^tdlchar;      tdlchar=array[0..((max32 div sizeof(char))-1)] of char;
-   pdlsmallint   =^tdlsmallint;  tdlsmallint=array[0..((max32 div sizeof(smallint))-1)] of smallint;
-   pdlword       =^tdlword;      tdlword=array[0..((max32 div sizeof(word))-1)] of word;
-   pbilongint    =^tbilongint;   tbilongint=array[0..1] of longint;
-   pdlbilongint  =^tdlbilongint; tdlbilongint=array[0..((max32 div sizeof(tbilongint))-1)] of tbilongint;
-   pdllongint    =^tdllongint;   tdllongint=array[0..((max32 div sizeof(longint))-1)] of longint;
-   pdlpoint      =^tdlpoint;     tdlpoint=array[0..((max32 div sizeof(tpoint))-1)] of tpoint;
-   pdlcurrency   =^tdlcurrency;  tdlcurrency=array[0..((max32 div sizeof(currency))-1)] of currency;
-   pdlcomp       =^tdlcomp;      tdlcomp=array[0..((max32 div sizeof(comp))-1)] of comp;
-   pdldouble     =^tdldouble;    tdldouble=array[0..((max32 div sizeof(double))-1)] of double;
-   pdldatetime   =^tdldatetime;  tdldatetime=array[0..((max32 div sizeof(tdatetime))-1)] of tdatetime;
-   pdlrect       =^tdlrect;      tdlrect=array[0..((max32 div sizeof(twinrect))-1)] of twinrect;
-   pdlstring     =^tdlstring;    tdlstring=array[0..((max32 div 32)-1)] of pstring;
-   pdlpointer    =^tdlpointer;   tdlpointer=array[0..((max32 div sizeof(pointer))-1)] of pointer;
-   pdlobject     =^tdlobject;    tdlobject=array[0..((max32 div sizeof(pobject))-1)] of tobject;
-   pdlstr8       =^tdlstr8;      tdlstr8=array[0..((max32 div sizeof(pointer))-1)] of tstr8;
-   pdlstr9       =^tdlstr9;      tdlstr9=array[0..((max32 div sizeof(pointer))-1)] of tstr9;
+   pbitboolean   =^tbitboolean;  tbitboolean        =set of 0..7;
+   pdlbitboolean =^tdlbitboolean;tdlbitboolean      =array[0..maxslot8]    of tbitboolean;
+   pdlbyte       =^tdlbyte;      tdlbyte            =array[0..maxslot8]    of byte;
+   pdlchar       =^tdlchar;      tdlchar            =array[0..maxslot8]    of char;
+   pdlsmallint   =^tdlsmallint;  tdlsmallint        =array[0..maxslot16]   of smallint;
+   pdlword       =^tdlword;      tdlword            =array[0..maxslot16]   of word;
+   pbilongint    =^tbilongint;   tbilongint         =array[0..1]           of longint32;//8b
+   pdlbilongint  =^tdlbilongint; tdlbilongint       =array[0..maxslot64]   of tbilongint;
+   pdllongint    =^tdllongint;   tdllongint         =array[0..maxslot32]   of longint32;
+   pdlpoint      =^tdlpoint;     tdlpoint           =array[0..maxslot64]   of tpoint;
+   pdlcurrency   =^tdlcurrency;  tdlcurrency        =array[0..maxslot64]   of currency;
+   pdlcomp       =^tdlcomp;      tdlcomp            =array[0..maxslot64]   of comp;
+   pdldouble     =^tdldouble;    tdldouble          =array[0..maxslot64]   of double;
+   pdldatetime   =^tdldatetime;  tdldatetime        =array[0..maxslot64]   of tdatetime;//8b
+   pdlrect       =^tdlrect;      tdlrect            =array[0..maxslot128]  of twinrect;//16b
+   pdlstring     =^tdlstring;    tdlstring          =array[0..maxslot3264] of pstring;//4 or 8b
+   pdlpointer    =^tdlpointer;   tdlpointer         =array[0..maxslot3264] of pointer3264;
+   pdlptr3264    =^tdlptr3264;   tdlptr3264         =array[0..maxslot3264] of pointer3264;//18dec2025
+   pdlobject     =^tdlobject;    tdlobject          =array[0..maxslot3264] of tobject;
+   pdlstr8       =^tdlstr8;      tdlstr8            =array[0..maxslot3264] of tstr8;
+   pdlstr9       =^tdlstr9;      tdlstr9            =array[0..maxslot3264] of tstr9;
+   pdlint32      =^tdlint32;     tdlint32           =array[0..maxslot32]   of longint32;
+   pdlint64      =^tdlint64;     tdlint64           =array[0..maxslot64]   of longint64;//14dec2025
 
    //.conversion records
    pbit8=^tbit8;
@@ -1541,6 +1591,38 @@ type
     9:(bgra32:tcolor32);//03feb2025 - clearly marked as different, tint4.r/g/b/a stores in RGBA order which is different to tcolor32 which stores in BGRA order
     10:(bgr24:tcolor24;ca:byte);//03feb2025 - clearly marked as different, tint4.r/g/b stores in RGB order which is different to tcolor24 which stores in BGR order
     11:(lo,hi:word);//01may2025
+    end;
+
+   pint32=^tint32;
+   tint32=packed record
+    case longint of
+    0:(val:longint32);
+    1:(r,g,b,a:byte);
+    2:(bytes:array [0..3] of byte);
+    3:(wrds:array [0..1] of word);
+    4:(bols:array [0..3] of bytebool);
+    5:(sint:array[0..1] of smallint);
+    6:(short:array[0..3] of shortint);
+    7:(bits:set of 0..31);
+    8:(b0,b1,b2,b3:byte);//26dec2024
+    9:(bgra32:tcolor32);//03feb2025 - clearly marked as different, tint4.r/g/b/a stores in RGBA order which is different to tcolor32 which stores in BGRA order
+    10:(bgr24:tcolor24;ca:byte);//03feb2025 - clearly marked as different, tint4.r/g/b stores in RGB order which is different to tcolor24 which stores in BGR order
+    11:(lo,hi:word);//01may2025
+    12:(ints:array[0..0] of longint);
+    end;
+
+   pint64=^tint64;
+   tint64=packed record
+    case longint of
+    0:(val:longint64);
+    1:(cmp:comp);
+    2:(cur:currency);
+    3:(dbl:double);
+    4:(bytes:array[0..7] of byte);
+    5:(wrds:array[0..3] of word);
+    6:(ints:array[0..1] of longint);
+    7:(bits:set of 0..63);
+    8:(datetime:tdatetime);
     end;
 
    pcmp8=^tcmp8;
@@ -1644,7 +1726,7 @@ type
    tstophere=class(tobject)//stop-start code execution at a point in code via a high-speed multimedia timer
    private
 
-    ihandle     :thandle;
+    ihandle     :longint3264;
     ifixtime64  :comp;//02nov2025
     itimerid    :longint;
     ilastms     :longint;
@@ -1667,7 +1749,7 @@ type
     destructor destroy; override;
 
     //information
-    property handle   :thandle     read ihandle;
+    property handle   :longint3264 read ihandle;
     property halted   :boolean     read ihalt;
     property errorcode:longint     read ierrorcode;//0=OK, 1=FAIL: Multimedia Timer, 2=FAIL: Event
 
@@ -1676,7 +1758,7 @@ type
     procedure stop2(xms:longint);
     procedure stop3(xms:longint;xuseSleep:boolean);
     procedure start;
-    procedure safecall__start2(const x:thandle);
+    procedure safecall__start2(const x:longint3264);
     procedure halt;//discontinue operations
 
    end;
@@ -1686,7 +1768,7 @@ type
    tstoprun=class(tobject)//stop or run for controlling thread activity
    private
 
-    ihandle      :thandle;
+    ihandle      :longint3264;
     ihalt        :boolean;
     irunning     :boolean;
     ipushcode    :longint;
@@ -1709,7 +1791,7 @@ type
     destructor destroy; override;
 
     //information
-    property handle     :thandle     read ihandle;
+    property handle     :longint3264 read ihandle;
     property halted     :boolean     read ihalt;
     property running    :boolean     read getrunning;
 
@@ -1750,8 +1832,8 @@ type
     iproctimer,itimer1000:comp;
     ithread__proccount,ithread__procid,ithread__mspeaklag,istopid,ipcount,iprocms,ims:longint;
     imsrate,imspert:double;
-    ithreadid      :dword;
-    ithreadhandle  :thandle;
+    ithreadid      :dword32;
+    ithreadhandle  :longint3264;
     iprocok        :boolean;
     iprocidle0     :boolean;
 
@@ -1761,8 +1843,8 @@ type
     //start-stop thread execution with optional code processing
     istoprun:tstoprun;
 
-    function xoversight:dword;//1st
-    function xrunprocs:dword; //2nd
+    function xoversight:dword32;//1st
+    function xrunprocs:dword32; //2nd
 
     function xstressTest:boolean;
     function xcanproc:boolean;
@@ -1785,12 +1867,12 @@ type
     procedure __finished;
 
     //information
-    property ms              :longint   read ims write setms;
-    property msrate          :double    read imsrate;//achieved ms interval
-    property mspert100       :double    read imspert;
-    property pcount          :longint   read ipcount;//number of times per second proc is fired
-    property threadhandle    :thandle   read ithreadhandle;
-    property threadid        :dword     read ithreadid;
+    property ms              :longint      read ims write setms;
+    property msrate          :double       read imsrate;//achieved ms interval
+    property mspert100       :double       read imspert;
+    property pcount          :longint      read ipcount;//number of times per second proc is fired
+    property threadhandle    :longint3264  read ithreadhandle;
+    property threadid        :dword32        read ithreadid;
     function errorcode       :longint;//0=OK, 1=FAIL: Multimedia Timer, 2=FAIL: Event, 3=FAIL: Mutex
     function errormsg        :string;//07sep2025
 
@@ -1871,13 +1953,18 @@ type
 {twproc}
    twproc=class(tobject)
    private
-    iwindow:hwnd;
+
+    iwindow:hauto;//18dec2025
+
    public
+
     //create
     constructor create;
     destructor destroy; override;
+
     //information
-    property window:hwnd read iwindow;
+    property window:hauto read iwindow;
+
    end;
 
 {tdynamiclist}
@@ -1981,22 +2068,22 @@ type
     tdynamicword=class(tdynamiclist)
     private
      iitems:pdlWORD;
-     function getvalue(_index:integer):word;
-     procedure setvalue(_index:integer;_value:word);
-     function getsvalue(_index:integer):word;
-     procedure setsvalue(_index:integer;_value:word);
+     function getvalue(_index:longint32):word;
+     procedure setvalue(_index:longint32;_value:word);
+     function getsvalue(_index:longint32):word;
+     procedure setsvalue(_index:longint32;_value:word);
     public
      constructor create; override;//01may2019
      destructor destroy; override;//01may2019
-     property value[x:integer]:word read getvalue write setvalue;
-     property svalue[x:integer]:word read getsvalue write setsvalue;
+     property value[x:longint32]:word read getvalue write setvalue;
+     property svalue[x:longint32]:word read getsvalue write setsvalue;
      property items:pdlWORD read iitems;
-     function find(_start:integer;_value:word):integer;
+     function find(_start:longint32;_value:word):longint32;
      //support
      procedure _init; override;
      procedure _corehandle; override;
      procedure _sort(_asc:boolean); override;
-     procedure __sort(a:pdlWORD;b:pdlLONGINT;l,r:integer;_asc:boolean);
+     procedure __sort(a:pdlWORD;b:pdlLONGINT;l,r:longint32;_asc:boolean);
     end;
 
 {tdynamicinteger}
@@ -2026,10 +2113,10 @@ type
     tdynamicpoint=class(tdynamiclist)
     private
      iitems:pdlPOINT;
-     function getvalue(_index:integer):tpoint;
-     procedure setvalue(_index:integer;_value:tpoint);
-     function getsvalue(_index:integer):tpoint;
-     procedure setsvalue(_index:integer;_value:tpoint);
+     function getvalue(_index:longint32):tpoint;
+     procedure setvalue(_index:longint32;_value:tpoint);
+     function getsvalue(_index:longint32):tpoint;
+     procedure setsvalue(_index:longint32;_value:tpoint);
      procedure _init; override;
      procedure _corehandle; override;
     protected
@@ -2037,12 +2124,12 @@ type
     public
      constructor create; override;//01may2019
      destructor destroy; override;//01may2019
-     property value[x:integer]:tpoint read getvalue write setvalue;
-     property svalue[x:integer]:tpoint read getsvalue write setsvalue;
+     property value[x:longint32]:tpoint read getvalue write setvalue;
+     property svalue[x:longint32]:tpoint read getsvalue write setsvalue;
      property items:pdlPOINT read iitems;
-     function find(_start:integer;_value:tpoint):integer;
+     function find(_start:longint32;_value:tpoint):longint32;
      //support
-     function areaTOTAL(var x1,y1,x2,y2:integer):boolean;//18OCT2011
+     function areaTOTAL(var x1,y1,x2,y2:longint32):boolean;//18OCT2011
      function areaTOTALEX(var a:twinrect):boolean;//18OCT2011
     end;
 
@@ -2115,27 +2202,35 @@ type
 {tdynamicpointer}
     tdynamicpointer=class(tdynamiclist)
     private
+
      iitems:pdlPOINTER;
+
      function getvalue(_index:longint):pointer;
      procedure setvalue(_index:longint;_value:pointer);
      function getsvalue(_index:longint):pointer;
      procedure setsvalue(_index:longint;_value:pointer);
+
     public
+
      constructor create; override;//01may2019
      destructor destroy; override;//01may2019
      property value[x:longint]:pointer read getvalue write setvalue;
      property svalue[x:longint]:pointer read getsvalue write setsvalue;
      property items:pdlPOINTER read iitems;
      function find(_start:longint;_value:pointer):longint;
+
      //support
      procedure _init; override;
      procedure _corehandle; override;
+
     end;
 
 {tdynamicstring}
     tdynamicstring=class(tdynamiclist)//09feb2022
     private
+
      iitems:pdlstring;
+
      function getvalue(_index:longint):string;
      procedure setvalue(_index:longint;_value:string); virtual;
      function getsvalue(_index:longint):string;
@@ -2143,7 +2238,9 @@ type
      function gettext:string;
      procedure settext(const x:string);
      function getstext:string;
+
     public
+
      constructor create; override;//01may2019
      destructor destroy; override;//01may2019
      function copyfrom(s:tdynamicstring):boolean;//09feb2022
@@ -2153,6 +2250,7 @@ type
      property svalue[x:longint]:string read getsvalue write setsvalue;
      property items:pdlstring read iitems;
      function find(_start:longint;_value:string;_casesensitive:boolean):longint;//01may2025
+
      //support
      procedure _oncreateitem(sender:tobject;index:longint); override;
      procedure _onfreeitem(sender:tobject;index:longint); override;
@@ -2160,37 +2258,45 @@ type
      procedure _corehandle; override;
      procedure _sort(_asc:boolean); override;
      procedure __sort(a:pdlstring;b:pdllongint;l,r:longint;_asc:boolean);
+
     end;
 
 {tlitestrings}
     tlitestrings=class(tobjectex)
     private
+
      idata:tdynamicstring;
      ipos,ilen:tdynamicinteger;
-     ibytes,icount,isharecount:integer;
-     function getvalue(_index:integer):string;
-     procedure setvalue(_index:integer;_value:string);//fixed - 30apr2015
+     ibytes,icount,isharecount:longint32;
+
+     function getvalue(_index:longint32):string;
+     procedure setvalue(_index:longint32;_value:string);//fixed - 30apr2015
      function gettext:string;
      procedure settext(const x:string);
-     procedure setsize(x:integer);
-     procedure setcount(x:integer);
-     function getsize:integer;
+     procedure setsize(x:longint32);
+     procedure setcount(x:longint32);
+     function getsize:longint32;
+
     public
+
      //create
      constructor create;
      destructor destroy; override;
+
      //information
-     property count:integer read icount write setcount;
-     property size:integer read getsize write setsize;
-     property bytes:integer read ibytes;//07sep2015
-     function atleast(_size:integer):boolean;
-     function setparams(_count,_size:integer):boolean;
+     property count:longint32 read icount write setcount;
+     property size:longint32 read getsize write setsize;
+     property bytes:longint32 read ibytes;//07sep2015
+     function atleast(_size:longint32):boolean;
+     function setparams(_count,_size:longint32):boolean;
+
      //workers
      procedure clear;//clean reset - 09DEC2011
      procedure flush;//fast clear and retains size - 07sep2015
-     function find(_start:integer;_value:string;_casesensitive:boolean):integer;
+     function find(_start:longint32;_value:string;_casesensitive:boolean):longint32;
      property text:string read gettext write settext;
-     property value[x:integer]:string read getvalue write setvalue;
+     property value[x:longint32]:string read getvalue write setvalue;
+
     end;
 
 {tdynamicname}
@@ -2284,11 +2390,11 @@ type
      property ni[x:string]:longint read getni;//numercial comma longint - slow
      property i64[x:string]:comp read geti64 write seti64;//comp - 15jun2019
      property ni64[x:string]:comp read getni64;//numercial comma comp - slow
-     property d[x:string]:double read getd write setd;//currency
+     property d[x:string]:double read getd write setd;//double
      property c[x:string]:currency read getc write setc;//currency
      property nc[x:string]:currency read getnc;//numercial comma currency - slow
      property pt[x:string]:tpoint read getpt write setpt;//point - 09JUN2010
-     procedure roll(x:string;by:currency);
+     procedure croll(x:string;by:currency);
      property n[x:longint]:string read getname;//name
      property v[x:longint]:string read getvaluei;//value
      //other
@@ -2348,177 +2454,223 @@ type
 {tdynamicstr9}
    tdynamicstr9=class(tobjectex)
    private
+
     ifallback:tstr9;
-    ilist:tintlist;
+    ilist:tintlist64;
+
     function getvalue(x:longint):tstr9;
     procedure setvalue(x:longint;xval:tstr9);
     function getcount:longint;
     procedure setcount(xnewcount:longint);
     procedure xfreeitem(x:pointer);
+
    public
+
+    //create
     constructor create; virtual;
     destructor destroy; override;
     property _fallback:tstr9 read ifallback;//read only
+
     //information
-    function mem:longint;
+    function mem:longint64;
     property count:longint read getcount write setcount;
     property value[x:longint]:tstr9 read getvalue write setvalue;
+
     //workers
     procedure clear;
+
    end;
 
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//6666666666666666666666
-{tintlist}
-   tintlist=class(tobjectex)//limit of 4,194,304 items when system_blocksize=8192 - 17feb2024
+{tintlist32}
+   tintlist32=class(tobjectex)//limit: 2,097,152 slots when system_blocksize=8192 - 14dec2025
    private
+
     iroot:pdlpointer;
-    igetmin,igetmax,isetmin,isetmax,iblocksize,irootcount,icount,irootlimit,iblocklimit,ilimit:longint;
-    igetmem,isetmem:pointer;
-    procedure setcount(x:longint);
-    function getvalue(x:longint):longint;
-    procedure setvalue(x:longint;xval:longint);
-    function getptr(x:longint):pointer;
-    procedure setptr(x:longint;xval:pointer);
+    igetmin,igetmax,isetmin,isetmax,iblocksize,irootcount,islotcount,irootlimit,iblocklimit,islotlimit:longint;
+    igetmem,isetmem:pointer3264;
+
+    procedure setslotcount(const x:longint32);
+    function getint32(const xslot:longint32):longint32;
+    procedure setint32(const xslot:longint32;xval:longint32);
+
    public
+
+    //create
     constructor create; virtual;
     destructor destroy; override;
+
     //information
-    function mem:longint;//memory size in bytes used
-    function mem_predict(xcount:comp):comp;//info proc used to predict value of mem
-    property limit:longint read ilimit;
-    property count:longint read icount write setcount;
-    property rootcount:longint read irootcount;
-    property rootlimit:longint read irootlimit;//tier 1 limit (iroot)
-    property blocklimit:longint read iblocklimit;//tier 2 limit (child of iroot)
-    function fastinfo(xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;//15feb2024
+    function mem_predict(xcount:longint64):longint64;
+    function mem         :longint64;//memory size in bytes used
+    property slotLimit   :longint32 read islotlimit;
+    property slotCount   :longint32 read islotcount write setslotcount;
+    property rootcount   :longint32 read irootcount;
+    property rootlimit   :longint32 read irootlimit;//tier 1 limit (iroot)
+    property blocklimit  :longint32 read iblocklimit;//tier 2 limit (child of iroot)
+
+    function fastinfo32(const xslot:longint32;var xmem:pointer3264;var xmin,xmax:longint32):boolean;//18jun2025, 15feb2024
+    function fastinfo64(const xslot:longint64;var xmem:pointer3264;var xmin,xmax:longint64):boolean;
+
     //workers
     procedure clear;
-    function mincount(xcount:longint):boolean;//fixed 20feb2024
-    property value[x:longint]:longint read getvalue write setvalue;
-    property int[x:longint]:longint read getvalue write setvalue;
-    property ptr[x:longint]:pointer read getptr write setptr;
+    function minslotcount(const xslotcount:longint32):boolean;//range: 0..limit => count=0..limit - 14dec2025, fixed 20feb2024
+    function minslot(const xslot:longint32):boolean;//range: 0..(limit-1) => count=1..limit
+
+    //value access
+    property value   [const xslot:longint32]:longint32      read getint32      write setint32;
+    property int32   [const xslot:longint32]:longint32      read getint32      write setint32;
+
    end;
 
-{tcmplist}
-   tcmplist=class(tobjectex)//limit of ?????????????? items when system_blocksize=8192 - 17feb2024
+{tintlist64}
+   tintlist64=class(tobjectex)//limit: 1,048,576 slots when system_blocksize=8192 - 14dec2025
    private
+
     iroot:pdlpointer;
-    igetmin,igetmax,isetmin,isetmax,iblocksize,irootcount,icount,irootlimit,iblocklimit,ilimit:longint;
-    igetmem,isetmem:pointer;
-    procedure setcount(x:longint);
-    function getvalue(x:longint):comp;
-    procedure setvalue(x:longint;xval:comp);
-    function getdbl(x:longint):double;
-    procedure setdbl(x:longint;xval:double);
-    function getdate(x:longint):tdatetime;
-    procedure setdate(x:longint;xval:tdatetime);
+    igetmin,igetmax,isetmin,isetmax,iblocksize,irootcount,islotcount,irootlimit,iblocklimit,islotlimit:longint;
+    igetmem,isetmem:pointer3264;
+
+    procedure setslotcount(const x:longint32);
+    function getint64(const xslot:longint32):longint64;
+    procedure setint64(const xslot:longint32;xval:longint64);
+    function getint32(const xslot:longint32):longint32;
+    procedure setint32(const xslot:longint32;xval:longint32);
+    function getdbl(const xslot:longint):double;
+    procedure setdbl(const xslot:longint;xval:double);
+    function getdate(const xslot:longint):tdatetime;
+    procedure setdate(const xslot:longint;xval:tdatetime);
+    function getptr3264(const xslot:longint):pointer3264;
+    procedure setptr3264(const xslot:longint;xval:pointer3264);
+
    public
+
+    //create
     constructor create; virtual;
     destructor destroy; override;
+
     //information
-    function mem:longint;//memory size in bytes used
-    property limit:longint read ilimit;
-    property count:longint read icount write setcount;
-    property rootcount:longint read irootcount;
-    property rootlimit:longint read irootlimit;//tier 1 limit (iroot)
-    property blocklimit:longint read iblocklimit;//tier 2 limit (child of iroot)
-    function fastinfo(xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;//15feb2024
+    function mem_predict(xcount:longint64):longint64;
+    function mem         :longint64;//memory size in bytes used
+    property limit       :longint32 read islotlimit;
+    property slotLimit   :longint32 read islotlimit;
+    property count       :longint32 read islotcount write setslotcount;
+    property slotCount   :longint32 read islotcount write setslotcount;
+    property rootcount   :longint32 read irootcount;
+    property rootlimit   :longint32 read irootlimit;//tier 1 limit (iroot)
+    property blocklimit  :longint32 read iblocklimit;//tier 2 limit (child of iroot)
+
+    function fastinfo32(const xslot:longint32;var xmem:pointer3264;var xmin,xmax:longint32):boolean;//18jun2025, 15feb2024
+    function fastinfo64(const xslot:longint64;var xmem:pointer3264;var xmin,xmax:longint64):boolean;
+
     //workers
     procedure clear;
-    function mincount(xcount:longint):boolean;//fixed 20feb2024
-    property value[x:longint]:comp read getvalue write setvalue;
-    property cmp[x:longint]:comp read getvalue write setvalue;
-    property dbl[x:longint]:double read getdbl write setdbl;
-    property date[x:longint]:tdatetime read getdate write setdate;
+    function minslotcount(const xslotcount:longint32):boolean;//range: 0..limit => count=0..limit - 14dec2025, fixed 20feb2024
+    function minslot(const xslot:longint32):boolean;//range: 0..(limit-1) => count=1..limit
+
+    //value access
+    property value   [const xslot:longint32]:longint64      read getint64      write setint64;
+    property int32   [const xslot:longint32]:longint32      read getint32      write setint32;
+    property int64   [const xslot:longint32]:longint64      read getint64      write setint64;
+    property ptr3264 [const xslot:longint32]:pointer3264    read getptr3264    write setptr3264;
+    property ptr     [const xslot:longint32]:pointer3264    read getptr3264    write setptr3264;
+    property cmp     [const xslot:longint32]:comp           read getint64      write setint64;
+    property dbl     [const xslot:longint32]:double         read getdbl        write setdbl;
+    property date    [const xslot:longint32]:tdatetime      read getdate       write setdate;
+
    end;
 
 {tstr8 - 8bit binary string -> replacement for Delphi 10's lack of 8bit native string - 29apr2020}
    tstr8=class(tobjectex)
    private
+
     iownmemory,iglobal:boolean;//default=false=local memory in use, true=global memory in use
-    idata:pointer;
-    ifloatsize,ilockcount,idatalen,icount:longint;//datalen=size of allocated memory | count=size of memory in use by user
-    ichars :pdlchar;
-    ibytes :pdlbyte;
-    iints4 :pdllongint;
-    irows8 :pcolorrows8;
-    irows15:pcolorrows16;
-    irows16:pcolorrows16;
-    irows24:pcolorrows24;
-    irows32:pcolorrows32;
+    idata:pointer3264;
+    ilockcount:longint32;
+    ifloatsize,idatalen,icount:longint64;//datalen=size of allocated memory | count=size of memory in use by user
+    ichars   :pdlchar;
+    ibytes   :pdlbyte;
+    iints4   :pdllongint;
+    irows8   :pcolorrows8;
+    irows15  :pcolorrows16;
+    irows16  :pcolorrows16;
+    irows24  :pcolorrows24;
+    irows32  :pcolorrows32;
 
-
-    procedure setfloatsize(x:longint);//29aug2025
-    function getbytes(x:longint):byte;
-    procedure setbytes(x:longint;xval:byte);
-    function getbytes1(x:longint):byte;//1-based
-    procedure setbytes1(x:longint;xval:byte);
-    function getchars(x:longint):char;
-    procedure setchars(x:longint;xval:char);
+    procedure setfloatsize(x:longint64);//29aug2025
+    function getbytes(x:longint64):byte;
+    procedure setbytes(x:longint64;xval:byte);
+    function getbytes1(x:longint64):byte;//1-based
+    procedure setbytes1(x:longint64;xval:byte);
+    function getchars(x:longint64):char;
+    procedure setchars(x:longint64;xval:char);
 
     //get + set support --------------------------------------------------------
-    function getc8(xpos:longint):tcolor8;
-    function getc24(xpos:longint):tcolor24;
-    function getc32(xpos:longint):tcolor32;
-    function getc40(xpos:longint):tcolor40;
-    function getcmp8(xpos:longint):comp;
-    function getcur8(xpos:longint):currency;
-    function getint4(xpos:longint):longint;
-    function getint4i(xindex:longint):longint;
-    function getint4R(xpos:longint):longint;
-    function getint3(xpos:longint):longint;
-    function getsml2(xpos:longint):smallint;//28jul2021
-    function getwrd2(xpos:longint):word;
-    function getwrd2R(xpos:longint):word;
-    function getbyt1(xpos:longint):byte;
-    function getbol1(xpos:longint):boolean;
-    function getchr1(xpos:longint):char;
-    function getstr(xpos,xlen:longint):string;//0-based - fixed - 16aug2020
-    function getstr1(xpos,xlen:longint):string;//1-based
-    function getnullstr(xpos,xlen:longint):string;//20mar2022
-    function getnullstr1(xpos,xlen:longint):string;//20mar2022
+    function getc8(xpos:longint64):tcolor8;
+    function getc24(xpos:longint64):tcolor24;
+    function getc32(xpos:longint64):tcolor32;
+    function getc40(xpos:longint64):tcolor40;
+    function getcmp8(xpos:longint64):comp;
+    function getcur8(xpos:longint64):currency;
+    function getint4(xpos:longint64):longint32;
+    function getint4i(xindex:longint64):longint32;
+    function getint4R(xpos:longint64):longint32;
+    function getint3(xpos:longint64):longint32;
+    function getsml2(xpos:longint64):smallint;//28jul2021
+    function getwrd2(xpos:longint64):word;
+    function getwrd2R(xpos:longint64):word;
+    function getbyt1(xpos:longint64):byte;
+    function getbol1(xpos:longint64):boolean;
+    function getchr1(xpos:longint64):char;
+    function getstr(xpos,xlen:longint64):string;//0-based - fixed - 16aug2020
+    function getstr1(xpos,xlen:longint64):string;//1-based
+    function getnullstr(xpos,xlen:longint64):string;//20mar2022
+    function getnullstr1(xpos,xlen:longint64):string;//20mar2022
     function gettext:string;
     procedure settext(const x:string);
     function gettextarray:string;
-    procedure setc8(xpos:longint;xval:tcolor8);
-    procedure setc24(xpos:longint;xval:tcolor24);
-    procedure setc32(xpos:longint;xval:tcolor32);
-    procedure setc40(xpos:longint;xval:tcolor40);
-    procedure setcmp8(xpos:longint;xval:comp);
-    procedure setcur8(xpos:longint;xval:currency);
-    procedure setint4(xpos:longint;xval:longint);
-    procedure setint4i(xindex:longint;xval:longint);
-    procedure setint4R(xpos:longint;xval:longint);
-    procedure setint3(xpos:longint;xval:longint);
-    procedure setsml2(xpos:longint;xval:smallint);
-    procedure setwrd2(xpos:longint;xval:word);
-    procedure setwrd2R(xpos:longint;xval:word);
-    procedure setbyt1(xpos:longint;xval:byte);
-    procedure setbol1(xpos:longint;xval:boolean);
-    procedure setchr1(xpos:longint;xval:char);
-    procedure setstr(xpos:longint;xlen:longint;xval:string);//0-based
-    procedure setstr1(xpos:longint;xlen:longint;xval:string);//1-based
+    procedure setc8(xpos:longint64;xval:tcolor8);
+    procedure setc24(xpos:longint64;xval:tcolor24);
+    procedure setc32(xpos:longint64;xval:tcolor32);
+    procedure setc40(xpos:longint64;xval:tcolor40);
+    procedure setcmp8(xpos:longint64;xval:comp);
+    procedure setcur8(xpos:longint64;xval:currency);
+    procedure setint4(xpos:longint64;xval:longint);
+    procedure setint4i(xindex:longint64;xval:longint);
+    procedure setint4R(xpos:longint64;xval:longint);
+    procedure setint3(xpos:longint64;xval:longint);
+    procedure setsml2(xpos:longint64;xval:smallint);
+    procedure setwrd2(xpos:longint64;xval:word);
+    procedure setwrd2R(xpos:longint64;xval:word);
+    procedure setbyt1(xpos:longint64;xval:byte);
+    procedure setbol1(xpos:longint64;xval:boolean);
+    procedure setchr1(xpos:longint64;xval:char);
+    procedure setstr(xpos,xlen:longint64;xval:string);//0-based
+    procedure setstr1(xpos,xlen:longint64;xval:string);//1-based
 
     //replace support ----------------------------------------------------------
-    procedure setreplace(x:tstr8);
-    procedure setreplacecmp8(x:comp);
-    procedure setreplacecur8(x:currency);
-    procedure setreplaceint4(x:longint);
-    procedure setreplacewrd2(x:word);
-    procedure setreplacebyt1(x:byte);
-    procedure setreplacebol1(x:boolean);
-    procedure setreplacechr1(x:char);
-    procedure setreplacestr(x:string);
+    procedure setreplace(const x:tstr8);
+    procedure setreplacecmp8(const x:comp);
+    procedure setreplacecur8(const x:currency);
+    procedure setreplaceint4(const x:longint);
+    procedure setreplacewrd2(const x:word);
+    procedure setreplacebyt1(const x:byte);
+    procedure setreplacebol1(const x:boolean);
+    procedure setreplacechr1(const x:char);
+    procedure setreplacestr(const x:string);
 
     //.ease of use support
-    procedure setbdata(x:tstr8);
+    procedure setbdata(const x:tstr8);
     function getbdata:tstr8;
-    procedure setbappend(x:tstr8);
+    procedure setbappend(const x:tstr8);
 
     //.general support
     procedure xsyncvars;
-    function gethandle:hglobal;//19may2025: fixed reference to "nil"
+    function gelongint3264:hglobal;//19may2025: fixed reference to "nil"
+    function getdatalen32:longint32;
+    function getcount32:longint32;
+
    public
+
     //ease of use support options
     oautofree:boolean;//default=false
     otestlock1:boolean;//debug only - 09may2021
@@ -2528,13 +2680,13 @@ type
     tag2:longint;
     tag3:longint;
     tag4:longint;
-    seekpos:longint;
+    seekpos:longint64;
 
     //create
-    constructor create(xlen:longint); virtual;
+    constructor create(const xlen:longint64); virtual;
     destructor destroy; override;
-    function xresize(x:longint;xsetcount:boolean):boolean;//29aug2025
-    function copyfrom(s:tstr8):boolean;//09feb2022
+    function xresize(const x:longint64;const xsetcount:boolean):boolean;//29aug2025
+    function copyfrom(const s:tstr8):boolean;//09feb2022
 
     //lock - disables "oautofree" whilst many layers are working on same object - 19aug2020
     procedure lock;
@@ -2542,131 +2694,136 @@ type
     property lockcount:longint read ilockcount;
 
     //information
-    property core:pointer read idata;//read-only
-    property handle:hglobal read gethandle;//for global memory only
-    property ownmemory:boolean read iownmemory;
-    property global:boolean read iglobal;
-    property datalen:longint read idatalen;//actual internal size of data buffer - 25sep2020
-    property len:longint read icount;
-    property count:longint read icount;
-    property floatsize:longint read ifloatsize write setfloatsize;
-    property chars[x:longint]:char read getchars write setchars;
-    property bytes[x:longint]:byte read getbytes write setbytes;//0-based
-    property bytes1[x:longint]:byte read getbytes1 write setbytes1;//1-based
-    function scanline(xfrom:longint):pointer;
+    property core:pointer3264           read idata;//read-only
+    property handle:hglobal             read gelongint3264;//for global memory only
+    property ownmemory:boolean          read iownmemory;
+    property global:boolean             read iglobal;
+    property datalen:longint64          read idatalen;//actual internal size of data buffer - 25sep2020
+    property datalen64:longint64        read idatalen;
+    property datalen32:longint32        read getdatalen32;
+    property len:longint64              read icount;
+    property len64:longint64            read icount;
+    property len32:longint32            read getcount32;
+    property count:longint64            read icount;
+    property count32:longint32          read getcount32;
+
+    property floatsize:longint64        read ifloatsize write setfloatsize;
+    property chars[x:longint64]:char    read getchars write setchars;
+    property bytes[x:longint64]:byte    read getbytes write setbytes;//0-based
+    property bytes1[x:longint64]:byte   read getbytes1 write setbytes1;//1-based
+    function scanline(xfrom:longint64):pointer3264;
 
     //.rapid access -> no range checking
-    property pbytes:pdlbyte       read ibytes;
-    property pints4 :pdllongint   read iints4;
-    property prows8 :pcolorrows8  read irows8;
-    property prows16:pcolorrows16 read irows16;
-    property prows24:pcolorrows24 read irows24;
-    property prows32:pcolorrows32 read irows32;
+    property pbytes:pdlbyte             read ibytes;
+    property pints4 :pdllongint         read iints4;
+    property prows8 :pcolorrows8        read irows8;
+    property prows16:pcolorrows16       read irows16;
+    property prows24:pcolorrows24       read irows24;
+    property prows32:pcolorrows32       read irows32;
     function maplist:tlistptr;//26apr2021, 07apr2021
 
     //workers
     function clear:boolean;
-    function setlen(x:longint):boolean;
-    function minlen(x:longint):boolean;//atleast this length - 21mar2025: fixed
-    procedure setcount(x:longint);//07dec2023
-    function fill(xfrom,xto:longint;xval:byte):boolean;
-    function del(xfrom,xto:longint):boolean;
-    function del3(xfrom,xlen:longint):boolean;//27jan2021
+    function setlen(const x:longint64):boolean;
+    function minlen(x:longint64):boolean;//atleast this length - 21mar2025: fixed
+    procedure setcount(const x:longint64);//07dec2023
+    function fill(xfrom,xto:longint64;const xval:byte):boolean;
+    function del(xfrom,xto:longint64):boolean;
+    function del3(const xfrom,xlen:longint64):boolean;//27jan2021
 
     //.local/global memory support - 15may2025
     function makelocal:boolean;
     function makeglobal:boolean;
-    function makeglobalFROM(xmem:hglobal;xownmemory:boolean):boolean;
+    function makeglobalFROM(const xmem:hglobal;const xownmemory:boolean):boolean;
     function ejectcore:boolean;
 
     //.object support
-    function add(var x:tstr8):boolean;
-    function addb(x:tstr8):boolean;
-    function add2(var x:tstr8;xfrom,xto:longint):boolean;
-    function add3(var x:tstr8;xfrom,xlen:longint):boolean;
-    function add31(var x:tstr8;xfrom1,xlen:longint):boolean;//28jul2021
-    function ins(var x:tstr8;xpos:longint):boolean;
-    function ins2(var x:tstr8;xpos,xfrom,xto:longint):boolean;//26apr2021
-    function _ins2(x:pobject;xpos,xfrom,xto:longint):boolean;//08feb2024: tstr9 support, 22apr2022, 27apr2021, 26apr2021
-    function owr(var x:tstr8;xpos:longint):boolean;//overwrite -> enlarge if required - 01oct2020
-    function owr2(var x:tstr8;xpos,xfrom,xto:longint):boolean;
+    function add(const x:tstr8):boolean;
+    function add2(const x:tstr8;const xfrom,xto:longint64):boolean;
+    function add3(const x:tstr8;const xfrom,xlen:longint64):boolean;
+    function add31(const x:tstr8;const xfrom1,xlen:longint64):boolean;//28jul2021
+    function ins(const x:tstr8;const xpos:longint64):boolean;
+    function ins2(const x:tstr8;const xpos,xfrom,xto:longint64):boolean;//26apr2021
+    function _ins2(const x:pobject;xpos,xfrom,xto:longint64):boolean;//08feb2024: tstr9 support, 22apr2022, 27apr2021, 26apr2021
+    function owr(const x:tstr8;const xpos:longint64):boolean;//overwrite -> enlarge if required - 01oct2020
+    function owr2(const x:tstr8;xpos,xfrom,xto:longint64):boolean;
 
     //.swappers
-    function swap(s:tstr8):boolean;//27dec2021
+    function swap(const s:tstr8):boolean;//27dec2021
 
     //.array support
     function aadd(const x:array of byte):boolean;
-    function aadd1(const x:array of byte;xpos1,xlen:longint):boolean;//1based - 19aug2020
-    function aadd2(const x:array of byte;xfrom,xto:longint):boolean;
-    function ains(const x:array of byte;xpos:longint):boolean;
-    function ains2(const x:array of byte;xpos,xfrom,xto:longint):boolean;
-    function padd(x:pdlbyte;xsize:longint):boolean;//15feb2024
-    function pins2(x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;//07feb2022
+    function aadd1(const x:array of byte;const xpos1,xlen:longint64):boolean;//1based - 19aug2020
+    function aadd2(const x:array of byte;const xfrom,xto:longint64):boolean;
+    function ains(const x:array of byte;const xpos:longint64):boolean;
+    function ains2(const x:array of byte;xpos,xfrom,xto:longint64):boolean;
+    function padd(const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
+    function pins2(const x:pdlbyte;xcount,xpos,xfrom,xto:longint64):boolean;//07feb2022
 
     //.add number support -> always append to end of data
-    function addcmp8(xval:comp):boolean;
-    function addcur8(xval:currency):boolean;
-    function addRGBA4(r,g,b,a:byte):boolean;
-    function addRGB3(r,g,b:byte):boolean;
-    function addint4(xval:longint):boolean;
+    function addcmp8(const xval:comp):boolean;
+    function addcur8(const xval:currency):boolean;
+    function addRGBA4(const r,g,b,a:byte):boolean;
+    function addRGB3(const r,g,b:byte):boolean;
+    function addint4(const xval:longint):boolean;
     function addint4R(xval:longint):boolean;
-    function addint3(xval:longint):boolean;
-    function addwrd2(xval:word):boolean;
+    function addint3(const xval:longint):boolean;
+    function addwrd2(const xval:word):boolean;
     function addwrd2R(xval:word):boolean;
-    function addsmi2(xval:smallint):boolean;//01aug2021
-    function addbyt1(xval:byte):boolean;
-    function addbol1(xval:boolean):boolean;
-    function addchr1(xval:char):boolean;
-    function addstr(xval:string):boolean;
-    function addrec(a:pointer;asize:longint):boolean;//07feb2022
+    function addsmi2(const xval:smallint):boolean;//01aug2021
+    function addbyt1(const xval:byte):boolean;
+    function addbol1(const xval:boolean):boolean;
+    function addchr1(const xval:char):boolean;
+    function addstr(const xval:string):boolean;
+    function addrec(const a:pointer3264;const asize:longint64):boolean;//07feb2022
 
     //.insert number support -> insert at specified position (0-based)
-    function insbyt1(xval:byte;xpos:longint):boolean;
-    function insbol1(xval:boolean;xpos:longint):boolean;
-    function insint4(xval,xpos:longint):boolean;
+    function insbyt1(const xval:byte;const xpos:longint64):boolean;
+    function insbol1(const xval:boolean;const xpos:longint64):boolean;
+    function insint4(const xval:longint32;const xpos:longint64):boolean;
 
     //.string support
     function sadd(const x:string):boolean;//26dec2023, 27apr2021
-    function sadd2(const x:string;xfrom,xto:longint):boolean;//26dec2023, 27apr2021
-    function sadd3(const x:string;xfrom,xlen:longint):boolean;//26dec2023, 27apr2021
-    function sins(const x:string;xpos:longint):boolean;//27apr2021
-    function sins2(const x:string;xpos,xfrom,xto:longint):boolean;
+    function sadd2(const x:string;const xfrom,xto:longint64):boolean;//26dec2023, 27apr2021
+    function sadd3(const x:string;const xfrom,xlen:longint64):boolean;//26dec2023, 27apr2021
+    function sins(const x:string;const xpos:longint64):boolean;//27apr2021
+    function sins2(const x:string;xpos,xfrom,xto:longint64):boolean;
 
     //.push support -> insert data at position "pos" and inc pos to new position
-    function pushcmp8(var xpos:longint;xval:comp):boolean;
-    function pushcur8(var xpos:longint;xval:currency):boolean;
-    function pushint4(var xpos:longint;xval:longint):boolean;
-    function pushint4R(var xpos:longint;xval:longint):boolean;
-    function pushint3(var xpos:longint;xval:longint):boolean;//range: 0..16777215
-    function pushwrd2(var xpos:longint;xval:word):boolean;
-    function pushwrd2R(var xpos:longint;xval:word):boolean;
-    function pushbyt1(var xpos:longint;xval:byte):boolean;
-    function pushbol1(var xpos:longint;xval:boolean):boolean;
-    function pushchr1(var xpos:longint;xval:char):boolean;//WARNING: Unicode conversion possible -> use only 0-127 chars????
-    function pushstr(var xpos:longint;xval:string):boolean;
+    function pushcmp8(var xpos:longint64;const xval:comp):boolean;
+    function pushcur8(var xpos:longint64;const xval:currency):boolean;
+    function pushint4(var xpos:longint64;const xval:longint):boolean;
+    function pushint4R(var xpos:longint64;xval:longint):boolean;
+    function pushint3(var xpos:longint64;const xval:longint):boolean;//range: 0..16777215
+    function pushwrd2(var xpos:longint64;const xval:word):boolean;
+    function pushwrd2R(var xpos:longint64;xval:word):boolean;
+    function pushbyt1(var xpos:longint64;const xval:byte):boolean;
+    function pushbol1(var xpos:longint64;const xval:boolean):boolean;
+    function pushchr1(var xpos:longint64;const xval:char):boolean;//WARNING: Unicode conversion possible -> use only 0-127 chars????
+    function pushstr(var xpos:longint64;const xval:string):boolean;
 
     //.get/set support
-    property c8[xpos:longint] :tcolor8  read getc8  write setc8;
-    property c24[xpos:longint]:tcolor24 read getc24 write setc24;
-    property c32[xpos:longint]:tcolor32 read getc32 write setc32;
-    property c40[xpos:longint]:tcolor40 read getc40 write setc40;
-    property cmp8[xpos:longint]:comp read getcmp8 write setcmp8;
-    property cur8[xpos:longint]:currency read getcur8 write setcur8;
-    property int4[xpos:longint]:longint read getint4 write setint4;
-    property int4i[xindex:longint]:longint read getint4i write setint4i;
-    property int4R[xpos:longint]:longint read getint4R write setint4R;
-    property int3[xpos:longint]:longint read getint3 write setint3;//range: 0..16777215
-    property sml2[xpos:longint]:smallint read getsml2 write setsml2;//28jul2021
-    property wrd2[xpos:longint]:word read getwrd2 write setwrd2;
-    property wrd2R[xpos:longint]:word read getwrd2R write setwrd2R;
-    property byt1[xpos:longint]:byte read getbyt1 write setbyt1;
-    property bol1[xpos:longint]:boolean read getbol1 write setbol1;
-    property chr1[xpos:longint]:char read getchr1 write setchr1;
-    property str[xpos:longint;xlen:longint]:string read getstr write setstr;//0-based
-    property str1[xpos:longint;xlen:longint]:string read getstr1 write setstr1;//1-based
-    property nullstr[xpos:longint;xlen:longint]:string read getnullstr;//0-based
-    property nullstr1[xpos:longint;xlen:longint]:string read getnullstr1;//1-based
-    function setarray(xpos:longint;const xval:array of byte):boolean;
+    property c8[xpos:longint64] :tcolor8  read getc8  write setc8;
+    property c24[xpos:longint64]:tcolor24 read getc24 write setc24;
+    property c32[xpos:longint64]:tcolor32 read getc32 write setc32;
+    property c40[xpos:longint64]:tcolor40 read getc40 write setc40;
+    property cmp8[xpos:longint64]:comp read getcmp8 write setcmp8;
+    property cur8[xpos:longint64]:currency read getcur8 write setcur8;
+    property int4[xpos:longint64]:longint read getint4 write setint4;
+    property int4i[xindex:longint64]:longint read getint4i write setint4i;
+    property int4R[xpos:longint64]:longint read getint4R write setint4R;
+    property int3[xpos:longint64]:longint read getint3 write setint3;//range: 0..16777215
+    property sml2[xpos:longint64]:smallint read getsml2 write setsml2;//28jul2021
+    property wrd2[xpos:longint64]:word read getwrd2 write setwrd2;
+    property wrd2R[xpos:longint64]:word read getwrd2R write setwrd2R;
+    property byt1[xpos:longint64]:byte read getbyt1 write setbyt1;
+    property bol1[xpos:longint64]:boolean read getbol1 write setbol1;
+    property chr1[xpos:longint64]:char read getchr1 write setchr1;
+    property str[xpos,xlen:longint64]:string read getstr write setstr;//0-based
+    property str1[xpos,xlen:longint64]:string read getstr1 write setstr1;//1-based
+    property nullstr[xpos,xlen:longint64]:string read getnullstr;//0-based
+    property nullstr1[xpos,xlen:longint64]:string read getnullstr1;//1-based
+    function setarray(xpos:longint64;const xval:array of byte):boolean;
     property text :string read gettext write settext;//use carefully -> D10 uses unicode
     property textarray:string read gettextarray;
 
@@ -2682,211 +2839,240 @@ type
     property replacestr:string write setreplacestr;
 
     //.writeto structures - 28jul2021
-    function writeto1(a:pointer;asize,xfrom1,xlen:longint):boolean;
-    function writeto1b(a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
-    function writeto(a:pointer;asize,xfrom0,xlen:longint):boolean;//28jul2021
+    function writeto1(const a:pointer3264;const asize,xfrom1,xlen:longint64):boolean;
+    function writeto1b(const a:pointer3264;const asize:longint64;var xfrom1:longint64;xlen:longint64):boolean;
+    function writeto(const a:pointer;const asize,xfrom0:longint64;xlen:longint64):boolean;//28jul2021
 
     //.logic support
     function empty:boolean;
     function notempty:boolean;
-    function same(var x:tstr8):boolean;
-    function same2(xfrom:longint;var x:tstr8):boolean;
+    function same(const x:tstr8):boolean;
+    function same2(xfrom:longint64;const x:tstr8):boolean;
     function asame(const x:array of byte):boolean;
-    function asame2(xfrom:longint;const x:array of byte):boolean;
-    function asame3(xfrom:longint;const x:array of byte;xcasesensitive:boolean):boolean;
-    function asame4(xfrom,xmin,xmax:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+    function asame2(const xfrom:longint64;const x:array of byte):boolean;
+    function asame3(const xfrom:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
+    function asame4(xfrom,xmin,xmax:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
 
     //.converters
     function uppercase:boolean;
-    function uppercase1(xpos1,xlen:longint):boolean;
+    function uppercase1(const xpos1:longint64;xlen:longint64):boolean;
     function lowercase:boolean;
-    function lowercase1(xpos1,xlen:longint):boolean;
+    function lowercase1(const xpos1:longint64;xlen:longint64):boolean;
 
     //.data block support
-    function datpush(n:longint;x:tstr8):boolean;//27jun2022
-    function datpull(var xpos,n:longint;x:tstr8):boolean;//27jun2022
+    function datpush(const n:longint32;const x:tstr8):boolean;//27jun2022
+    function datpull(var xpos:longint64;var n:longint32;const x:tstr8):boolean;//27jun2022
+    function datpull32(var xpos,n:longint32;const x:tstr8):boolean;//14dec205
 
     //.ease of use point of access
     property bdata:tstr8 read getbdata write setbdata;
     property bappend:tstr8 write setbappend;
 
     //.other
-    function splice(xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;//25feb2024
+    function splice(const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;//25feb2024
+
    end;
 
 {tstr9 - 8bit binary str spread over multiple memory blocks to ensure maximum memory reuse/reliability}
    tstr9=class(tobjectex)
    private
-    ilist:tintlist;
-    ilockcount,iblockcount,iblocksize,idatalen,ilen,ilen2,imem:longint;
-    igetmin,igetmax,isetmin,isetmax:longint;
+
+    ilist:tintlist64;//15dec2025
+    ilockcount,iblockcount,iblocksize:longint32;
+    idatalen,ilen,ilen2,imem,igetmin,igetmax,isetmin,isetmax:longint64;
     igetmem,isetmem:pdlbyte;
-    function getv(xpos:longint):byte;
-    procedure setv(xpos:longint;v:byte);
-    function getv1(xpos:longint):byte;
-    procedure setv1(xpos:longint;v:byte);
-    function getchar(xpos:longint):char;
-    procedure setchar(xpos:longint;v:char);
+
+    function getv(xpos:longint64):byte;
+    procedure setv(xpos:longint64;v:byte);
+    function getv1(xpos:longint64):byte;
+    procedure setv1(xpos:longint64;v:byte);
+    function getchar(xpos:longint64):char;
+    procedure setchar(xpos:longint64;v:char);
+
     //get + set support --------------------------------------------------------
-    function getc8(xpos:longint):tcolor8;
-    function getc24(xpos:longint):tcolor24;
-    function getc32(xpos:longint):tcolor32;
-    function getc40(xpos:longint):tcolor40;
-    function getcmp8(xpos:longint):comp;
-    function getcur8(xpos:longint):currency;
-    function getint4(xpos:longint):longint;
-    function getint4i(xindex:longint):longint;
-    function getint4R(xpos:longint):longint;
-    function getint3(xpos:longint):longint;
-    function getsml2(xpos:longint):smallint;//28jul2021
-    function getwrd2(xpos:longint):word;
-    function getwrd2R(xpos:longint):word;
-    function getbyt1(xpos:longint):byte;
-    function getbol1(xpos:longint):boolean;
-    function getchr1(xpos:longint):char;
-    function getstr(xpos,xlen:longint):string;//0-based - fixed - 16aug2020
-    function getstr1(xpos,xlen:longint):string;//1-based
-    function getnullstr(xpos,xlen:longint):string;//20mar2022
-    function getnullstr1(xpos,xlen:longint):string;//20mar2022
+    function getc8(xpos:longint64):tcolor8;
+    function getc24(xpos:longint64):tcolor24;
+    function getc32(xpos:longint64):tcolor32;
+    function getc40(xpos:longint64):tcolor40;
+    function getcmp8(xpos:longint64):comp;
+    function getcur8(xpos:longint64):currency;
+    function getint4(xpos:longint64):longint;
+    function getint4i(xindex:longint64):longint;
+    function getint4R(xpos:longint64):longint;
+    function getint3(xpos:longint64):longint;
+    function getsml2(xpos:longint64):smallint;//28jul2021
+    function getwrd2(xpos:longint64):word;
+    function getwrd2R(xpos:longint64):word;
+    function getbyt1(xpos:longint64):byte;
+    function getbol1(xpos:longint64):boolean;
+    function getchr1(xpos:longint64):char;
+    function getstr(xpos,xlen:longint64):string;//0-based - fixed - 16aug2020
+    function getstr1(xpos,xlen:longint64):string;//1-based
+    function getnullstr(xpos,xlen:longint64):string;//20mar2022
+    function getnullstr1(xpos,xlen:longint64):string;//20mar2022
     function gettext:string;
     procedure settext(const x:string);
     function gettextarray:string;
-    procedure setc8(xpos:longint;xval:tcolor8);
-    procedure setc24(xpos:longint;xval:tcolor24);
-    procedure setc32(xpos:longint;xval:tcolor32);
-    procedure setc40(xpos:longint;xval:tcolor40);
-    procedure setcmp8(xpos:longint;xval:comp);
-    procedure setcur8(xpos:longint;xval:currency);
-    procedure setint4(xpos:longint;xval:longint);
-    procedure setint4i(xindex:longint;xval:longint);
-    procedure setint4R(xpos:longint;xval:longint);
-    procedure setint3(xpos:longint;xval:longint);
-    procedure setsml2(xpos:longint;xval:smallint);
-    procedure setwrd2(xpos:longint;xval:word);
-    procedure setwrd2R(xpos:longint;xval:word);
-    procedure setbyt1(xpos:longint;xval:byte);
-    procedure setbol1(xpos:longint;xval:boolean);
-    procedure setchr1(xpos:longint;xval:char);
-    procedure setstr(xpos:longint;xlen:longint;xval:string);//0-based
-    procedure setstr1(xpos:longint;xlen:longint;xval:string);//1-based
+    procedure setc8(xpos:longint64;xval:tcolor8);
+    procedure setc24(xpos:longint64;xval:tcolor24);
+    procedure setc32(xpos:longint64;xval:tcolor32);
+    procedure setc40(xpos:longint64;xval:tcolor40);
+    procedure setcmp8(xpos:longint64;xval:comp);
+    procedure setcur8(xpos:longint64;xval:currency);
+    procedure setint4(xpos:longint64;xval:longint);
+    procedure setint4i(xindex:longint64;xval:longint);
+    procedure setint4R(xpos:longint64;xval:longint);
+    procedure setint3(xpos:longint64;xval:longint);
+    procedure setsml2(xpos:longint64;xval:smallint);
+    procedure setwrd2(xpos:longint64;xval:word);
+    procedure setwrd2R(xpos:longint64;xval:word);
+    procedure setbyt1(xpos:longint64;xval:byte);
+    procedure setbol1(xpos:longint64;xval:boolean);
+    procedure setchr1(xpos:longint64;xval:char);
+    procedure setstr(xpos,xlen:longint64;xval:string);//0-based
+    procedure setstr1(xpos,xlen:longint64;xval:string);//1-based
+    function getlen32:longint32;
+    function getdatalen32:longint32;
+
    public
+
     //ease of use support options
     oautofree:boolean;//default=false
+
     //misc
     tag1:longint;
     tag2:longint;
     tag3:longint;
     tag4:longint;
-    seekpos:longint;
+    seekpos:longint64;
+
     //create
-    constructor create(xlen:longint); virtual;
+    constructor create(xlen:longint64); virtual;
     destructor destroy; override;
+
     //lock - disables "oautofree" whilst many layers are working on same object - 04feb2020
     procedure lock;
     procedure unlock;
     property lockcount:longint read ilockcount;
+
     //information
-    property len:longint read ilen;//length of data
-    property datalen:longint read idatalen;
-    property mem:longint read imem;//size of allocated memory
-    function mem_predict(xlen:comp):comp;//info proc used to predict value of mem
+    property len:longint64          read ilen;//length of data
+    property len64:longint64        read ilen;
+    property len32:longint32        read getlen32;
+    property datalen:longint64      read idatalen;
+    property datalen64:longint64    read idatalen;
+    property datalen32:longint32    read getdatalen32;
+    property mem:longint64          read imem;//size of allocated memory
+    function mem_predict(xlen:longint64):longint64;//info proc used to predict value of mem
+
     //workers
     function softclear:boolean;
-    function softclear2(xmaxlen:longint):boolean;//07mar2024
+    function softclear2(xmaxlen:longint64):boolean;//07mar2024
     function clear:boolean;
-    function setlen(x:longint):boolean;
-    function minlen(x:longint):boolean;//atleast this length, 29feb2024: updated
-    property chars[x:longint]:char read getchar write setchar;
-    property pbytes[x:longint]:byte read getv write setv;//0-based
-    property bytes[x:longint]:byte read getv write setv;//0-based
-    property bytes1[x:longint]:byte read getv1 write setv1;//1-based
-    function del3(xfrom,xlen:longint):boolean;//06feb2024
-    function del(xfrom,xto:longint):boolean;//06feb2024
+    function setlen(x:longint64):boolean;
+    function minlen(const x:longint64):boolean;//atleast this length, 14dec2025, 29feb2024: updated
+    property chars[x:longint64]:char         read getchar            write setchar;
+    property pbytes[x:longint64]:byte        read getv               write setv;//0-based
+    property bytes[x:longint64]:byte         read getv               write setv;//0-based
+    property bytes1[x:longint64]:byte        read getv1              write setv1;//1-based
+    function del3(const xfrom,xlen:longint64):boolean;//06feb2024
+    function del(xfrom,xto:longint64):boolean;//06feb2024
+
     //.fast support
-    function splice(xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;
-    function fastinfo(xpos:longint;var xmem:pdlbyte;var xmin,xmax:longint):boolean;//15feb2024
-    function fastadd(var x:array of byte;xsize:longint):longint;
-    function fastwrite(var x:array of byte;xsize,xpos:longint):longint;
-    function fastread(var x:array of byte;xsize,xpos:longint):longint;
+    function splice(const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;
+    function fastinfo32(xpos:longint32;var xmem:pdlbyte;var xmin,xmax:longint32):boolean;//15feb2024
+    function fastinfo64(xpos:longint64;var xmem:pdlbyte;var xmin,xmax:longint64):boolean;//15feb2024
+    function fastadd32(const x:array of byte;const xsize:longint32):longint32;
+    function fastwrite32(const x:array of byte;const xsize:longint32;xpos:longint64):longint32;
+    function fastread32(var x:array of byte;const xsize:longint32;xpos:longint64):longint32;
+
     //.object support
-    function add(x:pobject):boolean;
-    function addb(x:tobject):boolean;
-    function add2(x:pobject;xfrom,xto:longint):boolean;
-    function add3(x:pobject;xfrom,xlen:longint):boolean;
-    function add31(x:pobject;xfrom1,xlen:longint):boolean;
-    function ins(x:pobject;xpos:longint):boolean;
-    function ins2(x:pobject;xpos,xfrom,xto:longint):boolean;//79% native speed of tstr8.ins2 which uses a single block of memory
-    function owr(x:pobject;xpos:longint):boolean;//overwrite -> enlarge if required
-    function owr2(x:pobject;xpos,xfrom,xto:longint):boolean;
+    function add(const x:pobject):boolean;
+    function addb(const x:tobject):boolean;
+    function add2(const x:pobject;const xfrom,xto:longint64):boolean;
+    function add3(const x:pobject;const xfrom,xlen:longint64):boolean;
+    function add31(const x:pobject;const xfrom1,xlen:longint64):boolean;
+    function ins(const x:pobject;const xpos:longint64):boolean;
+    function ins2(const x:pobject;xpos,xfrom,xto:longint64):boolean;//79% native speed of tstr8.ins2 which uses a single block of memory
+    function owr(const x:pobject;const xpos:longint64):boolean;//overwrite -> enlarge if required
+    function owr2(const x:pobject;xpos,xfrom,xto:longint64):boolean;
+
     //.array support
     function aadd(const x:array of byte):boolean;
-    function aadd1(const x:array of byte;xpos1,xlen:longint):boolean;//1based
-    function aadd2(const x:array of byte;xfrom,xto:longint):boolean;
-    function ains(const x:array of byte;xpos:longint):boolean;
-    function ains2(const x:array of byte;xpos,xfrom,xto:longint):boolean;
-    function padd(x:pdlbyte;xsize:longint):boolean;//15feb2024
-    function pins2(x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;//07feb2022
+    function aadd1(const x:array of byte;const xpos1,xlen:longint64):boolean;//1based
+    function aadd2(const x:array of byte;const xfrom,xto:longint64):boolean;
+    function ains(const x:array of byte;const xpos:longint64):boolean;
+    function ains2(const x:array of byte;xpos,xfrom,xto:longint64):boolean;
+    function padd(const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
+    function pins2(const x:pdlbyte;xcount,xpos,xfrom,xto:longint64):boolean;//07feb2022
+
     //.add number support -> always append to end of data
-    function addcmp8(xval:comp):boolean;
-    function addcur8(xval:currency):boolean;
-    function addRGBA4(r,g,b,a:byte):boolean;
-    function addRGB3(r,g,b:byte):boolean;
-    function addint4(xval:longint):boolean;
+    function addcmp8(const xval:comp):boolean;
+    function addcur8(const xval:currency):boolean;
+    function addRGBA4(const r,g,b,a:byte):boolean;
+    function addRGB3(const r,g,b:byte):boolean;
+    function addint4(const xval:longint):boolean;
     function addint4R(xval:longint):boolean;
-    function addint3(xval:longint):boolean;
-    function addwrd2(xval:word):boolean;
+    function addint3(const xval:longint):boolean;
+    function addwrd2(const xval:word):boolean;
     function addwrd2R(xval:word):boolean;
-    function addsmi2(xval:smallint):boolean;//01aug2021
-    function addbyt1(xval:byte):boolean;
-    function addbol1(xval:boolean):boolean;
-    function addchr1(xval:char):boolean;
-    function addstr(xval:string):boolean;
-    function addrec(a:pointer;asize:longint):boolean;
+    function addsmi2(const xval:smallint):boolean;//01aug2021
+    function addbyt1(const xval:byte):boolean;
+    function addbol1(const xval:boolean):boolean;
+    function addchr1(const xval:char):boolean;
+    function addstr(const xval:string):boolean;
+    function addrec(const a:pointer;const asize:longint64):boolean;
+
     //.string support
     function sadd(const x:string):boolean;
-    function sadd2(const x:string;xfrom,xto:longint):boolean;
-    function sadd3(const x:string;xfrom,xlen:longint):boolean;
-    function sins(const x:string;xpos:longint):boolean;
-    function sins2(const x:string;xpos,xfrom,xto:longint):boolean;
+    function sadd2(const x:string;const xfrom,xto:longint64):boolean;
+    function sadd3(const x:string;const xfrom,xlen:longint64):boolean;
+    function sins(const x:string;const xpos:longint64):boolean;
+    function sins2(const x:string;xpos,xfrom,xto:longint64):boolean;
+
     //.writeto structures - 26jul2024
-    function writeto1(a:pointer;asize,xfrom1,xlen:longint):boolean;
-    function writeto1b(a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
-    function writeto(a:pointer;asize,xfrom0,xlen:longint):boolean;//28jul2021
+    function writeto1(const a:pointer3264;const asize,xfrom1,xlen:longint64):boolean;
+    function writeto1b(const a:pointer3264;const asize:longint64;var xfrom1:longint64;xlen:longint64):boolean;
+    function writeto(const a:pointer3264;const asize,xfrom0:longint64;xlen:longint64):boolean;//14dec2025, 26jul2024
+
     //.logic support
     function empty:boolean;
     function notempty:boolean;
-    function same(x:pobject):boolean;
-    function same2(xfrom:longint;x:pobject):boolean;
+    function same(const x:pobject):boolean;
+    function same2(xfrom:longint64;const x:pobject):boolean;
     function asame(const x:array of byte):boolean;
-    function asame2(xfrom:longint;const x:array of byte):boolean;
-    function asame3(xfrom:longint;const x:array of byte;xcasesensitive:boolean):boolean;
-    function asame4(xfrom,xmin,xmax:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+    function asame2(const xfrom:longint64;const x:array of byte):boolean;
+    function asame3(const xfrom:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
+    function asame4(xfrom,xmin,xmax:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
+
     //.get/set support
-    property c8[xpos:longint] :tcolor8  read getc8  write setc8;
-    property c24[xpos:longint]:tcolor24 read getc24 write setc24;
-    property c32[xpos:longint]:tcolor32 read getc32 write setc32;
-    property c40[xpos:longint]:tcolor40 read getc40 write setc40;
-    property cmp8[xpos:longint]:comp read getcmp8 write setcmp8;
-    property cur8[xpos:longint]:currency read getcur8 write setcur8;
-    property int4[xpos:longint]:longint read getint4 write setint4;
-    property int4i[xindex:longint]:longint read getint4i write setint4i;
-    property int4R[xpos:longint]:longint read getint4R write setint4R;
-    property int3[xpos:longint]:longint read getint3 write setint3;//range: 0..16777215
-    property sml2[xpos:longint]:smallint read getsml2 write setsml2;
-    property wrd2[xpos:longint]:word read getwrd2 write setwrd2;
-    property wrd2R[xpos:longint]:word read getwrd2R write setwrd2R;
-    property byt1[xpos:longint]:byte read getbyt1 write setbyt1;
-    property bol1[xpos:longint]:boolean read getbol1 write setbol1;
-    property chr1[xpos:longint]:char read getchr1 write setchr1;
-    property str[xpos:longint;xlen:longint]:string read getstr write setstr;//0-based
-    property str1[xpos:longint;xlen:longint]:string read getstr1 write setstr1;//1-based
-    property nullstr[xpos:longint;xlen:longint]:string read getnullstr;//0-based
-    property nullstr1[xpos:longint;xlen:longint]:string read getnullstr1;//1-based
-    function setarray(xpos:longint;const xval:array of byte):boolean;
-    property text:string read gettext write settext;
-    property textarray:string read gettextarray;
+    property c8[xpos:longint64] :tcolor8          read getc8           write setc8;
+    property c24[xpos:longint64]:tcolor24         read getc24          write setc24;
+    property c32[xpos:longint64]:tcolor32         read getc32          write setc32;
+    property c40[xpos:longint64]:tcolor40         read getc40          write setc40;
+    property cmp8[xpos:longint64]:comp            read getcmp8         write setcmp8;
+    property cur8[xpos:longint64]:currency        read getcur8         write setcur8;
+    property int4[xpos:longint64]:longint         read getint4         write setint4;
+    property int4i[xindex:longint64]:longint      read getint4i        write setint4i;
+    property int4R[xpos:longint64]:longint        read getint4R        write setint4R;
+    property int3[xpos:longint64]:longint         read getint3         write setint3;//range: 0..16777215
+    property sml2[xpos:longint64]:smallint        read getsml2         write setsml2;
+    property wrd2[xpos:longint64]:word            read getwrd2         write setwrd2;
+    property wrd2R[xpos:longint64]:word           read getwrd2R        write setwrd2R;
+    property byt1[xpos:longint64]:byte            read getbyt1         write setbyt1;
+    property bol1[xpos:longint64]:boolean         read getbol1         write setbol1;
+    property chr1[xpos:longint64]:char            read getchr1         write setchr1;
+    property str[xpos,xlen:longint64]:string      read getstr          write setstr;//0-based
+    property str1[xpos,xlen:longint64]:string     read getstr1         write setstr1;//1-based
+    property nullstr[xpos,xlen:longint64]:string  read getnullstr;//0-based
+    property nullstr1[xpos,xlen:longint64]:string read getnullstr1;//1-based
+    function setarray(xpos:longint64;const xval:array of byte):boolean;
+    property text:string                          read gettext         write settext;
+    property textarray:string                     read gettextarray;
+
     //support
-    function xshiftup(spos,slen:longint):boolean;//29feb2024: fixed min range
+    function xshiftup(spos,slen:longint64):boolean;//29feb2024: fixed min range
+
    end;
 
 {tmemstr}
@@ -2986,21 +3172,28 @@ type
    end;
 
 //tmask8 - rapid 8bit graphic mask for tracking onscreen window areas (square and rounded) - 05may2020
-   tmaskrgb96 =packed array[0..11] of byte;
-   pmaskrow96 =^tmaskrow96;tmaskrow96=packed array[0..((max32 div sizeof(tmaskrgb96))-1)] of tmaskrgb96;
-   pmaskrows96=^tmaskrows96;tmaskrows96=array[0..maxrow] of pmaskrow96;
+   tmaskrgb96    =packed array[0..11] of byte;
+   pmaskrow96    =^tmaskrow96;
+   tmaskrow96    =packed array[0..((max32 div sizeof(tmaskrgb96))-1)] of tmaskrgb96;
+   pmaskrows96   =^tmaskrows96;
+   tmaskrows96   =array[0..maxrow] of pmaskrow96;
+
    tmask8=class(tobject)
    private
+
     icore:tstr8;
     irows:tstr8;
     ilastdy,icount,iblocksize,irowsize,iwidth,iheight:longint;
     irows96:pmaskrows96;
     irows8:pcolorrows8;
     ibytes:pdlbyte;
+
    public
+
     //create
     constructor create(w,h:longint); virtual;
     destructor destroy; override;
+
     //information
     property width:longint read iwidth;
     property height:longint read iheight;
@@ -3009,16 +3202,20 @@ type
     property rows:pmaskrows96 read irows96;
     property prows8:pcolorrows8 read irows8;
     property core:tstr8 read icore;//read-only
+
     //workers
     function resize(w,h:longint):boolean;
+
     //mask writers -> boundary is checked
     function cls(xval:byte):boolean;
     function fill(xarea:twinrect;xval:byte;xround:boolean):boolean;
     function fill2(xarea:twinrect;xval:byte;xround:boolean):boolean;//29apr2020
+
     //mask readers -> boundary is NOT checked -> out of range values will cause memory errors - 29apr2020
     procedure mrow(dy:longint);
     function mval(dx:longint):byte;
     function mval2(dx,dy:longint):byte;
+
    end;
 
 {tfastvars}
@@ -3140,11 +3337,11 @@ type
     private
      ipassword,ikeyrandom,ikey:string;//fixed length string of 1000 chars
      ikeymodified:boolean;
-     ipower:integer;
+     ipower:longint32;
      function keyinit:boolean;
-     function keyid(x:tstr8;var id:integer):boolean;
+     function keyid(x:tstr8;var id:longint32):boolean;
      procedure setpassword(x:string);
-     procedure setpower(x:integer);
+     procedure setpower(x:longint32);
     public
      //options
      obreath:boolean;//default=true=application.processmessage, false=do not use "application.processmessages" - 02mar2015
@@ -3152,7 +3349,7 @@ type
      constructor create;
      destructor destroy; override;
      //workers
-     property power:integer read ipower write setpower;
+     property power:longint32 read ipower write setpower;
      property password:string read ipassword write setpassword;
      function encode(s,d:tstr8;var e:string):boolean;
      function encode4(s,d:tstr8;var e:string):boolean;//14nov2023
@@ -3183,7 +3380,7 @@ type
 
 var
    //.started
-   system_started         :boolean=false;
+   system_started_root    :boolean=false;
    system_program         :tobject=nil;//used by GUI related procs for debugging etc
    gui__initing           :boolean=false;//01jan2021
    gui__running           :boolean=false;
@@ -3250,6 +3447,7 @@ var
    vizoom              :longint=1;
    vizoom_setonce      :boolean=false;//19aug2024
    system_eventdriven  :boolean=false;//true=Windows event list driven, false=internally driven
+   system_stophere     :tstophere=nil;//30dec2025
    system_runstyle     :longint=0;//0=unknown, 1=console app, 2=service, 3=gui app
    system_state        :longint=0;//ssStarting..ssMax
    system_musthalt     :boolean=false;//external trigger -> informs app it must shutdown
@@ -3268,6 +3466,8 @@ var
    system_root_str8    :tstr8=nil;
    system_root_str9    :tstr9=nil;
    system_coldlg_clist :array[0..15] of tcolor32;//required by MS color dialog
+   system_msix         :boolean=false;
+
 
    //.memory tracking
    system_memory_bytes            :comp=0;
@@ -3314,7 +3514,7 @@ var
    system_scn_mustpaint:boolean=false;//true=must update console screen
    system_scn_visible  :boolean=false;//true=take control of console screen and paint from "system_scn_lines", false=paint line by line in traditional mode
    system_scn_ref1     :boolean=false;
-   system_stdin        :thandle;
+   system_stdin        :longint3264;
    system_line_str     :string='';
    system_timeperiod   :longint=0;//not set -> adjusts main thread's timing accuracy -> see the proc "root__settimeperiod()" - 14mar2024
 
@@ -3341,7 +3541,6 @@ var
    system_timer500     :comp=0;
 
    //.app states
-   system_storeapp       :boolean=false;//gossgui__start detects status and sets to TRUE when this program is wrapped up/installed as a Micrsoft Windows Store App -> looks for "sys-<programname>.app" in the "BE\settings\" subfolder - 30mar2022
    system_paid           :boolean=false;//false=Free to Use, true=Licensed - 30mar2022
 
    //.ia based suppression - 21dec2024
@@ -3397,7 +3596,19 @@ function app____netmore:tobject;//optional - return a custom "tnetmore" object f
 function info__root(xname:string):string;//information specific to this unit of code
 function info__rootfind(xname:string):string;//central point from which to find the requested information - 08aug2025, 09apr2024
 function info__mode:longint;
-function splash__findvalue(x:longint;var xname,xvalue:string):boolean;//14jul2025
+function splash__findvalue(const x:longint;var xname,xvalue:string):boolean;//14jul2025
+function splash__findvalue2(const x:longint;const xnameORvalue:boolean):string;//17dec2025
+
+
+//msix procs -------------------------------------------------------------------
+function msix__active:boolean;
+function msix__tags:string;//12dec2025
+function msix__tagsLabel:string;
+function msix__hastag(const xtag:char):boolean;//31jan2026
+function msix__hastag2(const xtaglist:string;const xtag:char):boolean;//31jan2026
+function msix__showTagError(const xservicelabel,xtagchar:string):string;
+function msix__tagValid(const xtag:char):boolean;//31jan2026
+function msix__checkAllTagsAreValidFrom(const xtaglist:string):boolean;//31jan2026
 
 
 //compatiblity procs -----------------------------------------------------------
@@ -3415,8 +3626,8 @@ function programpaid_store:longint;//store paid status
 function programcheck_mode:longint;
 
 //pointer procs ----------------------------------------------------------------
-function ptr__shift(xstart:pointer;xshift:longint):pointer;
-function ptr__copy(const s:pointer;var d):boolean;
+function ptr__shift(const xstart:pointer3264;xshift:longint64):pointer3264;
+function ptr__copy(const s:pointer3264;var d):boolean;
 
 //nil procs --------------------------------------------------------------------
 procedure nil__1(x1:pobject);
@@ -3527,39 +3738,48 @@ function mail__findfield2(x:pobject;const xfieldname:string;xdecodelines:boolean
 //memory management procs ------------------------------------------------------
 
 //heap based memory
-function mem__create32(xsize:longint):pointer;//32bit
-function mem__create(xsize:comp):pointer;
-function mem__free(var xptr:pointer):boolean;//thread safe
-function mem__free2(xptr:pointer):longint;
-function mem__size(xptr:pointer):comp;//get size of memory
-function mem__resize32(xptr:pointer;xnewsize:longint):pointer;//32bit
-function mem__resize(xptr:pointer;xnewsize:comp):pointer;//thread safe - 26aug2026
-function mem__resize2(xptr:pointer;xnewsize:comp;var xoutptr:pointer):boolean;//thread safe - 26aug2026
-function mem__resize3(xptr:pointer;xnewsize:comp;xclearnewbytes:boolean;var xoutptr:pointer):boolean;//thread safe - 26aug2026
+function mem__create(const xsize:longint64):pointer3264;
+function mem__free(var xptr:pointer3264):boolean;//thread safe
+function mem__free2(xptr:pointer3264):longint64;
+function mem__size(const xptr:pointer3264):longint64;//get size of memory
+function mem__resize(const xptr:pointer3264;const xnewsize:longint64):pointer3264;//thread safe - 26aug2026
+function mem__resize2(const xptr:pointer3264;const xnewsize:longint64;var xoutptr:pointer3264):boolean;//thread safe - 26aug2026
+function mem__resize3(xptr:pointer3264;const xnewsize:longint64;const xclearnewbytes:boolean;var xoutptr:pointer3264):boolean;//thread safe - 26aug2026
 
 //global memory
-function global__create(xsize:comp):pointer;//19may2025
-procedure global__free(var xptr:pointer);//01sep2025
-function global__size(xptr:pointer):comp;
-function global__resize(xptr:pointer;xnewsize:comp):pointer;//19may2025: fixed
-function global__resize2(xptr:pointer;xnewsize:comp;var xoutptr:pointer):boolean;//26aug2025
+function global__handle(const x:pointer3264):hglobal;//14dec2025, 19may2025: fixed reference to "nil"
+function global__create(const xsize:comp):pointer3264;//19may2025
+procedure global__free(var xptr:pointer3264);//01sep2025
+function global__size(const xptr:pointer3264):comp;
+function global__resize(const xptr:pointer3264;const xnewsize:comp):pointer;//19may2025: fixed
+function global__resize2(xptr:pointer3264;const xnewsize:comp;var xoutptr:pointer3264):boolean;//26aug2025
 
 //other
 procedure mem__newpstring(var z:pstring);//29NOV2011
 procedure mem__despstring(var z:pstring);//29NOV2011
 
 
-//block memory management procs ------------------------------------------------
+//pointer procs ----------------------------------------------------------------
+
+function pointer__make64(const x:pointer):pointer64;//force pointer to 64 bits
+function pointer__from64(const x:pointer64):pointer3264;//convert 64bit pointer to system bit depth: 64 -> 32 or 64 -> 64
+
+
+//64bit block procs ------------------------------------------------------------
+
 //Note: These procs assume fixed memory blocks defined by "system_blocksize", typically 8192 bytes.
-//      Controls such as tstr9 and tintlist use block based memory for maximum stability and
+//      Controls such as tstr9 and tintlist32/64 use block based memory for maximum stability and
 //      scalability by reducing/almost elmininating memory fragmentation.
-function block__fastinfo(x:pobject;xpos:longint;var xmem:pdlbyte;var xmin,xmax:longint):boolean;//for supported controls (tstr9, tintlist etc) returns the memory block pointer in the byte array form "pdlbyte" referenced by the control's item index -> this provides an optimisation layer, as not every item index has to lookup it's memory block
-function block__fastptr(x:pobject;xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;
-function block__size:longint;//returns the system block size as defined by "system_blocksize"
-procedure block__cls(x:pointer);//sets the memory block to all zeros
-function block__new:pointer;//creates a new memory block and returns a pointer to it
-procedure block__free(var x:pointer);//frees the memory block and sets the pointer to nil
-procedure block__freeb(x:pointer);//frees the memory block and does NOT flush the pointer to nil
+
+function block64__size:longint;//returns the system block size as defined by "system_blocksize"
+procedure block64__cls(const x:pointer3264);//*** Warning ***: assumes memory is sized to "block64__size" - 12dec2025
+procedure block64__cls2(const x:pointer3264;const xlen:longint);
+function block64__new:pointer3264;
+function block64__new2(const xlen:longint):pointer3264;
+procedure block64__free(var x:pointer3264);
+procedure block64__freeb(x:pointer3264);
+function block64__fastinfo32(x:pobject;const xpos:longint32;var xmem:pdlbyte;var xmin,xmax:longint32):boolean;
+function block64__fastinfo64(x:pobject;const xpos:longint64;var xmem:pdlbyte;var xmin,xmax:longint64):boolean;
 
 
 //small things support - 29aug2025 ---------------------------------------------
@@ -3584,71 +3804,82 @@ function filter__matchlist(const xline,xmasklist:string):boolean;//04oct2020
 
 
 //binary string procs ----------------------------------------------------------
-function cache__ptr(x:tobject):pobject;//09feb2024: Stores a "floating object" (a dynamically created object that is to be passed to a proc as a parameter)
+
+function cache__ptr(const x:tobject):pobject;//09feb2024: Stores a "floating object" (a dynamically created object that is to be passed to a proc as a parameter)
+
 //.info
-function str__info(x:pobject;var xstyle:longint):boolean;
-function str__info2(x:pobject):longint;
-function str__ok(x:pobject):boolean;
-function str__lock(x:pobject):boolean;
-function str__lock2(x,x2:pobject):boolean;
-function str__lock3(x,x2,x3:pobject):boolean;//17dec2024
-function str__unlock(x:pobject):boolean;
-procedure str__unlockautofree(x:pobject);
-procedure str__uaf(x:pobject);//short version of "str__unlockautofree"
-procedure str__uaf2(x,x2:pobject);
-procedure str__uaf3(x,x2,x3:pobject);//17dec2024
-procedure str__autofree(x:pobject);
-procedure str__af(x:pobject);//same as str__autofree
+function str__info(const x:pobject;var xstyle:longint):boolean;
+function str__info2(const x:pobject):longint;
+function str__ok(const x:pobject):boolean;
+function str__lock(const x:pobject):boolean;
+function str__lock2(const x,x2:pobject):boolean;
+function str__lock3(const x,x2,x3:pobject):boolean;//17dec2024
+function str__unlock(const x:pobject):boolean;
+procedure str__unlockautofree(const x:pobject);
+procedure str__uaf(const x:pobject);//short version of "str__unlockautofree"
+procedure str__uaf2(const x,x2:pobject);
+procedure str__uaf3(const x,x2,x3:pobject);//17dec2024
+procedure str__autofree(const x:pobject);
+procedure str__af(const x:pobject);//same as str__autofree
+
 //.new
-function str__newsametype(x:pobject):tobject;
+function str__newsametype(const x:pobject):tobject;
 function str__new8:tstr8;
 function str__new9:tstr9;
 function str__new8b(const xval:string):tstr8;
 function str__new9b(const xval:string):tstr9;
-function str__new8c(x:pobject):tstr8;//assigns value of "x" to new str handler object - 28jun2024
-function str__new9c(x:pobject):tstr9;
-function str__newlen8(xlen:longint):tstr8;//22jun2024
-function str__newlen9(xlen:longint):tstr9;//22jun2024
+function str__new8c(const x:pobject):tstr8;//assigns value of "x" to new str handler object - 28jun2024
+function str__new9c(const x:pobject):tstr9;
+function str__newlen8(const xlen:longint64):tstr8;//22jun2024
+function str__newlen9(const xlen:longint64):tstr9;//22jun2024
 function str__newaf8:tstr8;//autofree
 function str__newaf9:tstr9;//autofree
 function str__newaf8b(const xval:string):tstr8;//autofree
 function str__newaf9b(const xval:string):tstr9;//autofree
 //.workers
-function str__equal(s,s2:pobject):boolean;
-function str__mem(x:pobject):longint;
-function str__datalen(x:pobject):longint;
-function str__len(x:pobject):longint;
-function str__minlen(x:pobject;xnewlen:longint):boolean;//29feb2024: created
-function str__setlen(x:pobject;xnewlen:longint):boolean;
-function str__splice(x:pobject;xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;
-procedure str__clear(x:pobject);
-procedure str__softclear(x:pobject);//retain data block but reset len to 0
-procedure str__softclear2(x:pobject;xmaxlen:longint);
-procedure str__free(x:pobject);
-procedure str__free2(x,x2:pobject);
-procedure str__free3(x,x2,x3:pobject);
+function str__equal(const s,s2:pobject):boolean;
+function str__mem(const x:pobject):longint64;
+function str__mem32(const x:pobject):longint32;
+function str__datalen(const x:pobject):longint64;
+function str__datalen32(const x:pobject):longint32;
+function str__len(const x:pobject):longint64;
+function str__len64(const x:pobject):longint64;
+function str__len32(const x:pobject):longint32;
+function str__minlen(const x:pobject;const xnewlen:longint64):boolean;//29feb2024: created
+function str__setlen(const x:pobject;const xnewlen:longint64):boolean;
+function str__splice(const x:pobject;const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;
+procedure str__clear(const x:pobject);
+procedure str__softclear(const x:pobject);//retain data block but reset len to 0
+procedure str__softclear2(const x:pobject;const xmaxlen:longint64);
+procedure str__free(const x:pobject);
+procedure str__free2(const x,x2:pobject);
+procedure str__free3(const x,x2,x3:pobject);
+
 //.multi-part web form (post data)
 function str__multipart_nextitem(x:pobject;var xpos:longint;var xboundary,xname,xfilename,xcontenttype:string;xoutdata:pobject):boolean;//03apr2025
+
 //.object support
-function str__add(x,xadd:pobject):boolean;
-function str__add2(x,xadd:pobject;xfrom,xto:longint):boolean;
-function str__add3(x,xadd:pobject;xfrom,xlen:longint):boolean;
-function str__add31(x,xadd:pobject;xfrom1,xlen:longint):boolean;
-function str__addrec(x:pobject;xrec:pointer;xrecsize:longint):boolean;//20feb2024, 07feb2022
-function str__insstr(x:pobject;xadd:string;xpos:longint):boolean;//18aug2024
-function str__ins(x,xadd:pobject;xpos:longint):boolean;
-function str__ins2(x,xadd:pobject;xpos,xfrom,xto:longint):boolean;
-function str__del3(x:pobject;xfrom,xlen:longint):boolean;//06feb2024
-function str__del(x:pobject;xfrom,xto:longint):boolean;//06feb2024
-function str__is8(x:pobject):boolean;//x is tstr8
-function str__is9(x:pobject):boolean;//x is tstr9
-function str__as8(x:pobject):tstr8;//use with care
-function str__as9(x:pobject):tstr9;//use with care
-function str__as8f(x:pobject):tstr8;//uses fallback var instead of failure - 30aug2025
-function str__as9f(x:pobject):tstr9;//uses fallback var instead of failure - 30aug2025
+function str__add(const x,xadd:pobject):boolean;
+function str__add2(const x,xadd:pobject;const xfrom,xto:longint64):boolean;
+function str__add3(const x,xadd:pobject;const xfrom,xlen:longint64):boolean;
+function str__add31(const x,xadd:pobject;const xfrom1,xlen:longint64):boolean;
+function str__addrec(const x:pobject;const xrec:pointer3264;const xrecsize:longint64):boolean;//20feb2024, 07feb2022
+function str__insstr(const x:pobject;const xadd:string;const xpos:longint64):boolean;//18aug2024
+function str__ins(const x,xadd:pobject;const xpos:longint64):boolean;
+function str__ins2(const x,xadd:pobject;const xpos,xfrom,xto:longint64):boolean;
+function str__del3(const x:pobject;const xfrom,xlen:longint64):boolean;//06feb2024
+function str__del(const x:pobject;xfrom,xto:longint64):boolean;//06feb2024
+function str__is8(const x:pobject):boolean;//x is tstr8
+function str__is9(const x:pobject):boolean;//x is tstr9
+function str__as8(const x:pobject):tstr8;//use with care
+function str__as9(const x:pobject):tstr9;//use with care
+function str__as8f(const x:pobject):tstr8;//uses fallback var instead of failure - 30aug2025
+function str__as9f(const x:pobject):tstr9;//uses fallback var instead of failure - 30aug2025
+
 //.array procs
-function str__asame2(x:pobject;xfrom:longint;const xlist:array of byte):boolean;
-function str__asame3(x:pobject;xfrom:longint;const xlist:array of byte;xcasesensitive:boolean):boolean;//20jul2024
+function str__asame2(const x:pobject;const xfrom:longint64;const xlist:array of byte):boolean;
+function str__asame3(const x:pobject;xfrom:longint64;const xlist:array of byte;const xcasesensitive:boolean):boolean;//20jul2024
+
 function str__aadd(x:pobject;const xlist:array of byte):boolean;//20jul2024
 function str__addbyt1(x:pobject;xval:longint):boolean;
 function str__addbol1(x:pobject;xval:boolean):boolean;
@@ -3656,48 +3887,63 @@ function str__addchr1(x:pobject;xval:char):boolean;
 function str__addsmi2(x:pobject;xval:smallint):boolean;
 function str__addwrd2(x:pobject;xval:word):boolean;
 function str__addint4(x:pobject;xval:longint):boolean;
+
 //..pdl support -> direct memory support
-function str__padd(s:pobject;x:pdlbyte;xsize:longint):boolean;//15feb2024
-function str__pins2(s:pobject;x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;
+function str__padd(const s:pobject;const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
+function str__pins2(const s:pobject;const x:pdlbyte;const xcount,xpos,xfrom,xto:longint64):boolean;
+
 //.write to structure procs
-function str__writeto1(x:pobject;a:pointer;asize,xfrom1,xlen:longint):boolean;
-function str__writeto1b(x:pobject;a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
-function str__writeto(x:pobject;a:pointer;asize,xfrom0,xlen:longint):boolean;
+function str__writeto1(const x:pobject;const a:pointer3264;const asize,xfrom1,xlen:longint64):boolean;
+function str__writeto1b(const x:pobject;const a:pointer3264;const asize:longint64;var xfrom1:longint64;const xlen:longint64):boolean;
+function str__writeto1b32(const x:pobject;const a:pointer3264;const asize:longint64;var xfrom1:longint32;const xlen:longint64):boolean;
+function str__writeto(const x:pobject;const a:pointer3264;const asize,xfrom0,xlen:longint64):boolean;
+
 //.string procs
 function str__nullstr(x:pobject):string;//07oct2025
-function str__nextline0(xdata,xlineout:pobject;var xpos:longint):boolean;//07apr2025, 31mar2025, 17oct2018
-procedure str__stripwhitespace_lt(s:pobject);//strips leading and trailing white space - 16mar2025
-procedure str__stripwhitespace(s:pobject;xstriptrailing:boolean);
-function str__sadd(x:pobject;const xdata:string):boolean;
-function str__remchar(x:pobject;y:byte):boolean;//29feb2024: created
-function str__text(x:pobject):string;
-function str__settext(x:pobject;const xtext:string):boolean;
-function str__settextb(x:pobject;const xtext:string):boolean;
-function str__str0(x:pobject;xpos,xlen:longint):string;
-function str__str1(x:pobject;xpos,xlen:longint):string;
-function bcopy1(x:tstr8;xpos1,xlen:longint):tstr8;//fixed - 26apr2021
-function str__copy81(x:tobject;xpos1,xlen:longint):tstr8;//28jun2024
-function str__copy91(x:tobject;xpos1,xlen:longint):tstr9;//28jun2024
-function str__sml2(x:pobject;xpos:longint):smallint;
-function str__seekpos(x:pobject):longint;
-function str__tag1(x:pobject):longint;
-function str__tag2(x:pobject):longint;
-function str__tag3(x:pobject):longint;
-function str__tag4(x:pobject):longint;
-function str__setseekpos(x:pobject;xval:longint):boolean;
-function str__settag1(x:pobject;xval:longint):boolean;
-function str__settag2(x:pobject;xval:longint):boolean;
-function str__settag3(x:pobject;xval:longint):boolean;
-function str__settag4(x:pobject;xval:longint):boolean;
-function str__pbytes0(x:pobject;xpos:longint):byte;//NOT limited by "len", but can write all the way upto internal datalen (e.g. set via str__minlen)
-function str__bytes0(x:pobject;xpos:longint):byte;//limited by actual "len" that must be set using "str__setlen"
-function str__bytes1(x:pobject;xpos:longint):byte;//limited by actual "len" that must be set using "str__setlen"
-procedure str__setpbytes0(x:pobject;xpos:longint;xval:byte);//NOT limited by "len", but can write all the way upto internal datalen (e.g. set via str__minlen)
-procedure str__setbytes0(x:pobject;xpos:longint;xval:byte);//limited by actual "len" that must be set using "str__setlen"
-procedure str__setbytes1(x:pobject;xpos:longint;xval:byte);//limited by actual "len" that must be set using "str__setlen"
+function str__nextline0(const xdata,xlineout:pobject;var xpos:longint):boolean;//07apr2025, 31mar2025, 17oct2018
+procedure str__stripwhitespace_lt(const s:pobject);//strips leading and trailing white space - 16mar2025
+procedure str__stripwhitespace(const s:pobject;const xstriptrailing:boolean);
+function str__sadd(const x:pobject;const xdata:string):boolean;
+function str__remchar(const x:pobject;const y:byte):boolean;//29feb2024: created
+function str__text(const x:pobject):string;
+function str__settext(const x:pobject;const xtext:string):boolean;
+function str__settextb(const x:pobject;const xtext:string):boolean;
+function str__str0(const x:pobject;const xpos,xlen:longint64):string;
+function str__str1(const x:pobject;const xpos,xlen:longint64):string;
+function bcopy1(const x:tstr8;const xpos1,xlen:longint64):tstr8;//fixed - 26apr2021
+function str__copy81(const x:tobject;const xpos1,xlen:longint64):tstr8;//28jun2024
+function str__copy91(const x:tobject;const xpos1,xlen:longint64):tstr9;//28jun2024
+function str__sml2(const x:pobject;const xpos:longint64):smallint;
+function str__seekpos(const x:pobject):longint64;
+function str__seekpos32(const x:pobject):longint32;
+function str__setseekpos(const x:pobject;const xval:longint64):boolean;
+
+function str__tag1(const x:pobject):longint;
+function str__tag2(const x:pobject):longint;
+function str__tag3(const x:pobject):longint;
+function str__tag4(const x:pobject):longint;
+
+function str__tag(const x:pobject;const xtagindex:longint):longint;
+function str__settag(const x:pobject;const xtagindex,xval:longint):boolean;
+
+function str__settag1(const x:pobject;const xval:longint):boolean;
+function str__settag2(const x:pobject;const xval:longint):boolean;
+function str__settag3(const x:pobject;const xval:longint):boolean;
+function str__settag4(const x:pobject;const xval:longint):boolean;
+
+function str__pbytes0(const x:pobject;const xpos:longint64):byte;//not limited by internal count, but by datalen
+function str__bytes0(const x:pobject;const xpos:longint64):byte;
+function str__bytes1(const x:pobject;const xpos:longint64):byte;
+
+procedure str__setpbytes0(const x:pobject;const xpos:longint64;const xval:byte);//NOT limited by "len", but can write all the way upto internal datalen (e.g. set via str__minlen)
+procedure str__setbytes0(const x:pobject;const xpos:longint64;const xval:byte);//limited by actual "len" that must be set using "str__setlen"
+procedure str__setbytes1(const x:pobject;const xpos:longint64;const xval:byte);//limited by actual "len" that must be set using "str__setlen"
+
 //.move support
-function str__moveto(s:pobject;var d;spos,ssize:longint):longint;//move memory from "s" to buffer "d" - 04may2025
-function str__movefrom(s:pobject;const d;ssize:longint):longint;//move memory from buffer "d" to "s" - 04may2025
+function str__moveto(const s:pobject;var d;spos:longint64;const ssize:longint64):longint64;//move memory from "s" to buffer "d" - 04may2025
+function str__moveto32(const s:pobject;var d;spos:longint64;const ssize:longint64):longint32;
+function str__movefrom(const s:pobject;const d;const ssize:longint64):longint64;//move memory from buffer "d" to "s" - 04may2025
+function str__movefrom32(const s:pobject;const d;ssize:longint64):longint32;
 
 function  str__byt1(x:pobject;xpos:longint):byte;
 procedure str__setbyt1(x:pobject;xpos:longint;xval:byte);
@@ -3724,7 +3970,8 @@ function str__fromb64(s,d:pobject):boolean;//25jul2024: support for tstr8 and ts
 function str__fromb642(s,d:pobject;xpos1:longint):boolean;
 //.other / older procs
 function bgetstr1(x:tobject;xpos1,xlen:longint):string;
-function _blen(x:tobject):longint;//does NOT destroy "x", keeps "x"
+function _blen(const x:tobject):longint64;//does NOT destroy "x", keeps "x"
+function _blen32(const x:tobject):longint32;
 procedure bdel1(x:tobject;xpos1,xlen:longint);
 function bcopystr1(const x:string;xpos1,xlen:longint):tstr8;
 function bcopystrall(const x:string):tstr8;
@@ -3750,6 +3997,7 @@ function nozero__rel(xdebugID:longint;x:real):real;
 //.32bit mintue counter
 function mn32:longint;//32 bit minute timer - 08jan2024
 function nowmin:longint;//03mar2022
+function nowmin2(const xdate:tdatetime):longint;//03mar2022
 
 //.64bit high-res counter
 function ns64:comp;//64 bit nanosecond counter
@@ -3911,7 +4159,8 @@ function low__param(x:longint):string;//01mar2024
 function low__paramstr1:string;
 function low__fireevent(xsender:tobject;x:tevent):boolean;
 function low__comparearray(const a,b:array of byte):boolean;//27jan2021
-function low__cls(x:pointer;xsize:longint):boolean;
+function low__cls(const x:pointer;const xsize:longint64):boolean;
+function low__cls2(const x:pointer;const xsize:longint64;const xval:byte):boolean;//23dec2025
 function low__intr(x:longint):longint;//reverse longint
 function low__wrdr(x:word):word;//reverse word
 function low__sign(x:longint):longint;//returns 0, 1 or -1 - 22jul2024
@@ -3950,15 +4199,27 @@ function striptrailingrcodesb(const x:string):string;
 function freeobj(x:pobject):boolean;//01sep2025, 22jun2024: Updated for GUI support, 09feb2024: Added support for "._rtmp" & mustnil, 02feb2021, 05may2020, 05DEC2011, 14JAN2011, 15OCT2004
 
 function math__power32(xvalue:extended;xtothepowerof:longint):extended;
+function math_abs(const x:longint):longint;//05jan2026
+function math_absE(const x:extended):extended;//05jan2026
 
-function mult64(xval,xval2:comp):comp;//multiply
-function add64(xval,xval2:comp):comp;//add
-function sub64(xval,xval2:comp):comp;//subtract
-function div64(xval,xdivby:comp):comp;//28dec2021, this proc performs proper "comp division" -> fixes Delphi's "comp" division error -> which raises POINTER EXCEPTION and MEMORY ERRORS when used at speed and repeatedly - 13jul2021, 19apr2021
-function add32(xval,xval2:comp):longint;//01sep2025
-function sub32(xval,xval2:comp):longint;//30sep2022, subtract
-function div32(xval,xdivby:comp):longint;//proper "comp division" - 19apr2021
-function pert32(xval,xlimit:comp):longint;
+function isNAN(const x:double):boolean;
+
+//.64bit number processers
+function round64(const xval:extended):comp;//12dec2025
+function add64(const xval,xval2:comp):comp;//add
+function sub64(const xval,xval2:comp):comp;//subtract
+function mult64E(const xval,xval2:extended):comp;
+function mult64(const xval,xval2:comp):comp;//multiply
+function div64(const xval,xval2:comp):comp;//rounds down like "trunc()" e.g. 1.4=1, 1.6=1, 1.9=>1 - 12dec2025, 28dec2021 - this proc performs proper "comp division" -> fixes Delphi's "comp" division error -> which raises POINTER EXCEPTION and MEMORY ERRORS when used at speed and repeatedly - 13jul2021, 19apr2021
+
+//.32bit number processers
+function round32(const xval:extended):longint;//12dec2025
+function add32(const xval,xval2:comp):longint;//01sep2025
+function sub32(const xval,xval2:comp):longint;//30sep2022, subtract
+function mult32(const xval,xval2:comp):longint;
+function div32(const xval,xval2:comp):longint;//proper "comp division" - 19apr2021
+function pert32(const xval,xlimit:comp):longint;
+
 function text__tooneline(const s:string;xreturncodeASchar:char):string;
 function text__fromoneline(const s:string;xreturncodeASchar:char):string;
 function guid__make(xname:string;xcompact:boolean):string;//11apr2025
@@ -3968,7 +4229,7 @@ function low__remdup(const x:string):string;//remove duplicates
 function low__remdup2(const x:string;xremblanklines,xsort,xscanpastwhitespace:boolean):string;//remove duplicates - 20mar2025: updated with "xscanpastwhitespace"
 function low__useonce(var x:string):string;//return value of x and clear x - 28dec2022
 function low__repeatstr(const x:string;xcount:longint):string;//15nov2022
-function low__randomstr(x:tstr8;xlen:longint):boolean;//27apr2021
+function low__randomstr(const x:tstr8;const xlen:longint32):boolean;//27apr2021
 function low__urlok(const xurl:string;xmailto:boolean):boolean;//19apr2021
 function low__limitlines(const x:string;xlimit:longint):string;//14apr2021
 function low__findchar(const x:string;c:char):longint;//27feb2021, 14SEP2007
@@ -3994,14 +4255,16 @@ function strbyte0(const x:string;xpos:longint):byte;//0based always -> backward 
 function strbyte1(const x:string;xpos:longint):byte;//1based always -> backward compatible with D3 - 02may2020
 procedure strdef(var x:string;const xdef:string);//set new value, default to "xdef" if xnew is nil
 function strdefb(const x,xdef:string):string;
-function low__setlen(var x:string;xlen:longint):boolean;
-function low__setlen0(var x:string;xlen:longint):boolean;//clears memory to #0 - 23aug2025
-function low__len(const x:string):longint;//05dec2024
+function low__setlen(var x:string;const xlen:longint64):boolean;
+function low__setlen0(var x:string;const xlen:longint64):boolean;//clears memory to #0 - 23aug2025
+function low__len(const x:string):longint64;//05dec2024
+function low__len32(const x:string):longint32;
 function pchar__strlen(str:pchar):cardinal;//01may2025
 function floattostrex2(x:extended):string;//19DEC2007
 function floattostrex(x:extended;dig:byte):string;//07NOV20210
 function strtofloatex(x:string):extended;//triggers less errors (x=nil now covered)
-function restrict32(x:comp):longint;//limit32 - 24jul2025, 24jan2016
+function restrict32(x:comp):longint;//limit32 - 14dec2025, 24jul2025, 24jan2016
+function restrict3264(x:comp):comp;//03dec2025
 function restrict64(x:comp):comp;//24jan2016
 function fr64(x,xmin,xmax:extended):extended;
 function f64(x:extended):string;//25jan2025
@@ -4019,20 +4282,23 @@ function printer__have:boolean;//26apr2025
 function printer__count:longint;
 function printer__find(xindex:longint;var xname,xservname:string;var xattr,xdevicetimeout,xretrytimeout:longint;var xdefaultprinter:boolean):boolean;
 
+
 //font procs -------------------------------------------------------------------
-function font__size(xfontheight:longint):longint;//04sep2025
-function font__size2(xfontheight:longint):double;
+function font__findsize(xfontheight:longint):longint;//12dec2025, 04sep2025
+function font__findsize2(xfontheight:longint):double;
 procedure font__list(x:pobject);//26mar2022
 procedure font__list2(x:pobject;xscreen,xprinter,xspecial:boolean);//26mar2022
 function font__initscreen(xupdatelist:boolean):boolean;
 function font__initprinter(xupdatelist:boolean):boolean;
-function font__screenfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
-function font__printerfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
+function font__screenfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: longint32; Data: Pointer): longint32; stdcall;
+function font__printerfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: longint32; Data: Pointer): longint32; stdcall;
 
 
 //system wide tracking procs - 01may2021 ---------------------------------------
+
 //.non-tracking
 function pok(x:pobject):boolean;//06feb2024
+
 //.pointer tracking
 procedure ppadd(x:pointer);
 procedure ppdel(x:pointer);
@@ -4040,6 +4306,7 @@ function ppok(x:pointer;xid:longint):boolean;
 function ppnil(x:pointer;xid:longint):boolean;
 procedure ppcheck(x:pointer;xid:longint);
 procedure pperr(xreason,xlevel:string;x:pointer;xid:longint);
+
 //.object tracking
 procedure zzadd(x:tobject);
 procedure zzdel(x:tobject);
@@ -4058,9 +4325,10 @@ function zzstr(x:tstr8;xid:longint):tstr8;
 //system procs -----------------------------------------------------------------
 //.need checkers
 procedure need_chimes;//02mar2022
-procedure need_mm;
+procedure need_mm;//31jan2026, 10dec2025
 procedure need_filecache;
-procedure need_net;
+procedure need_net;//10dec2025
+procedure need_xbox;//10dec2025
 procedure need_ipsec;
 procedure need_png;//requires zip support
 procedure need_zip;
@@ -4078,9 +4346,9 @@ function have_ico:boolean;//22may2022
 
 //app procs --------------------------------------------------------------------
 //.information
-function app__activehandle:tbasic_handle;
-function app__handle:tbasic_handle;
-function app__hinstance:tbasic_handle;
+function app__activehandle:hauto;
+function app__handle:hauto;
+function app__hinstance:hauto;
 function app__uptime:comp;
 function app__uptimegreater(x:comp):boolean;
 function app__uptimestr:string;
@@ -4100,7 +4368,7 @@ function app__savesettings:boolean;
 procedure app__filtersettings;//19jun2025
 //..register -> filters settings data so only registered values persist
 procedure app__breg(xname:string;xdefval:boolean);//register boolean for settings
-procedure app__ireg(xname:string;xdefval,xmin,xmax:longint);//32bit register integer for settings
+procedure app__ireg(xname:string;xdefval,xmin,xmax:longint);//32bit register longint32 for settings
 procedure app__creg(xname:string;xdefval,xmin,xmax:comp);//64bit register comp for settings
 procedure app__sreg(xname:string;xdefval:string);//register string for settings
 //..value readers
@@ -4127,14 +4395,14 @@ procedure app__boot(xEventDriven,xFileCache,xGUImode:boolean);//28sep2025, 19aug
 procedure app__checkvars;//04may2025, 29jan2025
 function app__valuedefaults(xname:string):string;//08aug2025
 procedure app__checkCompilerOptionsForMaxSpeed;//15jul2025
-procedure app__run;//run - 07sep2025, 17jun2025, 19aug2024: adjust GUI start position
+procedure app__run;//run - 30dec2025: better timing control and accuracy, 07sep2025, 17jun2025, 19aug2024: adjust GUI start position
 function app__running:boolean;
 procedure app__startclose;//07jul2025
 procedure app__halt;//25jul2025
 function app__processmessages:boolean;
 function app__processallmessages:boolean;
 function app__wproc:twproc;//auto makes the windows message handler
-function app__eventproc(ctrltype:dword):bool; stdcall;//detects shutdown requests from Windows
+function app__eventproc(ctrltype:dword32):bool; stdcall;//detects shutdown requests from Windows
 //.read + write line
 function app__write(x:string):boolean;//write
 function app__writeln(x:string):boolean;//write line
@@ -4160,11 +4428,12 @@ function app__turboOK:boolean;
 procedure app__ecomode_pause;//06dec2024
 //.window alpha level
 function app__cansetwindowalpha:boolean;
-function app__setwindowalpha(xwindow:hwnd;xalpha:longint):boolean;//27nov2024: sets the alpha level of window, also automatically upgrades window's extended style to support alpha values
+function app__setwindowalpha(xwindow:hauto;xalpha:longint):boolean;//27nov2024: sets the alpha level of window, also automatically upgrades window's extended style to support alpha values
 
 
 //multi-monitor procs ----------------------------------------------------------
 //.multi-monitor support
+function monitors__mustsync(const xwinmsg:longint):boolean;//01feb2026
 procedure monitors__sync;//06jan2025, 26nov2024
 function monitors__count:longint;
 function monitors__primaryindex:longint;
@@ -4242,62 +4511,73 @@ function scn__gettext(xwidth,xheight:longint):string;
 //numerical procs --------------------------------------------------------------
 //.16bit
 function low__rword(x:word):word;
+
 //.32bit
-function low__sum32(x:array of longint):longint;
+function low__sum32(const x:array of longint):longint;
 procedure low__orderint(var x,y:longint);
-function frcmin32(x,min:longint):longint;
-function frcmax32(x,max:longint):longint;
-function frcrange32(x,min,max:longint):longint;
-function frcminD64(x,min:double):double;//05jul2025
-function frcmaxD64(x,max:double):double;
-function frcrangeD64(x,min,max:double):double;
+function frcmin32(const x,min:longint):longint;
+function frcmax32(const x,max:longint):longint;
+function frcrange32(const x,min,max:longint):longint;
+function frcrange322(var x:longint32;const xmin,xmax:longint32):boolean;//14dec2025, 20dec2023, 29apr2020
+function frcminD64(const x,min:double):double;//05jul2025
+function frcmaxD64(const x,max:double):double;
+function frcrangeD64(const x,min,max:double):double;
 function str__to32(const x:string):longint;//02oct2025, 21jun2024, 29AUG2007
-function str__from32(x:longint):string;//02oct2025, 21jun2024, 29AUG2007
-function frcrange2(var x:longint;xmin,xmax:longint):boolean;//29apr2020
-function smallest32(a,b:longint):longint;
-function largest32(a,b:longint):longint;
-function smallestD64(a,b:double):double;//21jul2025
-function largestD64(a,b:double):double;
-function largestarea32(s,d:twinrect):twinrect;//25dec2024
-function cfrcrange32(x,min,max:currency):currency;//date: 02-APR-2004
-function strint(x:string):longint;//skip over pluses "+" - 22jan2022, skip over commas - 05jun2021, date: 16aug2020, 25mar2016 v1.00.50 / 10DEC2009, v1.00.045
-function strbol(x:string):boolean;//27aug2024, 02aug2024
-function bolstr(x:boolean):string;
+function str__from32(const x:longint):string;//02oct2025, 21jun2024, 29AUG2007
+function smallest32(const a,b:longint):longint;
+function largest32(const a,b:longint):longint;
+function smallestD64(const a,b:double):double;//21jul2025
+function largestD64(const a,b:double):double;
+function largestarea32(const s,d:twinrect):twinrect;//25dec2024
+function cfrcrange32(const x,min,max:currency):currency;//date: 02-APR-2004
+function strbol(const x:string):boolean;//27aug2024, 02aug2024
+function bolstr(const x:boolean):string;
+
 //.64bit
-function frcmin64(x,min:comp):comp;//24jan2016
-function frcmax64(x,max:comp):comp;//24jan2016
-function frcrange64(x,min,max:comp):comp;//24jan2016
-function frcrange642(var x:comp;xmin,xmax:comp):boolean;//20dec2023
-function smallest64(a,b:comp):comp;
-function largest64(a,b:comp):comp;
-function strint32(x:string):longint;//01nov2024
-function intstr32(x:longint):string;//01nov2024
-function strint64(x:string):comp;//v1.00.035 - 05jun2021, v1.00.033 - 28jan2017
-function intstr64(x:comp):string;//30jan2017
-function sign32(xpositive:boolean):longint;//29jul2025
-procedure inc32(var x:longint;xby:longint);
-procedure dec32(var x:longint;xby:longint);
-procedure inc64(var x:comp;xby:comp);
-procedure dec64(var x:comp;xby:comp);
+function frcmin64(const x,min:comp):comp;//24jan2016
+function frcmax64(const x,max:comp):comp;//24jan2016
+function frcrange64(const x,min,max:comp):comp;//24jan2016
+function frcrange642(var x:longint64;const xmin,xmax:longint64):boolean;//20dec2023
+function smallest64(const a,b:comp):comp;
+function largest64(const a,b:comp):comp;
+function strint32(const x:string):longint;//01nov2024
+function intstr32(const x:longint):string;//01nov2024
+function strint64(const x:string):comp;//v1.00.035 - 05jun2021, v1.00.033 - 28jan2017
+function intstr64(const x:comp):string;//30jan2017
+function int64__3264(const x:longint64):longint3264;//14dec2025
+function sign32(const xpositive:boolean):longint;//29jul2025
+function or32(const v1,v2:comp):longint;//safe 32bit OR handler for Lazarus, which complains when v1 or v2 reaches max32 and does NOT roll the value over to the minus range using the upper level of the 32bit longint32 as Delphi 3 does - 03dec2025
+function int32(const v:comp):longint;//03dec2025
+
+function rollid32(var x:longint32):longint32;//1..max32, never <=0
+function roll32(var x:longint32):longint32;//roll one
+procedure inc32(var x:longint32;const xby:longint32);
+procedure dec32(var x:longint32;const xby:longint32);
+
+function rollid64(var x:longint64):longint64;//1..max64, never <=0
+function roll64(var x:longint64):longint64;//roll one
+procedure inc64(var x:longint64;const xby:longint64);
+procedure dec64(var x:longint64;const xby:longint64);
+
 procedure inc132(var x:longint);//inc by 1 - 30aug2025
 procedure dec132(var x:longint);
 procedure inc164(var x:comp);
 procedure dec164(var x:comp);
-function int__tostr(x:extended):string;
-function int__fromstr(x:string):comp;
-function int__byteX(xindex,x:longint):byte;
-function int__byte0(x:longint):byte;
-function int__byte1(x:longint):byte;
-function int__byte2(x:longint):byte;
-function int__byte3(x:longint):byte;
-function int__round4(x:longint):longint;//round X up to nearest 4 - 26apr2025
-function float__tostr_divby(xvalue,xdivby:extended):string;//12dec2024
-function float__tostr(x:extended):string;//31oct2024: system independent
-function float__tostr2(x:extended;xsep:byte):string;//31oct2024: system independent
-function float__tostr3(x:extended;xsep:byte;xallowdecimal:boolean):string;//31oct2024: system independent
-function float__fromstr(x:string):extended;//31oct2024: system independent
-function float__fromstr2(x:string;xsep:byte):extended;//31oct2024: system independent
-function float__fromstr3(x:string;xsep:byte;xallowdecimal:boolean):extended;//31oct2024: system independent
+function int__tostr(const x:extended):string;
+function int__fromstr(const x:string):comp;
+function int__byteX(xindex:longint;const x:longint):byte;
+function int__byte0(const x:longint):byte;
+function int__byte1(const x:longint):byte;
+function int__byte2(const x:longint):byte;
+function int__byte3(const x:longint):byte;
+function int__round4(const x:longint):longint;//round X up to nearest 4 - 26apr2025
+function float__tostr_divby(const xvalue,xdivby:extended):string;//12dec2024
+function float__tostr(const x:extended):string;//31oct2024: system independent
+function float__tostr2(const x:extended;const xsep:byte):string;//31oct2024: system independent
+function float__tostr3(x:extended;const xsep:byte;const xallowdecimal:boolean):string;//15dec2025, 31oct2024: system independent
+function float__fromstr(const x:string):extended;//31oct2024: system independent
+function float__fromstr2(const x:string;const xsep:byte):extended;//31oct2024: system independent
+function float__fromstr3(const x:string;const xsep:byte;const xallowdecimal:boolean):extended;//31oct2024: system independent
 function strdec(x:string;y:byte;xcomma:boolean):string;
 function curdec(x:currency;y:byte;xcomma:boolean):string;
 function curstrex(x:currency;sep:string):string;//01aug2017, 07SEP2007
@@ -4323,6 +4603,8 @@ function area__nil:twinrect;
 function area__valid(const x:twinrect):boolean;//09may2025
 function area__equal(const x,y:twinrect):boolean;//26jul2025
 function area__make(const xleft,xtop,xright,xbottom:longint):twinrect;
+procedure area__makefast(const xleft,xtop,xright,xbottom:longint;var x:twinrect);//23dec2025
+
 function area__makewh(const xleft,xtop,xwidth,xheight:longint):twinrect;//28jul2025
 function area__clip(clip_rect,s:twinrect):twinrect;//21nov2023
 function area__grow(const x:twinrect;const xby:longint):twinrect;//07apr2021
@@ -4341,33 +4623,33 @@ function low__setdbl(var xdata:double;xnewvalue:double):boolean;//01sep2025
 function low__setint(var xdata:longint;xnewvalue:longint):boolean;
 function low__setbyt(var xdata:byte;xnewvalue:byte):boolean;//01feb2025
 function low__setbol(var xdata:boolean;xnewvalue:boolean):boolean;
-function insbol(x,y:boolean):boolean;//05jul2025
-function insint(x:longint;y:boolean):longint;
-function insint32(x:longint;y:boolean):longint;
-function insint64(x:comp;y:boolean):comp;
-procedure low__divmod(dividend:longint;divisor:word;var result,remainder:word);
-function low__insint(x:longint;y:boolean):longint;
-function low__inscmp(x:comp;y:boolean):comp;//28dec2023
-function low__insd64(x:double;y:boolean):double;//06jul2025
-function low__aorb(a,b:longint;xuseb:boolean):longint;
-function low__aorbD64(a,b:double;xuseb:boolean):double;//04sep2025
-function low__aorbcomp(a,b:comp;xuseb:boolean):comp;//19feb2024
+function insbol(const x,y:boolean):boolean;//05jul2025
+function insint(const x:longint;const y:boolean):longint;
+function insint32(const x:longint;const y:boolean):longint;
+function insint64(const x:comp;const y:boolean):comp;
+procedure low__divmod(const xval:longint;const xdivby:word;var result,remainder:word);//14dec2025
+function low__insint(const x:longint;const y:boolean):longint;
+function low__inscmp(const x:comp;const y:boolean):comp;//28dec2023
+function low__insd64(const x:double;const y:boolean):double;//06jul2025
+function low__aorb(const a,b:longint;const xuseb:boolean):longint;
+function low__aorbD64(const a,b:double;const xuseb:boolean):double;//04sep2025
+function low__aorbcomp(const a,b:comp;const xuseb:boolean):comp;//19feb2024
 
-function low__aorb32(a,b:longint;xuseb:boolean):longint;//27aug2024
-function low__aorb64(a,b:comp;xuseb:boolean):comp;//27aug2024
+function low__aorb32(const a,b:longint;const xuseb:boolean):longint;//27aug2024
+function low__aorb64(const a,b:comp;const xuseb:boolean):comp;//27aug2024
 
-function low__aorbrect(a,b:twinrect;xuseb:boolean):twinrect;//25nov2023
-function low__aorbbyte(a,b:byte;xuseb:boolean):byte;
-function low__aorbcur(a,b:currency;xuseb:boolean):currency;//07oct2022
-function low__yes(x:boolean):string;//16sep2022
-function low__enabled(x:boolean):string;//29apr2024
-function low__aorbobj(a,b:tobject;xuseb:boolean):tobject;//08may2025
-function low__aorbstr(a,b:string;xuseb:boolean):string;
-function low__aorbchar(a,b:char;xuseb:boolean):char;
-function low__aorbbol(a,b:boolean;xuseb:boolean):boolean;
+function low__aorbrect(const a,b:twinrect;const xuseb:boolean):twinrect;//25nov2023
+function low__aorbbyte(const a,b:byte;const xuseb:boolean):byte;
+function low__aorbcur(const a,b:currency;const xuseb:boolean):currency;//07oct2022
+function low__yes(const x:boolean):string;//16sep2022
+function low__enabled(const x:boolean):string;//29apr2024
+function low__aorbobj(const a,b:tobject;const xuseb:boolean):tobject;//08may2025
+function low__aorbstr(const a,b:string;const xuseb:boolean):string;
+function low__aorbchar(const a,b:char;const xuseb:boolean):char;
+function low__aorbbol(const a,b:boolean;const xuseb:boolean):boolean;
 procedure low__toggle(var x:boolean);
-function low__aorbstr8(a,b:tstr8;xuseb:boolean):tstr8;//06dec2023
-function low__aorbvars8(a,b:tvars8;xuseb:boolean):tvars8;//06dec2023
+function low__aorbstr8(const a,b:tstr8;const xuseb:boolean):tstr8;//06dec2023
+function low__aorbvars8(const a,b:tvars8;const xuseb:boolean):tvars8;//06dec2023
 
 
 //swap procs -------------------------------------------------------------------
@@ -4430,7 +4712,7 @@ function res__findlanginfo(const scode:longint;var xcaption,xlabel:string;var xc
 
 
 //object procs -----------------------------------------------------------------
-function obj__readitem(xdata:pobject;var xpos:integer;var xname:string;xvalue:pobject;var xvalue32:integer;var xusevalue32:boolean):boolean;
+function obj__readitem(xdata:pobject;var xpos:longint32;var xname:string;xvalue:pobject;var xvalue32:longint32;var xusevalue32:boolean):boolean;
 
 
 //compression procs (standard ZIP - 26jan2021) ---------------------------------
@@ -4562,7 +4844,7 @@ function dialog__updateFilterList(var xfilterlist:string;const dindex:longint):b
 implementation
 
 uses main, gossio {$ifdef gui},gossdat ,gossgui{$endif} {$ifdef snd},gosssnd{$endif} ,gossimg, gossnet,
-     gosszip{$ifdef jpeg},gossjpg{$endif} {$ifdef gamecore},gossgame{$endif};
+     gossfast, gosszip{$ifdef jpeg},gossjpg{$endif} {$ifdef gamecore},gossgame{$endif};
 
 const
    //security checkid 2 of 2 -> put it here to space it out inside the EXE - harder to track - 11oct2022
@@ -4687,7 +4969,7 @@ zfilename.fill(0,zfilename.len-1,0);//fill with null chars
 z.lStructSize     :=sizeof(z);
 z.hWndOwner       :=app__activeHandle;//required -> tracks which monitor to display on - 06oct2025
 z.lpstrFile       :=zfilename.core;
-z.nMaxFile        :=zfilename.len;
+z.nMaxFile        :=zfilename.len32;
 z.flags           :=OFN_PATHMUSTEXIST or OFN_FILEMUSTEXIST or OFN_LONGNAMES or OFN_HIDEREADONLY;
 z.lpstrFilter     :=pchar(dlist);
 z.nFilterIndex    :=dindex;
@@ -4759,12 +5041,12 @@ zfilename         :=str__new8;
 zfilename.setlen(1+max16);
 zfilename.fill(0,zfilename.len-1,0);//fill with null chars
 
-for p:=1 to frcmax32(low__len(xfilename),zfilename.len-2) do zfilename.pbytes[p-1]:=byte(xfilename[p-1+stroffset]);
+for p:=1 to frcmax32(low__len32(xfilename),zfilename.len32-2) do zfilename.pbytes[p-1]:=byte(xfilename[p-1+stroffset]);
 
 z.lStructSize     :=sizeof(z);
 z.hWndOwner       :=app__activeHandle;//required -> tracks which monitor to display on - 06oct2025
 z.lpstrFile       :=zfilename.core;
-z.nMaxFile        :=zfilename.len;
+z.nMaxFile        :=zfilename.len32;
 z.flags           :=OFN_PATHMUSTEXIST or OFN_LONGNAMES or OFN_HIDEREADONLY;
 z.lpstrFilter     :=pchar(dlist);
 z.nFilterIndex    :=dindex;
@@ -4839,7 +5121,7 @@ xlist         :=xfilterlist;
 if low__splitstr(xfilterlist,ssQuestion,str1,xlist) then xindex:=frcmin32(strint32(str1),1);
 
 //extract default extension from filterlist -> over allow by +1
-vlen          :=low__len(xlist);
+vlen          :=low__len32(xlist);
 findex        :=xindex;
 
 redo:
@@ -5021,7 +5303,7 @@ try
 //init
 a:=str__new8;
 a.minlen(2048);
-asize:=a.len;
+asize:=a.len32;
 
 if win____GetDefaultPrinter(a.core,asize) then result:=pchar(a.core);
 except;end;
@@ -5158,12 +5440,12 @@ end;
 
 //font procs -------------------------------------------------------------------
 
-function font__size(xfontheight:longint):longint;//04sep2025
+function font__findsize(xfontheight:longint):longint;//04sep2025
 begin
-result:=round(font__size2(xfontheight));
+result:=round(font__findsize2(xfontheight));
 end;
 
-function font__size2(xfontheight:longint):double;
+function font__findsize2(xfontheight:longint):double;
 begin
 
 if (xfontheight<0) then xfontheight:=-xfontheight;
@@ -5322,7 +5604,7 @@ if printer__have then
    end;//if
 end;
 
-function font__screenfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
+function font__screenfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: longint32; Data: Pointer): longint32; stdcall;
 var
    str1:string;
 
@@ -5346,7 +5628,7 @@ str1:=xfilter(logfont.lfFaceName);
 if (str1<>'') and (system_fontlist_screen.count=0) or (not strmatch(str1,system_fontlist_screen.value[system_fontlist_screen.count-1])) then system_fontlist_screen.value[system_fontlist_screen.count]:=str1;
 end;
 
-function font__printerfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
+function font__printerfontproc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: longint32; Data: Pointer): longint32; stdcall;
 var
    str1:string;
 
@@ -5518,7 +5800,7 @@ var
 begin
 try
 //check
-if system_started then exit else system_started:=true;
+if system_started_root then exit else system_started_root:=true;
 
 //os version info
 low__cls(@xver,sizeof(xver));//02oct2025
@@ -5552,7 +5834,7 @@ begin
 try
 
 //check
-if not system_started then exit else system_started:=false;
+if not system_started_root then exit else system_started_root:=false;
 
 //vars
 
@@ -5737,8 +6019,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gossroot.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.6386'
-else if (xname='date')       then result:='06nov2025'
+if      (xname='ver')        then result:='4.00.6761'
+else if (xname='date')       then result:='01feb2026'
 else if (xname='name')       then result:='Root'
 else if (xname='mode.int')   then result:=intstr32(info__mode)
 else if (xname='mode')       then
@@ -5770,9 +6052,9 @@ var
 
    if (x<>'') then
       begin
-      for p:=low__len(x) downto 1 do if (x[p-1+stroffset]='.') then
+      for p:=low__len32(x) downto 1 do if (x[p-1+stroffset]='.') then
          begin
-         result:=strint(strcopy1(x,p+1,low__len(x)));
+         result:=strint32(strcopy1(x,p+1,low__len32(x)));
          break;
          end;//p
       end;
@@ -5796,6 +6078,7 @@ if (result='') then result:=info__io(xname);
 if (result='') then result:=info__img(xname);
 if (result='') then result:=info__net(xname);
 if (result='') then result:=info__win(xname);
+if (result='') then result:=info__fast(xname);//01feb2026
 
 {$ifdef snd}
 if (result='') then result:=info__snd(xname);//16jun2025
@@ -5858,7 +6141,17 @@ if (info_mode<=0) then
 result:=info_mode;
 end;
 
-function splash__findvalue(x:longint;var xname,xvalue:string):boolean;//14jul2025
+function splash__findvalue2(const x:longint;const xnameORvalue:boolean):string;//17dec2025
+var
+   xname,xvalue:string;
+begin
+
+splash__findvalue(x,xname,xvalue);
+result:=low__aorbstr(xname,xvalue,xnameORvalue);
+
+end;
+
+function splash__findvalue(const x:longint;var xname,xvalue:string):boolean;//14jul2025
 var
    v:string;
 
@@ -5875,18 +6168,26 @@ xvalue:='';
 
 //get
 case x of
-0:xset('Version',app__info('ver'));
+0:xset('Version',app__info('ver')+'  ( '+k64(app__bits)+' bit )');
 1:xset('License',strdefb(app__info('license'),low__aorbstr('Free','Paid',system_paid)));
 2:begin
-   if app__guimode then v:=low__aorbstr('Desktop App','Windows Store App',system_storeapp) else v:='Console App';
+
+   case app__guimode of
+   true:v:=low__aorbstr('Desktop App','Microsoft Store App',system_msix);//10dec2025
+   else v:='Console App';
+   end;//case
+
    v:=v+' ('+low__aorbstr('Standard','Multi-Panel Plus',programplus)+' Edition)';
    xset('Type',v);
+
    end;
 3:xset('Codebase','Gossamer v'+app__info('gossamer.ver'));
 4:if (app__info('splash.infoname')<>'') then xset( app__info('splash.infoname'), app__info('splash.infoline') );//14jul2025
 5:begin
+
    v:=app__info('nocopyright');
    if (v<>'') then xset('',v) else xset('Copyright',strdefb(app__info('copyright'),'© '+low__yearstr(2025)));
+
    end;
 end;//case
 
@@ -5895,18 +6196,158 @@ result:=(xname<>'') or (xvalue<>'');
 end;
 
 
-//pointer procs ----------------------------------------------------------------
-function ptr__shift(xstart:pointer;xshift:longint):pointer;
+//msix procs -------------------------------------------------------------------
+
+function msix__active:boolean;//10dec2025
 begin
-//32bit only -> cardinal only supports 0..2.1 Gb
-result:=pointer(cardinal(xstart)+xshift);
+
+result:=system_msix;
+
 end;
 
-function ptr__copy(const s:pointer;var d):boolean;
+function msix__tags:string;//12dec2025
 begin
-result:=true;
-tpointer(d):=tpointer(s);
+
+result:=strup( app__info('msix.tags') );
+
 end;
+
+function msix__tagsLabel:string;
+var
+   n,v:string;
+   p:longint;
+
+   procedure a(const v:string);
+   begin
+
+   result:=result + insstr(', ',result<>'') + v;
+
+   end;
+
+begin
+
+//defaults
+result :='';
+
+//get
+v:=msix__tags;
+
+if (v<>'') then
+   begin
+
+   for p:=1 to low__len32(v) do
+   begin
+
+   n:=v[p-1+stroffset];
+
+   if      strmatch(n,msixMIDI) then a('M=Midi');
+
+   end;//p
+
+   end;
+
+end;
+
+function msix__hastag(const xtag:char):boolean;//31jan2026
+begin
+
+result:=msix__hastag2( msix__tags, xtag );
+
+end;
+
+function msix__hastag2(const xtaglist:string;const xtag:char):boolean;//31jan2026
+var
+   p:longint;
+begin
+
+//defaults
+result :=false;
+
+//get
+if (xtaglist<>'') then
+   begin
+
+   for p:=1 to low__len32(xtaglist) do if strmatch(xtaglist[p-1+stroffset],xtag) and msix__tagValid(xtag) then
+      begin
+
+      result:=true;
+      break;
+
+      end;//p
+
+   end;
+
+end;
+
+function msix__tagValid(const xtag:char):boolean;//31jan2026
+begin
+
+result:=strmatch(xtag,msixMIDI);
+
+end;
+
+function msix__showTagError(const xservicelabel,xtagchar:string):string;
+begin
+
+showerror(
+'MSIX service tag missing from app__info(''msix.tags''):'+rcode+
+rcode+
+'Service Tag: '+strdefb(xtagchar,'<unspecified>')+rcode+
+'For Service: '+strdefb(xservicelabel,'<unspecified>')+rcode+
+'');
+
+end;
+
+function msix__checkAllTagsAreValidFrom(const xtaglist:string):boolean;//31jan2026
+var
+   p:longint;
+begin
+
+//defaults
+result:=true;
+
+//get
+if (xtaglist<>'') then
+   begin
+
+   for p:=1 to low__len32(xtaglist) do if not msix__tagValid( xtaglist[p-1+stroffset] ) then
+      begin
+
+      result:=false;
+      break;
+
+      end;//p
+
+   end;
+
+end;
+
+
+//pointer procs ----------------------------------------------------------------
+function ptr__shift(const xstart:pointer3264;xshift:longint64):pointer3264;
+begin
+
+{$ifdef 64bit}
+
+result:=pointer3264( longint64(xstart) + xshift );
+
+{$else}
+
+//32bit only -> cardinal only supports 0..2.1 Gb
+result:=pointer3264( cardinal(xstart) + restrict32( xshift ) );
+
+{$endif}
+
+end;
+
+function ptr__copy(const s:pauto;var d):boolean;
+begin
+
+result           :=true;
+tpointer3264(d)  :=tpointer3264(s);
+
+end;
+
 
 //compatiblity procs -----------------------------------------------------------
 function rthtranslate(x:string):string;//31JAN2011, 05OCT2007 - don't translate, just mark the text for "sniffer", since text will be translated in realtime on demand
@@ -5952,7 +6393,7 @@ end;
 
 function programnewinstance:boolean;
 begin
-result:=(info__app('new.instance')='1');
+result:=(app__info('new.instance')='1');
 end;
 
 function programslogan:string;
@@ -5962,17 +6403,17 @@ end;
 
 function programpaid:longint;//desktop paid status -> 0=free, 1..N=paid - also works inconjunction with "system_storeapp" and it's cost value to determine PAID status is used within help etc - 30mar2022
 begin
-result:=strint(info__app('paid'));
+result:=strint32(info__app('paid'));
 end;
 
 function programpaid_store:longint;//store paid status
 begin
-result:=strint(info__app('paid.store'));
+result:=strint32(info__app('paid.store'));
 end;
 
 function programcheck_mode:longint;
 begin
-result:=strint(info__app('check.mode'));
+result:=strint32(info__app('check.mode'));
 end;
 
 
@@ -6275,11 +6716,17 @@ satDragpaint        :r('Drag Paint');
 satSizecount        :r('Size Count');
 satMaskcapture      :r('Mask Capture');
 satUpTime           :r('Up Time');
+satVer              :r( splash__findvalue2(0,false) );//17dec2025
+satCodebase         :r( splash__findvalue2(3,false) );//17dec2025
+satMSIXmode         :r('OS.MSIX.Active');//10dec2025
+satMSIXtags         :r('OS.MSIX.Tags');//01feb2026, 10dec2025
 satDPIawareV2       :r('OS.Dpi.Aware.v2');
+satScale            :r('Active Scaling');//10dec2025
 satGUIresources     :r('OS.GUI.Resources');
 satDLLload          :r('OS.DLL.Load');
 satAPIload          :r('OS.Api.Load');
 satAPIcalls         :r('OS.Api.Calls');
+satRenderRate       :r('Render Rate');
 satMemory           :r('Memory In Use');
 satMemorycount      :r('Memory Pointers');
 satMemoryFreeCount  :r('Memory Free Calls');
@@ -6317,8 +6764,8 @@ satFile             :r('file');
 satHashtable        :r('hashtable');
 satNetbasic         :r('netbasic');
 satWproc            :r('wproc');
-satIntlist          :r('intlist');
-satCmplist          :r('cmplist');
+satIntlist32       :r('intlist32');
+satIntlist64       :r('intlist64');
 //
 //
 satTBT              :r('tbt');
@@ -6403,8 +6850,8 @@ var
    var
       int1,int2:longint;
    begin
-   int1:=low__len(xpadder);
-   int2:=frcmax32(low__len(x),int1);
+   int1:=low__len32(xpadder);
+   int2:=frcmax32(low__len32(x),int1);
    result:=strcopy1(x,1,int2)+strcopy1(xpadder,1,int1-int2);
    end;
 
@@ -6413,7 +6860,7 @@ var
       int1,int2:longint;
    begin
    int1:=4;
-   int2:=frcmax32(low__len(x),int1);
+   int2:=frcmax32(low__len32(x),int1);
    result:=strcopy1(x,1,int2)+strcopy1(xpadder,1,int1-int2);
    end;
 
@@ -6502,7 +6949,10 @@ end;//p
 //set
 result:=a.text;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 function track__findvalue_count:longint;
@@ -6587,11 +7037,17 @@ track_Overview_start-1:xset2('Overview','Quantity',true);
 track_Core_start-1    :xset4('Core','Load','Create','Free',true);
 track_GUI_start-1     :xset4('GUI','Load','Create','Free',true);
 satUpTime             :xset0(low__uptime(sub64(ms64,system_boot),false,false,false,true,true,#32));//real-time
+satVer                :xset0( splash__findvalue2(0,true) );//17dec2025
+satCodebase           :xset0( splash__findvalue2(3,true) );//17dec2025
+satMSIXmode           :xset0(low__yes(msix__active));//10dec2025
+satMSIXtags           :xset0(strdefb(msix__tagsLabel,'<none>'));//12dec2025
 satDPIawareV2         :xset0(low__yes(system_monitors_dpiAwareV2));
+satScale              :{$ifdef gui}xset0( k64(round( viscale*100 )) +'%');{$else}xset0('?');{$endif}
 satGUIresources       :xset0( low__aorbstr('-',k64(app__guiresources),app__guiresources>=0) );
 satDLLload            :xset0(k64(win__dllload)+' / '+k64(dllcount));//07sep2025
 satAPIload            :xset0(k64(win__procload)+' / '+k64(win__proccount));
 satAPIcalls           :xset0(k64(win__proccalls));
+satRenderRate         :xset0(curdec(fd__renderMPS,2,true)+' mps');//07jan2026
 satMemory             :xset0(k64(system_memory_bytes));
 satMemoryCount        :xset0(k64(system_memory_count));
 satMemoryFreeCount    :xset0(k64(system_memory_freecount));
@@ -6693,10 +7149,10 @@ if (sysleak_label[x]<>'') then
       inc(xstop,sysleak_stop[x][p]);
       if (sysleak_stop[x][p]<>0) then
          begin
-         if (low__len(str1)<=100) then
+         if (low__len32(str1)<=100) then
             begin
             str1:=str1+'['+track__label(p)+'/'+k64(sysleak_stop[x][p])+']';
-            if (low__len(str1)>=100) then str1:=str1+'...';
+            if (low__len32(str1)>=100) then str1:=str1+'...';
             end;
          end;
       end;//p
@@ -6789,7 +7245,7 @@ if not dappend then str__clear(d);
 
 //get
 spos:=0;
-slen:=str__len(s);
+slen:=str__len32(s);
 if (slen<=0) then goto skipend;
 
 redo:
@@ -6883,7 +7339,7 @@ if (s=d)               then goto skipend;
 //init
 str__clear(d);
 spos :=0;
-slen :=str__len(s);
+slen :=str__len32(s);
 if str__is8(d) then d8:=(d^ as tstr8) else d8:=nil;
 
 //check
@@ -6947,7 +7403,7 @@ begin
 try
 x:=utf8__toasciib(x,false);
 
-for p:=1 to low__len(x) do
+for p:=1 to low__len32(x) do
 begin
 case ord(x[p-1+stroffset]) of
 9,10,13,32..127:;//OK
@@ -7001,8 +7457,8 @@ var
    rcodeok:=false;
    try
    //init
-   if (sline.len<1) or (sline.pbytes[sline.len-1]<>ssEqual) then rcodeok:=true;//line has a return code
-   if (sline.len>=1) and (sline.pbytes[sline.len-1]=ssEqual) then sline.setlen(sline.len-1);//strip trailing "="
+   if (sline.len<1) or (sline.pbytes[sline.len32-1]<>ssEqual) then rcodeok:=true;//line has a return code
+   if (sline.len>=1) and (sline.pbytes[sline.len32-1]=ssEqual) then sline.setlen(sline.len-1);//strip trailing "="
    //get
    p:=0;
    redo:
@@ -7046,7 +7502,7 @@ if low__nextline0(s,sline,spos) then
    begin
    //strip trailing white space "#32/#9"
    int1:=0;
-   if (sline.len>=1) then for p:=sline.len downto 1 do if (sline.pbytes[p-1]<>9) and (sline.pbytes[p-1]<>32) then
+   if (sline.len>=1) then for p:=sline.len32 downto 1 do if (sline.pbytes[p-1]<>9) and (sline.pbytes[p-1]<>32) then
       begin
       int1:=p;
       break;
@@ -7087,7 +7543,7 @@ var
    //check
    if (x='') then exit;
    //start
-   if (x<>'') then for p:=1 to low__len(x) do if (x[p-1+stroffset]='=') then
+   if (x<>'') then for p:=1 to low__len32(x) do if (x[p-1+stroffset]='=') then
       begin
       if strmatch(strcopy1(x,p,8),'=?UTF-8?') then
          begin
@@ -7107,7 +7563,7 @@ var
          end;
       end;
    //finish
-   if (x<>'') and (xtype<>'') then for p:=1 to low__len(x) do if (x[p-1+stroffset]='?') and strmatch(strcopy1(x,p,2),'?=') then
+   if (x<>'') and (xtype<>'') then for p:=1 to low__len32(x) do if (x[p-1+stroffset]='?') and strmatch(strcopy1(x,p,2),'?=') then
       begin
       result:=true;
       xline:=strcopy1(x,1,p-1);
@@ -7130,9 +7586,9 @@ var
 
    try
    result:=
-    strmatch(strcopy1(x,1,low__len(xn)),xn) or
-    strmatch(strcopy1(x,1,low__len(xn)+1),#32+xn) or
-    strmatch(strcopy1(x,1,low__len(xn)+1),#9+xn);//Old Netscape Mail 3.0 compatible - they used leading tabs instead of spaces back then
+    strmatch(strcopy1(x,1,low__len32(xn)),xn) or
+    strmatch(strcopy1(x,1,low__len32(xn)+1),#32+xn) or
+    strmatch(strcopy1(x,1,low__len32(xn)+1),#9+xn);//Old Netscape Mail 3.0 compatible - they used leading tabs instead of spaces back then
    except;end;
    end;
 begin
@@ -7147,8 +7603,8 @@ if xencode then goto encode1 else goto decode2;
 //-- Encode --
 encode1:
 if (not xmustencode) and (hascode('=?iso-8859-1?',x) or hascode('=?UTF-8?',x)) then xmustencode:=true;
-if (not xmustencode) and (low__len(result)>60) then xmustencode:=true;//allows for 16c field name, e.g. "Subject: " = 9c
-if (not xmustencode) and (result<>'') then for p:=1 to low__len(result) do
+if (not xmustencode) and (low__len32(result)>60) then xmustencode:=true;//allows for 16c field name, e.g. "Subject: " = 9c
+if (not xmustencode) and (result<>'') then for p:=1 to low__len32(result) do
    begin
    case byte(result[p-1+stroffset]) of
    32..126:;//OK - 7bit
@@ -7235,7 +7691,7 @@ if (result<>'') then
    begin
    //.detect an invalid address (one without @ symbol)
    bol1:=false;
-   if (result<>'') then for p:=1 to low__len(result) do if (result[p-1+stroffset]='@') then
+   if (result<>'') then for p:=1 to low__len32(result) do if (result[p-1+stroffset]='@') then
       begin
       bol1:=true;
       break;
@@ -7243,20 +7699,20 @@ if (result<>'') then
    if not bol1 then result:='';
 
    //.remove leading labels
-   if (result<>'') then for p:=1 to low__len(result) do if (result[p-1+stroffset]='@') then
+   if (result<>'') then for p:=1 to low__len32(result) do if (result[p-1+stroffset]='@') then
       begin
       for p2:=p downto 1 do if (result[p2-1+stroffset]=#32) or (result[p2-1+stroffset]='<') or (result[p2-1+stroffset]='>') or (result[p2-1+stroffset]=';') or (result[p2-1+stroffset]=',') then
          begin
-         result:=strcopy1(result,p2+1,low__len(result));
+         result:=strcopy1(result,p2+1,low__len32(result));
          break;
          end;//p2
       break;
       end;
 
    //.remove trailing labels
-   if (result<>'') then for p:=1 to low__len(result) do if (result[p-1+stroffset]='@') then
+   if (result<>'') then for p:=1 to low__len32(result) do if (result[p-1+stroffset]='@') then
       begin
-      for p2:=p to low__len(result) do if (result[p2-1+stroffset]=#32) or (result[p2-1+stroffset]='<') or (result[p2-1+stroffset]='>') or (result[p2-1+stroffset]=';') or (result[p2-1+stroffset]=',')  then
+      for p2:=p to low__len32(result) do if (result[p2-1+stroffset]=#32) or (result[p2-1+stroffset]='<') or (result[p2-1+stroffset]='>') or (result[p2-1+stroffset]=';') or (result[p2-1+stroffset]=',')  then
          begin
          result:=strcopy1(result,1,p2-1);
          break;
@@ -7268,7 +7724,10 @@ if (result<>'') then
    low__remchar(result,'"');
    end;
 except;end;
-try;freeobj(@a);except;end;
+
+//free
+freeobj(@a);
+
 end;
 
 function mail__filteraddresses(x:string;xaddressesonly,xwraponlines:boolean):string;//06apr2025
@@ -7308,7 +7767,7 @@ if (a.count>=1) then for p:=0 to (a.count-1) do if (a.value[p]<>'') then
       begin
       case xwraponlines of
       true:begin
-         if ((low__len(xline)+low__len(v))<=74) then xline:=xline+v+', '//76c line length limit
+         if ((low__len32(xline)+low__len32(v))<=74) then xline:=xline+v+', '//76c line length limit
          else
             begin
             if (xline<>'') then d.sadd(xline+#10);//let NO accidental blank lines through - 04nov2018
@@ -7323,7 +7782,7 @@ if (a.count>=1) then for p:=0 to (a.count-1) do if (a.value[p]<>'') then
 if (xline<>'') then d.sadd(xline+#10);//let NO accidental blank lines through - 04nov2018
 //set
 result:=striptrailingrcodesb(d.text);//no trailing RCODE
-if (low__len(result)>=2) and (strcopy1(result,low__len(result)-1,2)=', ') then strdel1(result,low__len(result)-1,2);//remove trailing ", "
+if (low__len32(result)>=2) and (strcopy1(result,low__len32(result)-1,2)=', ') then strdel1(result,low__len32(result)-1,2);//remove trailing ", "
 except;end;
 try
 freeobj(@a);
@@ -7348,7 +7807,7 @@ function mail__diskname(xdate:tdatetime;xsubject:string;xtrycount:longint):strin
    swapstrs(result,'_','&#95;');
    swapchars(result,':','-');//21nov2024
    //check length, trim to last whoe "&#...;" code
-   len:=low__len(result);
+   len:=low__len32(result);
    if (len>80) then
       begin
       lp:=1;
@@ -7394,7 +7853,7 @@ function mail__makemsg(x:pobject;xsenderip,xfrom,xto,xsubject,xmsg:string;xdate:
    if (x='') then exit;
    //init
    b:=str__new8;
-   xlen:=low__len(x);
+   xlen:=low__len32(x);
    xpos:=1;
    //get
    redo:
@@ -7406,7 +7865,10 @@ function mail__makemsg(x:pobject;xsenderip,xfrom,xto,xsubject,xmsg:string;xdate:
    //set
    result:=b.text;
    except;end;
-   try;str__free(@b);except;end;
+
+   //free
+   str__free(@b);
+   
    end;
 
    procedure ladd(xline:string);
@@ -7460,7 +7922,7 @@ begin
 //defaults
 result     :=false;
 xline      :=nil;
-nlen       :=low__len(xfieldname);
+nlen       :=low__len32(xfieldname);
 xwithin    :=false;
 
 try
@@ -7526,7 +7988,7 @@ var//Note: xattachments=optional, but when supplied this proc looks for files wi
    function xpullandshrink(var x:string):string;
    begin
    result:=strcopy1(x,1,200);
-   strdel1(x,1,low__len(result));
+   strdel1(x,1,low__len32(result));
    end;
 
    function xmakemsgid36:string;
@@ -7546,7 +8008,7 @@ var//Note: xattachments=optional, but when supplied this proc looks for files wi
       end;
    begin
    low__setlen(result,36);
-   for p:=1 to low__len(result) do result[p-1+stroffset]:=rc;
+   for p:=1 to low__len32(result) do result[p-1+stroffset]:=rc;
    end;
 
    function xmakeboundary36:string;
@@ -7574,7 +8036,7 @@ var//Note: xattachments=optional, but when supplied this proc looks for files wi
       end;
 
    //no blank lines from this point on -> break long line into sub-lines and avoid RFC limit of 998c + CRLF
-   while (low__len(xline)>xlimit) do//greater than avoids creating any "unexpected blank line/s"
+   while (low__len32(xline)>xlimit) do//greater than avoids creating any "unexpected blank line/s"
    begin
    xaddpart(strcopy1(xline,1,xlimit));
    strdel1(xline,1,xlimit);//remainder should never be "nil"
@@ -7594,7 +8056,7 @@ var//Note: xattachments=optional, but when supplied this proc looks for files wi
    if (x='') then exit;
 
    //init
-   xlen :=low__len(x);
+   xlen :=low__len32(x);
    xpos :=1;
 
    //get
@@ -7611,7 +8073,7 @@ var//Note: xattachments=optional, but when supplied this proc looks for files wi
    low__remchar(result,'"');
 
    //get
-   result:=strcopy1(result,1, frcmax32(low__len(result),64) );
+   result:=strcopy1(result,1, frcmax32(low__len32(result),64) );
    end;
 begin
 //defaults
@@ -7785,7 +8247,25 @@ end;
 
 
 //global memory procs ----------------------------------------------------------
-function global__create(xsize:comp):pointer;//19may2025
+
+function global__handle(const x:pointer3264):hglobal;//14dec2025, 19may2025: fixed reference to "nil"
+begin
+
+if (x<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=win____GlobalHandle(x);//?????
+   {$else}
+   result:=win____GlobalHandle(x);
+   {$endif}
+
+   end
+else result:=0;
+
+end;
+
+function global__create(const xsize:longint64):pointer3264;//14dec2025, 19may2025
 var
    h:hglobal;
 begin
@@ -7797,7 +8277,12 @@ result:=nil;
 if (xsize>=1) then
    begin
 
+   {$ifdef 64bit}
+   h:=win____GlobalAlloc(GMEM_MOVEABLE, xsize );
+   {$else}
    h:=win____GlobalAlloc(GMEM_MOVEABLE, restrict32(xsize) );
+   {$endif}
+
    if (h<>0) then result:=win____GlobalLock(h);
 
    if (result<>nil) then
@@ -7814,7 +8299,7 @@ if (xsize>=1) then
 
 end;
 
-procedure global__free(var xptr:pointer);//01sep2025
+procedure global__free(var xptr:pointer3264);//01sep2025
 var
    h:hglobal;
 begin
@@ -7823,7 +8308,7 @@ if (xptr<>nil) then
    begin
 
    //free
-   h:=win____GlobalHandle(xptr);
+   h:=global__handle(xptr);
 
    if (h<>0) then
       begin
@@ -7842,23 +8327,21 @@ if (xptr<>nil) then
    xptr:=nil;
 
    low__irollone64(system_memory_freecount);
+
    end;
 
 end;
 
-function global__resize(xptr:pointer;xnewsize:comp):pointer;
+function global__resize(const xptr:pointer3264;const xnewsize:longint64):pointer3264;
 begin
 global__resize2(xptr,xnewsize,result);
 end;
 
-function global__resize2(xptr:pointer;xnewsize:comp;var xoutptr:pointer):boolean;//26aug2025
+function global__resize2(xptr:pointer3264;const xnewsize:longint64;var xoutptr:pointer3264):boolean;//14dec2025, 26aug2025
 var
    h:hglobal;
-   xoldsize:comp;
+   xoldsize:longint64;
 begin
-
-//filter
-xnewsize:=restrict32(xnewsize);
 
 //reallocate existing memory
 if (xptr<>nil) and (xnewsize>=1) then
@@ -7867,16 +8350,26 @@ if (xptr<>nil) and (xnewsize>=1) then
    xoldsize:=global__size(xptr);
 
    //MS -> if it fails, original memory and pointer remain valid - 26aug2025
-   h:=win____GlobalHandle(xptr);
+   h:=global__handle(xptr);
    if (h<>0) then win____GlobalUnlock(h);
 
+   {$ifdef 64bit}
+   h:=win____GlobalReAlloc(h, xnewsize, GMEM_MOVEABLE);
+   {$else}
    h:=win____GlobalReAlloc(h, restrict32(xnewsize), GMEM_MOVEABLE);
+   {$endif}
+
    if (h<>0) then xoutptr:=win____GlobalLock(h) else xoutptr:=nil;
 
    if (xoutptr<>nil) then
       begin
 
+      {$ifdef 64bit}
       system_memory_bytes:=add64(system_memory_bytes,xnewsize);
+      {$else}
+      system_memory_bytes:=add64(system_memory_bytes,restrict32(xnewsize));
+      {$endif}
+
       system_memory_bytes:=frcmin64( sub64(system_memory_bytes,xoldsize) ,0);//23oct2025
 
       result:=true;
@@ -7887,7 +8380,7 @@ if (xptr<>nil) and (xnewsize>=1) then
       begin
 
       //keep previous
-      h:=win____GlobalHandle(xptr);
+      h:=global__handle(xptr);
       if (h<>0) then xoutptr:=win____GlobalLock(h) else xoutptr:=nil;
 
       result  :=false;
@@ -7926,40 +8419,45 @@ else
 
 end;
 
-function global__size(xptr:pointer):comp;
+function global__size(const xptr:pointer3264):longint64;
 var
    h:hglobal;
 begin
 
-h:=win____GlobalHandle(xptr);
+h:=global__handle(xptr);
+
+{$ifdef 64bit}
+if (h<>0) then result:=win____GlobalSize(h) else result:=0;//???
+{$else}
 if (h<>0) then result:=win____GlobalSize(h) else result:=0;
+{$endif}
 
 end;
 
 
 //memory management procs ------------------------------------------------------
 
-function mem__create32(xsize:longint):pointer;
+function mem__create(const xsize:longint64):pointer3264;
 begin
-result:=mem__create(xsize);
-end;
-
-function mem__create(xsize:comp):pointer;
-var
-   xsize32:longint;
-begin
-
-xsize32:=restrict32(xsize);
 
 if (xsize>=1) then
    begin
 
-   result:=win____HeapAlloc(win____getprocessheap,0,xsize32);
+   {$ifdef 64bit}
+   result:=win____HeapAlloc(win____getprocessheap,0,xsize);
+   {$else}
+   result:=win____HeapAlloc(win____getprocessheap,0,restrict32(xsize));
+   {$endif}
 
    if (result<>nil) then
       begin
 
-      system_memory_bytes:=add64(system_memory_bytes,xsize32);
+      {$ifdef 64bit}
+      system_memory_bytes:=add64(system_memory_bytes,xsize);
+      {$else}
+      system_memory_bytes:=add64(system_memory_bytes,restrict32(xsize));
+      {$endif}
+
       inc64(system_memory_count,1);
 
       low__irollone64(system_memory_createcount);
@@ -7971,20 +8469,21 @@ else result:=nil;
 
 end;
 
-function mem__free(var xptr:pointer):boolean;//thread safe
+function mem__free(var xptr:pointer3264):boolean;//thread safe
 var
-   xoldsize:comp;
+   xoldsize:longint64;
 begin
 
 //MS -> xptr can be nil and still be valid
-xoldsize:=mem__size(xptr);
+xoldsize :=mem__size(xptr);
 
-result:=(xptr<>nil) and win____HeapFree(win____getprocessheap,0,xptr);
+result   :=(xptr<>nil) and win____HeapFree(win____getprocessheap,0,xptr);
 
 if result then
    begin
 
    system_memory_bytes:=frcmin64( sub64(system_memory_bytes, xoldsize ) ,0);//23oct2025
+
    dec64(system_memory_count,1);
    xptr:=nil;
 
@@ -7994,7 +8493,7 @@ if result then
 
 end;
 
-function mem__free2(xptr:pointer):longint;
+function mem__free2(xptr:pointer):longint64;
 begin
 
 result:=0;
@@ -8002,7 +8501,7 @@ mem__free(xptr);
 
 end;
 
-function mem__size(xptr:pointer):comp;
+function mem__size(const xptr:pointer):longint64;
 begin
 
 case (xptr<>nil) of
@@ -8012,28 +8511,21 @@ end;//case
 
 end;
 
-function mem__resize32(xptr:pointer;xnewsize:longint):pointer;
+function mem__resize(const xptr:pointer3264;const xnewsize:longint64):pointer3264;//thread safe - 26aug2026
 begin
 mem__resize3(xptr,xnewsize,false,result);
 end;
 
-function mem__resize(xptr:pointer;xnewsize:comp):pointer;//thread safe - 26aug2026
-begin
-mem__resize3(xptr,xnewsize,false,result);
-end;
-
-function mem__resize2(xptr:pointer;xnewsize:comp;var xoutptr:pointer):boolean;//thread safe - 26aug2026
+function mem__resize2(const xptr:pointer3264;const xnewsize:longint64;var xoutptr:pointer3264):boolean;//thread safe - 26aug2026
 begin
 result:=mem__resize3(xptr,xnewsize,false,xoutptr);
 end;
 
-function mem__resize3(xptr:pointer;xnewsize:comp;xclearnewbytes:boolean;var xoutptr:pointer):boolean;//thread safe - 26aug2026
+function mem__resize3(xptr:pointer3264;const xnewsize:longint64;const xclearnewbytes:boolean;var xoutptr:pointer3264):boolean;//thread safe - 26aug2026
 var
-   xoldsize:comp;
-   xnewsize32,p:longint;
+   xoldsize:longint64;
+   p:longint3264;
 begin
-
-xnewsize32:=restrict32(xnewsize);
 
 //reallocate existing memory
 if (xptr<>nil) and (xnewsize>=1) then
@@ -8042,21 +8534,25 @@ if (xptr<>nil) and (xnewsize>=1) then
    xoldsize:=mem__size(xptr);
 
    //MS -> if it fails, original memory and pointer remain valid - 26aug2025
-   xoutptr:=win____HeapReAlloc( win____getprocessheap, 0, xptr, xnewsize32 );
+   {$ifdef 64bit}
+   xoutptr:=win____HeapReAlloc( win____getprocessheap, 0, xptr, xnewsize );
+   {$else}
+   xoutptr:=win____HeapReAlloc( win____getprocessheap, 0, xptr, int64__3264(xnewsize) );
+   {$endif}
 
    if (xoutptr<>nil) then
       begin
 
       //clear newly allocated bytes
-      if xclearnewbytes and (xnewsize32>xoldsize) then
+      if xclearnewbytes and (int64__3264(xnewsize)>xoldsize) then
          begin
 
-         for p:=restrict32(xoldsize) to (xnewsize32-1) do pdlbyte(xoutptr)[p]:=0;
+         for p:=int64__3264(xoldsize) to (int64__3264(xnewsize)-1) do pdlbyte(xoutptr)[p]:=0;
 
          end;//p
 
       //track
-      system_memory_bytes:=add64( system_memory_bytes, xnewsize32 );
+      system_memory_bytes:=add64( system_memory_bytes, int64__3264(xnewsize) );
       system_memory_bytes:=sub64( system_memory_bytes, xoldsize );
 
       result:=true;
@@ -8116,105 +8612,207 @@ track__inc(satPstring,-1);
 end;
 
 
-//block memory management procs ------------------------------------------------
-function block__size:longint;
+//pointer procs ----------------------------------------------------------------
+
+function pointer__make64(const x:pointer3264):pointer64;//????????????????????????
 begin
-result:=system_blocksize;//static, does not change during runtime
+
+{$ifdef 64bit}
+
+result:=x;
+
+{$else}
+
+tcmp8(result^).ints[0]:=longint( x );
+tcmp8(result^).ints[1]:=0;
+
+{$endif}
+
 end;
 
-function block__fastinfo(x:pobject;xpos:longint;var xmem:pdlbyte;var xmin,xmax:longint):boolean;
-var
-   pmem:pointer;
+function pointer__from64(const x:pointer64):pointer3264;
 begin
-//defaults
-result:=false;
-xmem:=nil;
-xmin:=-1;
-xmax:=-2;
 
-try
+{$ifdef 64bit}
+
+result:=x;
+
+{$else}
+
+result:=pointer3264( tint64(x^).ints[0] );
+
+{$endif}
+
+end;
+
+
+//64bit block procs ------------------------------------------------------------
+
+function block64__size:longint;//returns the system block size as defined by "system_blocksize"
+begin
+result:=system_blocksize;
+end;
+
+procedure block64__cls(const x:pointer3264);//Warning: assumes memory is sized to "block64__size" - 12dec2025
+begin
+block64__cls2(x,system_blocksize);
+end;
+
+procedure block64__cls2(const x:pointer3264;const xlen:longint);
+begin
+if (x<>nil) then low__cls(x,xlen);
+end;
+
+function block64__fastinfo32(x:pobject;const xpos:longint32;var xmem:pdlbyte;var xmin,xmax:longint32):boolean;
+var
+   pmem:pointer3264;
+begin
+
+//defaults
+result    :=false;
+xmem      :=nil;
+xmin      :=-1;
+xmax      :=-2;
+
 //get
-if str__ok(x) then
+if (x<>nil) and (x^<>nil) then
    begin
-   if      (x^ is tstr9) then (x^ as tstr9).fastinfo(xpos,xmem,xmin,xmax)
+
+   if      (x^ is tstr9) then (x^ as tstr9).fastinfo32(xpos,xmem,xmin,xmax)
+
    else if (x^ is tstr8) then
       begin
+
       if (xpos>=0) and (xpos<(x^ as tstr8).len) then
          begin
+
          xmem:=(x^ as tstr8).core;
          xmin:=0;
-         xmax:=(x^ as tstr8).len-1;
+         xmax:=(x^ as tstr8).len32-1;
+
          end;
       end
-   else if (x^ is tintlist) then
+
+   else if (x^ is tintlist64) then
       begin
-      (x^ as tintlist).fastinfo(xpos,pmem,xmin,xmax);
+
+      (x^ as tintlist64).fastinfo32(xpos,pmem,xmin,xmax);
       xmem:=pdlbyte(pmem);
+
+      end
+
+   else if (x^ is tintlist32) then
+      begin
+
+      (x^ as tintlist32).fastinfo32(xpos,pmem,xmin,xmax);
+      xmem:=pdlbyte(pmem);
+
       end;
+
    //successful
    result:=(xmem<>nil) and (xmax>=0) and (xmin>=0);
+
    end;
-except;end;
+
 end;
 
-function block__fastptr(x:pobject;xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;
+function block64__fastinfo64(x:pobject;const xpos:longint64;var xmem:pdlbyte;var xmin,xmax:longint64):boolean;
 var
-   bmem:pdlbyte;
+   pmem:pointer3264;
 begin
-//defaults
-result:=false;
-xmem:=nil;
-xmin:=-1;
-xmax:=-2;
 
-try
+//defaults
+result    :=false;
+xmem      :=nil;
+xmin      :=-1;
+xmax      :=-2;
+
 //get
-if str__ok(x) then
+if (x<>nil) and (x^<>nil) then
    begin
-   if      (x^ is tstr9) then
-      begin
-      (x^ as tstr9).fastinfo(xpos,bmem,xmin,xmax);
-      xmem:=pointer(bmem);
-      end
+
+   if      (x^ is tstr9) then (x^ as tstr9).fastinfo64(xpos,xmem,xmin,xmax)
+
    else if (x^ is tstr8) then
       begin
+
       if (xpos>=0) and (xpos<(x^ as tstr8).len) then
          begin
+
          xmem:=(x^ as tstr8).core;
          xmin:=0;
          xmax:=(x^ as tstr8).len-1;
+
          end;
       end
-   else if (x^ is tintlist) then (x^ as tintlist).fastinfo(xpos,xmem,xmin,xmax);
+
+   else if (x^ is tintlist64) then
+      begin
+
+      (x^ as tintlist64).fastinfo64(xpos,pmem,xmin,xmax);
+      xmem:=pdlbyte(pmem);
+
+      end
+
+   else if (x^ is tintlist32) then
+      begin
+
+      (x^ as tintlist32).fastinfo64(xpos,pmem,xmin,xmax);
+      xmem:=pdlbyte(pmem);
+
+      end;
+
    //successful
    result:=(xmem<>nil) and (xmax>=0) and (xmin>=0);
+
    end;
-except;end;
+
 end;
 
-procedure block__cls(x:pointer);
+function block64__new:pointer3264;
 begin
-if (x<>nil) then low__cls(x,block__size);
+result:=block64__new2( block64__size );
 end;
 
-function block__new:pointer;
+function block64__new2(const xlen:longint):pointer3264;
 begin
-result:=mem__create(system_blocksize);
+
+case (xlen>=1) of
+true:result:=win____HeapAlloc(win____getprocessheap,0,xlen);
+else result:=nil;
+end;//case
+
+//stats
 if (result<>nil) then track__inc(satBlock,1);
+
 end;
 
-procedure block__free(var x:pointer);
+procedure block64__free(var x:pointer3264);
 begin
-if (x<>nil) and mem__free(x) and (x=nil) then track__inc(satBlock,-1);
+
+if (x<>nil) then
+   begin
+
+   win____HeapFree(win____getprocessheap,0, x );
+
+   //dec stats
+   track__inc(satBlock,-1);
+
+   end;
+
+//clear
+x:=nil;
+
 end;
 
-procedure block__freeb(x:pointer);
+procedure block64__freeb(x:pointer3264);
 begin
-if (x<>nil) and mem__free(x) and (x=nil) then track__inc(satBlock,-1);
+if (x<>nil) then block64__free(x);
 end;
+
 
 //binary string procs ----------------------------------------------------------
-function cache__ptr(x:tobject):pobject;//09feb2024: Stores a "floating object" (a dynamically created object that is to be passed to a proc as a parameter)
+function cache__ptr(const x:tobject):pobject;//09feb2024: Stores a "floating object" (a dynamically created object that is to be passed to a proc as a parameter)
 begin                                //           but which has no persistent variable to act as a SAFE pointer -> object is thus stored on it's own temp var
                                      //           as a special variable "__cacheptr", allowing for safe pointer operations - works on Delphi 3 and Lazarus - 10feb2024
 //defaults
@@ -8234,235 +8832,350 @@ if (x<>nil) then
 except;end;
 end;
 
-function str__info(x:pobject;var xstyle:longint):boolean;
+function str__info(const x:pobject;var xstyle:longint):boolean;
 begin
+
 result:=false;
 xstyle:=0;
 
 if (x<>nil) and (x^<>nil) then
    begin
+
    if (x^ is tstr8) then
       begin
       xstyle:=8;
       result:=true;
       end
+
    else if (x^ is tstr9) then
       begin
       xstyle:=9;
       result:=true;
       end;
+
    end;
+
 end;
 
-function str__info2(x:pobject):longint;
+function str__info2(const x:pobject):longint;
 begin
 str__info(x,result);
 end;
 
-function str__ok(x:pobject):boolean;
+function str__ok(const x:pobject):boolean;
 begin
 result:=(x<>nil) and (x^<>nil) and ( (x^ is tstr8) or (x^ is tstr9) );
 end;
 
-function str__newsametype(x:pobject):tobject;
+function str__newsametype(const x:pobject):tobject;
 begin
+
 if str__ok(x) then
    begin
+
    if (x^ is tstr9) then result:=str__new9
    else                  result:=str__new8;
+
    end
 else                     result:=str__new8;
+
 end;
 
-function str__lock(x:pobject):boolean;
+function str__lock(const x:pobject):boolean;
 begin
+
 result:=str__ok(x);
+
 if result then
    begin
+
    if      (x^ is tstr8) then (x^ as tstr8).lock
    else if (x^ is tstr9) then (x^ as tstr9).lock
-   else result:=false;
+   else                       result:=false;
+
    end;
+
 end;
 
-function str__lock2(x,x2:pobject):boolean;
+function str__lock2(const x,x2:pobject):boolean;//14dec2025
 begin
-if      not str__lock(x)  then result:=false
-else if not str__lock(x2) then result:=false
-else                           result:=true;
+
+result:=true;
+
+if not str__lock(x)  then result:=false;
+if not str__lock(x2) then result:=false;
+
 end;
 
-function str__lock3(x,x2,x3:pobject):boolean;//17dec2024
+function str__lock3(const x,x2,x3:pobject):boolean;//14dec2025, 17dec2024
 begin
-if      not str__lock(x)  then result:=false
-else if not str__lock(x2) then result:=false
-else if not str__lock(x3) then result:=false
-else                           result:=true;
+
+result:=true;
+
+if not str__lock(x)  then result:=false;
+if not str__lock(x2) then result:=false;
+if not str__lock(x3) then result:=false;
+
 end;
 
-function str__unlock(x:pobject):boolean;
+function str__unlock(const x:pobject):boolean;
 begin
+
 result:=str__ok(x);
+
 if result then
    begin
+
    if      (x^ is tstr8) then (x^ as tstr8).unlock
    else if (x^ is tstr9) then (x^ as tstr9).unlock
-   else result:=false;
+   else                       result:=false;
+
    end;
+
 end;
 
-procedure str__unlockautofree(x:pobject);
+procedure str__unlockautofree(const x:pobject);
 begin
 if str__unlock(x) then str__autofree(x);
 end;
 
-procedure str__uaf(x:pobject);
+procedure str__uaf(const x:pobject);
 begin
 if str__unlock(x) then str__autofree(x);
 end;
 
-procedure str__uaf2(x,x2:pobject);
+procedure str__uaf2(const x,x2:pobject);
 begin
+
 if str__unlock(x)  then str__autofree(x);
 if str__unlock(x2) then str__autofree(x2);
+
 end;
 
-procedure str__uaf3(x,x2,x3:pobject);//17dec2024
+procedure str__uaf3(const x,x2,x3:pobject);//17dec2024
 begin
+
 if str__unlock(x)  then str__autofree(x);
 if str__unlock(x2) then str__autofree(x2);
 if str__unlock(x3) then str__autofree(x3);
+
 end;
 
-procedure str__autofree(x:pobject);
+procedure str__autofree(const x:pobject);
 begin
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) and (x^ as tstr8).oautofree and ((x^ as tstr8).lockcount=0) then freeobj(x)
    else if (x^ is tstr9) and (x^ as tstr9).oautofree and ((x^ as tstr9).lockcount=0) then freeobj(x);
+
    end;
+
 end;
 
-procedure str__af(x:pobject);
+procedure str__af(const x:pobject);
 begin
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) and (x^ as tstr8).oautofree and ((x^ as tstr8).lockcount=0) then freeobj(x)
    else if (x^ is tstr9) and (x^ as tstr9).oautofree and ((x^ as tstr9).lockcount=0) then freeobj(x);
+
    end;
+
 end;
 
-function str__mem(x:pobject):longint;
+function str__mem(const x:pobject):longint64;
 begin
+
+//defaults
 result:=0;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).datalen
 else if (x^ is tstr9) then result:=(x^ as tstr9).mem;
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__len(x:pobject):longint;
+function str__mem32(const x:pobject):longint32;
 begin
+result:=restrict32( str__mem(x) );
+end;
+
+function str__len(const x:pobject):longint64;
+begin
+result:=str__len64(x);
+end;
+
+function str__len64(const x:pobject):longint64;
+begin
+
+//defaults
 result:=0;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).len
 else if (x^ is tstr9) then result:=(x^ as tstr9).len;
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__datalen(x:pobject):longint;
+function str__len32(const x:pobject):longint32;
 begin
+result:=restrict32(str__len64(x));
+end;
+
+function str__datalen(const x:pobject):longint64;
+begin
+
+//defaults
 result:=0;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).datalen
 else if (x^ is tstr9) then result:=(x^ as tstr9).datalen;
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__equal(s,s2:pobject):boolean;
+function str__datalen32(const x:pobject):longint32;
+begin
+result:=restrict32( str__datalen(x) );
+end;
+
+function str__equal(const s,s2:pobject):boolean;
 label
    skipend;
 var
-   smin,smax,smin2,smax2,p,slen,slen2:longint;
+   p:longint3264;
+   smin,smax,smin2,smax2,slen,slen2:longint64;
    smem,smem2:pdlbyte;
 begin
-result:=false;
+
+//defaults
+result :=false;
 
 try
 //check
 if not str__lock2(s,s2) then goto skipend;
 
 //length check
-slen :=str__len(s);
-slen2:=str__len(s2);
+slen   :=str__len(s);
+slen2  :=str__len(s2);
+
 if (slen<>slen2) then goto skipend;
+
 if (slen<=0) then
    begin
+
    result:=true;
    goto skipend;
+
    end;
 
 //data check
-smax:=-2;
-smax2:=-2;
-for p:=0 to (slen-1) do
+smax   :=-2;
+smax2  :=-2;
+
+
+for p:=0 to int64__3264(slen-1) do
 begin
-if (p>smax)  and (not block__fastinfo(s,p,smem,smin,smax)) then goto skipend;
-if (p>smax2) and (not block__fastinfo(s2,p,smem2,smin2,smax2)) then goto skipend;
+
+if (p>smax)  and (not block64__fastinfo64(s,p,smem,smin,smax)) then goto skipend;
+if (p>smax2) and (not block64__fastinfo64(s2,p,smem2,smin2,smax2)) then goto skipend;
+
 //.compare
+{$ifdef 64bit}
 if (smem[p-smin]<>smem2[p-smin2]) then goto skipend;
+{$else}
+if (smem[ restrict32(p-smin) ]<>smem2[ restrict32(p-smin2) ] ) then goto skipend;
+{$endif}
+
 end;//p
 
 //successful
 result:=true;
+
 skipend:
+
 except;end;
-try;str__uaf2(s,s2);except;end;
+
+//free
+str__uaf2(s,s2);
 end;
 
-function str__minlen(x:pobject;xnewlen:longint):boolean;//29feb2024: created
+function str__minlen(const x:pobject;const xnewlen:longint64):boolean;//29feb2024: created
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).minlen(xnewlen)
 else if (x^ is tstr9) then result:=(x^ as tstr9).minlen(xnewlen);
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__setlen(x:pobject;xnewlen:longint):boolean;
+function str__setlen(const x:pobject;const xnewlen:longint64):boolean;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).setlen(xnewlen)
 else if (x^ is tstr9) then result:=(x^ as tstr9).setlen(xnewlen);
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
 function str__new8:tstr8;
@@ -8485,26 +9198,30 @@ begin
 result:=nil;try;result:=tstr9.create(0);result.text:=xval;except;end;
 end;
 
-function str__new8c(x:pobject):tstr8;
+function str__new8c(const x:pobject):tstr8;
 begin
 result:=tstr8.create(0);str__add(@result,x);
 end;
 
-function str__new9c(x:pobject):tstr9;
+function str__new9c(const x:pobject):tstr9;
 begin
 result:=tstr9.create(0);str__add(@result,x);
 end;
 
-function str__newlen8(xlen:longint):tstr8;//22jun2024
+function str__newlen8(const xlen:longint64):tstr8;//22jun2024
 begin
+
 result:=str__new8;
-if (result<>nil) then str__setlen(@result,frcmin32(xlen,0));
+if (result<>nil) then str__setlen(@result,frcmin64(xlen,0));
+
 end;
 
-function str__newlen9(xlen:longint):tstr9;//22jun2024
+function str__newlen9(const xlen:longint64):tstr9;//22jun2024
 begin
+
 result:=str__new9;
-if (result<>nil) then str__setlen(@result,frcmin32(xlen,0));
+if (result<>nil) then str__setlen(@result,frcmin64(xlen,0));
+
 end;
 
 function str__newaf8:tstr8;//autofree
@@ -8527,232 +9244,237 @@ begin
 result:=nil;try;result:=tstr9.create(0);result.text:=xval;result.oautofree:=true;except;end;
 end;
 
-procedure str__free(x:pobject);
+procedure str__free(const x:pobject);
 begin
 freeobj(x);
 end;
 
-procedure str__free2(x,x2:pobject);
+procedure str__free2(const x,x2:pobject);
 begin
 freeobj(x);
 freeobj(x2);
 end;
 
-procedure str__free3(x,x2,x3:pobject);
+procedure str__free3(const x,x2,x3:pobject);
 begin
 freeobj(x);
 freeobj(x2);
 freeobj(x3);
 end;
 
-function str__splice(x:pobject;xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;
+function str__splice(const x:pobject;const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).splice(xpos,xlen,xoutmem,xoutlen)
 else if (x^ is tstr9) then result:=(x^ as tstr9).splice(xpos,xlen,xoutmem,xoutlen);
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-procedure str__clear(x:pobject);
+procedure str__clear(const x:pobject);
 begin
-try
+
 //check
 if not str__lock(x) then exit;
+
 //get
 if      (x^ is tstr8) then (x^ as tstr8).clear
 else if (x^ is tstr9) then (x^ as tstr9).clear;
-except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-procedure str__softclear(x:pobject);
+procedure str__softclear(const x:pobject);
 begin
-try
+
 //check
 if not str__lock(x) then exit;
+
 //get
 if      (x^ is tstr8) then (x^ as tstr8).clear
 else if (x^ is tstr9) then (x^ as tstr9).softclear;
-except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-procedure str__softclear2(x:pobject;xmaxlen:longint);
+procedure str__softclear2(const x:pobject;const xmaxlen:longint64);
 begin
-try
+
 //check
 if not str__lock(x) then exit;
+
 //get
 if      (x^ is tstr8) then
    begin
+
    if ((x^ as tstr8).len>xmaxlen) then (x^ as tstr8).setlen(xmaxlen);
+
    end
+
 else if (x^ is tstr9) then (x^ as tstr9).softclear2(xmaxlen);
-except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
 
 //string procs -----------------------------------------------------------------
-function str__addrec(x:pobject;xrec:pointer;xrecsize:longint):boolean;//20feb2024, 07feb2022
+function str__addrec(const x:pobject;const xrec:pointer3264;const xrecsize:longint64):boolean;//20feb2024, 07feb2022
 begin
 result:=str__pins2(x,pdlbyte(xrec),xrecsize,str__len(x),0,xrecsize-1);
 end;
 
-function str__add(x,xadd:pobject):boolean;
+function str__add(const x,xadd:pobject):boolean;
 begin
 result:=str__ins2(x,xadd,str__len(x),0,max32);
 end;
 
-function str__add2(x,xadd:pobject;xfrom,xto:longint):boolean;
+function str__add2(const x,xadd:pobject;const xfrom,xto:longint64):boolean;
 begin
 result:=str__ins2(x,xadd,str__len(x),xfrom,xto);
 end;
 
-function str__add3(x,xadd:pobject;xfrom,xlen:longint):boolean;
+function str__add3(const x,xadd:pobject;const xfrom,xlen:longint64):boolean;
 begin
 //result:=false;try;if (xlen>=1) then result:=str__ins2(x,xadd,str__len(x),xfrom,xfrom+xlen-1) else result:=true;except;end;
 if (xlen>=1) then result:=str__ins2(x,xadd,str__len(x),xfrom,xfrom+xlen-1) else result:=true;
 end;
 
-function str__add31(x,xadd:pobject;xfrom1,xlen:longint):boolean;
+function str__add31(const x,xadd:pobject;const xfrom1,xlen:longint64):boolean;
 begin
-result:=false;try;if (xlen>=1) then result:=str__ins2(x,xadd,str__len(x),(xfrom1-1),(xfrom1-1)+xlen-1) else result:=true;except;end;
+if (xlen>=1) then result:=str__ins2(x,xadd,str__len(x),(xfrom1-1),(xfrom1-1)+xlen-1) else result:=true;
 end;
 
-function str__padd(s:pobject;x:pdlbyte;xsize:longint):boolean;//15feb2024
+function str__padd(const s:pobject;const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
 begin
 if (xsize<=0) then result:=true else result:=str__pins2(s,x,xsize,str__len(s),0,xsize-1);
 end;
 
-function str__pins2(s:pobject;x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;
+function str__pins2(const s:pobject;const x:pdlbyte;const xcount,xpos,xfrom,xto:longint64):boolean;
 begin
-result:=false;
-try
+
+//get
 if str__lock(s) then
    begin
+
    if      (s^ is tstr9) then result:=(s^ as tstr9).pins2(x,xcount,xpos,xfrom,xto)
-   else if (s^ is tstr8) then result:=(s^ as tstr8).pins2(x,xcount,xpos,xfrom,xto);
-   end;
-except;end;
-try;str__uaf(s);except;end;
+   else if (s^ is tstr8) then result:=(s^ as tstr8).pins2(x,xcount,xpos,xfrom,xto)
+   else                       result:=false;
+
+   end
+else result:=false;
+
+//free
+str__uaf(s);
+
 end;
 
-function str__insstr(x:pobject;xadd:string;xpos:longint):boolean;//18aug2024
+function str__insstr(const x:pobject;const xadd:string;const xpos:longint64):boolean;//18aug2024
 var
    b:tobject;
 begin
-result:=false;
-b:=nil;
 
+//defaults
+result  :=false;
+b       :=nil;
+
+//get
 try
-b:=str__new8;
+b       :=str__new8;
 str__settext(@b,xadd);
-result:=str__ins(x,@b,xpos);
+result  :=str__ins(x,@b,xpos);
+
 except;end;
+
+//free
 str__uaf(@b);
+
 end;
 
-function str__ins(x,xadd:pobject;xpos:longint):boolean;
+function str__ins(const x,xadd:pobject;const xpos:longint64):boolean;
 begin
 result:=str__ins2(x,xadd,xpos,0,max32);
 end;
 
-function str__ins2(x,xadd:pobject;xpos,xfrom,xto:longint):boolean;
+function str__ins2(const x,xadd:pobject;const xpos,xfrom,xto:longint64):boolean;
 begin
-result:=false;
 
-try
 //get
 if low__true2(str__lock(x),str__lock(xadd)) then
    begin
+
    if      (x^ is tstr9) then result:=(x^ as tstr9).ins2(xadd,xpos,xfrom,xto)//79% native speed of tstr8.ins2 which uses a single block of memory
-   else if (x^ is tstr8) then result:=(x^ as tstr8)._ins2(xadd,xpos,xfrom,xto);
-   end;
-except;end;
-try
+   else if (x^ is tstr8) then result:=(x^ as tstr8)._ins2(xadd,xpos,xfrom,xto)
+   else                       result:=false;
+   end
+else result:=false;
+
+//free
 str__uaf(x);
 str__uaf(xadd);
-except;end;
+
 end;
 
-function str__del3(x:pobject;xfrom,xlen:longint):boolean;//06feb2024
+function str__del3(const x:pobject;const xfrom,xlen:longint64):boolean;//06feb2024
 begin
 result:=str__del(x,xfrom,xfrom+xlen-1);
 end;
 
-function str__del(x:pobject;xfrom,xto:longint):boolean;//06feb2024
-label
-   skipend;
-var
-   smin,dmin,smax,dmax,xlen,p,int1:longint;
-   smem,dmem:pdlbyte;
-   v:byte;
+function str__del(const x:pobject;xfrom,xto:longint64):boolean;//14dec2025, 06feb2024
 begin
+
 //defaults
-result:=true;//pass-thru
+result  :=true;
 
-try
-if not str__lock(x) then exit;
-xlen:=str__len(x);
-
-//check
-if (xlen<=0) or (xfrom>xto) or (xto<0) or (xfrom>=xlen) then exit;
 //get
-if frcrange2(xfrom,0,xlen-1) and frcrange2(xto,xfrom,xlen-1) then
-   begin
-   //shift down
-   int1:=xto+1;
-   if (int1<xlen) then
-      begin
-      //init
-      smax:=-2;
-      dmax:=-2;
-      //get
-      for p:=int1 to (xlen-1) do
-      begin
-      if (p>smax) and (not block__fastinfo(x,p,smem,smin,smax)) then goto skipend;
-      v:=smem[p-smin];
+if not str__lock(x)   then exit
+else if (x^ is tstr8) then result:=(x^ as tstr8).del(xfrom,xto)
+else if (x^ is tstr9) then result:=(x^ as tstr9).del(xfrom,xto);
 
-      if ((xfrom+p-int1)>dmax) and (not block__fastinfo(x,xfrom+p-int1,dmem,dmin,dmax)) then goto skipend;
-      dmem[xfrom+p-int1-dmin]:=v;
-      end;//p
-      end;
-   //resize
-   result:=str__setlen(x,xlen-(xto-xfrom+1));
-   end;
-skipend:
-except;end;
+//free
+str__uaf(x);
+
 end;
 
-function str__is8(x:pobject):boolean;//x is tstr8
+function str__is8(const x:pobject):boolean;//x is tstr8
 begin
 result:=str__ok(x) and (x^ is tstr8);
 end;
 
-function str__is9(x:pobject):boolean;//x is tstr9
+function str__is9(const x:pobject):boolean;//x is tstr9
 begin
 result:=str__ok(x) and (x^ is tstr9);
 end;
 
-function str__as8(x:pobject):tstr8;
+function str__as8(const x:pobject):tstr8;
 begin
 if str__is8(x) then result:=(x^ as tstr8) else result:=nil;
 end;
 
-function str__as9(x:pobject):tstr9;
+function str__as9(const x:pobject):tstr9;
 begin
 if str__is9(x) then result:=(x^ as tstr9) else result:=nil;
 end;
 
-function str__as8f(x:pobject):tstr8;//uses fallback var instead of failure - 30aug2025
+function str__as8f(const x:pobject):tstr8;//uses fallback var instead of failure - 30aug2025
 begin
 
 if str__is8(x) then result:=(x^ as tstr8)
@@ -8760,6 +9482,7 @@ else
    begin
 
    if (system_root_str8=nil) then system_root_str8:=str__new8;
+
    system_root_str8.floatsize:=5000;
    system_root_str8.clear;
 
@@ -8769,7 +9492,7 @@ else
 
 end;
 
-function str__as9f(x:pobject):tstr9;//uses fallback var instead of failure - 30aug2025
+function str__as9f(const x:pobject):tstr9;//uses fallback var instead of failure - 30aug2025
 begin
 
 if str__is9(x) then result:=(x^ as tstr9)
@@ -8777,6 +9500,7 @@ else
    begin
 
    if (system_root_str9=nil) then system_root_str9:=str__new9;
+
    system_root_str9.clear;
 
    result:=system_root_str9;
@@ -8785,20 +9509,27 @@ else
 
 end;
 
-function str__asame2(x:pobject;xfrom:longint;const xlist:array of byte):boolean;
+function str__asame2(const x:pobject;const xfrom:longint64;const xlist:array of byte):boolean;
 begin
 result:=str__asame3(x,xfrom,xlist,true);
 end;
 
-function str__asame3(x:pobject;xfrom:longint;const xlist:array of byte;xcasesensitive:boolean):boolean;//20jul2024
+function str__asame3(const x:pobject;xfrom:longint64;const xlist:array of byte;const xcasesensitive:boolean):boolean;//20jul2024
 begin
-result:=false;
-try
-if not str__lock(x)   then exit
+
+//get
+if not str__lock(x)   then
+   begin
+   result:=false;
+   exit
+   end
 else if (x^ is tstr8) then result:=(x^ as tstr8).asame3(xfrom,xlist,xcasesensitive)
-else if (x^ is tstr9) then result:=(x^ as tstr9).asame3(xfrom,xlist,xcasesensitive);
-except;end;
-try;str__uaf(x);except;end;
+else if (x^ is tstr9) then result:=(x^ as tstr9).asame3(xfrom,xlist,xcasesensitive)
+else                       result:=false;
+
+//free
+str__uaf(x);
+
 end;
 
 function str__aadd(x:pobject;const xlist:array of byte):boolean;//20jul2024
@@ -8846,47 +9577,81 @@ begin
 result:=str__aadd(x,tint4(xval).bytes);
 end;
 
-function str__writeto1(x:pobject;a:pointer;asize,xfrom1,xlen:longint):boolean;
+function str__writeto1(const x:pobject;const a:pointer3264;const asize,xfrom1,xlen:longint64):boolean;
 begin
-result:=false;
-try
-if not str__lock(x)   then exit
+
+//get
+if not str__lock(x) then
+   begin
+   result:=false;
+   exit;
+   end
 else if (x^ is tstr8) then result:=(x^ as tstr8).writeto1(a,asize,xfrom1,xlen)
-else if (x^ is tstr9) then result:=(x^ as tstr9).writeto1(a,asize,xfrom1,xlen);
-except;end;
-try;str__uaf(x);except;end;
+else if (x^ is tstr9) then result:=(x^ as tstr9).writeto1(a,asize,xfrom1,xlen)
+else                       result:=false;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__writeto1b(x:pobject;a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
+function str__writeto1b32(const x:pobject;const a:pointer3264;const asize:longint64;var xfrom1:longint32;const xlen:longint64):boolean;
+var
+   xfrom64:longint64;
 begin
-result:=false;
-try
-if not str__lock(x)   then exit
+
+xfrom64  :=xfrom1;
+result   :=str__writeto1b(x,a,asize,xfrom64,xlen);
+xfrom1   :=restrict32(xfrom64);
+
+end;
+
+function str__writeto1b(const x:pobject;const a:pointer3264;const asize:longint64;var xfrom1:longint64;const xlen:longint64):boolean;
+begin
+
+//get
+if not str__lock(x) then
+   begin
+   result:=false;
+   exit
+   end
 else if (x^ is tstr8) then result:=(x^ as tstr8).writeto1b(a,asize,xfrom1,xlen)
-else if (x^ is tstr9) then result:=(x^ as tstr9).writeto1b(a,asize,xfrom1,xlen);
-except;end;
-try;str__uaf(x);except;end;
+else if (x^ is tstr9) then result:=(x^ as tstr9).writeto1b(a,asize,xfrom1,xlen)
+else                       result:=false;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__writeto(x:pobject;a:pointer;asize,xfrom0,xlen:longint):boolean;
+function str__writeto(const x:pobject;const a:pointer;const asize,xfrom0,xlen:longint64):boolean;
 begin
+
+//defaults
 result:=false;
-try
+
+//get
 if not str__lock(x)   then exit
 else if (x^ is tstr8) then result:=(x^ as tstr8).writeto(a,asize,xfrom0,xlen)
 else if (x^ is tstr9) then result:=(x^ as tstr9).writeto(a,asize,xfrom0,xlen);
-except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__sadd(x:pobject;const xdata:string):boolean;
+function str__sadd(const x:pobject;const xdata:string):boolean;
 begin
+
+//defaults
 result:=false;
 
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then result:=(x^ as tstr8).sadd(xdata)
    else if (x^ is tstr9) then result:=(x^ as tstr9).sadd(xdata);
+
    end;
 {
 try
@@ -8900,57 +9665,83 @@ try;str__uaf(x);except;end;
 {}
 end;
 
-function str__remchar(x:pobject;y:byte):boolean;//29feb2024: created
+function str__remchar(const x:pobject;const y:byte):boolean;//29feb2024: created
 label
    skipend;
 var
-   smin,smax,dmin,dmax,slen,dlen,p:longint;
+   p:longint3264;
+   smin,smax,dmin,dmax,slen,dlen:longint64;
    smem,dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
-result:=false;
+result  :=false;
 
 //check
 if not str__lock(x) then exit;
 
 try
 //init
-slen:=str__len(x);
-dlen:=0;
+slen    :=str__len(x);
+dlen    :=0;
+
 if (slen<=0) then goto skipend;
-smax:=-2;
-smin:=-1;
-dmax:=-2;
-dmin:=-1;
+
+smax    :=-2;
+smin    :=-1;
+dmax    :=-2;
+dmin    :=-1;
 
 //get
-for p:=0 to (slen-1) do
+for p:=0 to int64__3264(slen-1) do
 begin
-if (p>smax) and (not block__fastinfo(x,p,smem,smin,smax)) then goto skipend;
+
+if (p>smax) and (not block64__fastinfo64(x,p,smem,smin,smax)) then goto skipend;
+
+{$ifdef 64bit}
 v:=smem[p-smin];
+{$else}
+v:=smem[ int64__3264(p-smin) ];
+{$endif}
+
 if (v<>y) then
    begin
-   if (dlen>dmax) and (not block__fastinfo(x,dlen,dmem,dmin,dmax)) then goto skipend;
-   dmem[dlen-dmin]:=v;
-   inc(dlen);
+
+   if (dlen>dmax) and (not block64__fastinfo64(x,dlen,dmem,dmin,dmax)) then goto skipend;
+
+   {$ifdef 64bit}
+   dmem[ dlen-dmin ]              :=v;
+   {$else}
+   dmem[ int64__3264(dlen-dmin) ] :=v;
+   {$endif}
+
+   inc64(dlen,1);
+
    end;
+
 end;//p
 
 //finalise
 if (dlen<>slen) then
    begin
+
    str__setlen(x,dlen);
    result:=true;
+
    end;
 
 skipend:
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__text(x:pobject):string;
+function str__text(const x:pobject):string;
 begin
+
 //defaults
 result:='';
 
@@ -8958,15 +9749,21 @@ result:='';
 if not str__lock(x) then exit;
 
 try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).text
 else if (x^ is tstr9) then result:=(x^ as tstr9).text;
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__settext(x:pobject;const xtext:string):boolean;
+function str__settext(const x:pobject;const xtext:string):boolean;
 begin
+
 //defaults
 result:=false;
 
@@ -8974,290 +9771,391 @@ result:=false;
 if not str__lock(x) then exit;
 
 try
+
 //get
 if (x^ is tstr8) then
    begin
+
    (x^ as tstr8).text:=xtext;
    result:=true;
+
    end
 else if (x^ is tstr9) then
    begin
+
    (x^ as tstr9).text:=xtext;
    result:=true;
+
    end;
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__settextb(x:pobject;const xtext:string):boolean;
+function str__settextb(const x:pobject;const xtext:string):boolean;
 begin
 result:=str__settext(x,xtext);
 end;
 
-function str__str1(x:pobject;xpos,xlen:longint):string;
+function str__str1(const x:pobject;const xpos,xlen:longint64):string;
 begin
+
 //defaults
 result:='';
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).str1[xpos,xlen]
 else if (x^ is tstr9) then result:=(x^ as tstr9).str1[xpos,xlen];
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function str__str0(x:pobject;xpos,xlen:longint):string;
+function str__str0(const x:pobject;const xpos,xlen:longint64):string;
 begin
+
 //defaults
 result:='';
 
-try
 //check
 if not str__lock(x) then exit;
+
+try
+
 //get
 if      (x^ is tstr8) then result:=(x^ as tstr8).str[xpos,xlen]
 else if (x^ is tstr9) then result:=(x^ as tstr9).str[xpos,xlen];
+
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
-function bcopy1(x:tstr8;xpos1,xlen:longint):tstr8;//fixed - 26apr2021
+function bcopy1(const x:tstr8;const xpos1,xlen:longint64):tstr8;//fixed - 26apr2021
 begin
+
+//init
 result:=str__newaf8;
+
+//get
 try;if str__lock(@x) then result.add3(x,xpos1-1,xlen);except;end;
+
+//free
 str__uaf(@x);
+
 end;
 
-function str__copy81(x:tobject;xpos1,xlen:longint):tstr8;//28jun2024
+function str__copy81(const x:tobject;const xpos1,xlen:longint64):tstr8;//28jun2024
 begin
+
 result:=str__new8;
 str__add3(@result,@x,xpos1-1,xlen);
 result.oautofree:=true;
+
 end;
 
-function str__copy91(x:tobject;xpos1,xlen:longint):tstr9;//28jun2024
+function str__copy91(const x:tobject;const xpos1,xlen:longint64):tstr9;//28jun2024
 begin
+
 result:=str__new9;
 str__add3(@result,@x,xpos1-1,xlen);
 result.oautofree:=true;
+
 end;
 
-function str__sml2(x:pobject;xpos:longint):smallint;
+function str__sml2(const x:pobject;const xpos:longint64):smallint;
 begin
+
 result:=0;
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then result:=(x^ as tstr8).sml2[xpos]
    else if (x^ is tstr9) then result:=(x^ as tstr9).sml2[xpos];
+
    end;
+
 end;
 
-function str__seekpos(x:pobject):longint;
+function str__seekpos(const x:pobject):longint64;
 begin
-result:=0;
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then result:=(x^ as tstr8).seekpos
-   else if (x^ is tstr9) then result:=(x^ as tstr9).seekpos;
-   end;
+   else if (x^ is tstr9) then result:=(x^ as tstr9).seekpos
+   else                       result:=0;
+
+   end
+else result:=0;
+
 end;
 
-function str__tag1(x:pobject):longint;
+function str__seekpos32(const x:pobject):longint32;
 begin
-result:=0;
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).tag1
-   else if (x^ is tstr9) then result:=(x^ as tstr9).tag1;
-   end;
+result:=restrict32( str__seekpos(x) );
 end;
 
-function str__tag2(x:pobject):longint;
+function str__setseekpos(const x:pobject;const xval:longint64):boolean;
 begin
-result:=0;
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).tag2
-   else if (x^ is tstr9) then result:=(x^ as tstr9).tag2;
-   end;
-end;
 
-function str__tag3(x:pobject):longint;
-begin
-result:=0;
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).tag3
-   else if (x^ is tstr9) then result:=(x^ as tstr9).tag3;
-   end;
-end;
-
-function str__tag4(x:pobject):longint;
-begin
-result:=0;
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).tag4
-   else if (x^ is tstr9) then result:=(x^ as tstr9).tag4;
-   end;
-end;
-
-function str__setseekpos(x:pobject;xval:longint):boolean;
-begin
 result:=false;
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then
       begin
+
       (x^ as tstr8).seekpos:=xval;
       result:=true;
+
       end
    else if (x^ is tstr9) then
       begin
+
       (x^ as tstr9).seekpos:=xval;
       result:=true;
+
       end;
+
    end;
+
 end;
 
-function str__settag1(x:pobject;xval:longint):boolean;
+function str__tag1(const x:pobject):longint;
 begin
-result:=false;
+str__tag(x,0);
+end;
+
+function str__tag2(const x:pobject):longint;
+begin
+str__tag(x,1);
+end;
+
+function str__tag3(const x:pobject):longint;
+begin
+str__tag(x,2);
+end;
+
+function str__tag4(const x:pobject):longint;
+begin
+str__tag(x,3);
+end;
+
+function str__tag(const x:pobject;const xtagindex:longint):longint;
+begin
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then
       begin
-      (x^ as tstr8).tag1:=xval;
-      result:=true;
+
+      case xtagindex of
+      0    :result:=(x^ as tstr8).tag1;
+      1    :result:=(x^ as tstr8).tag2;
+      2    :result:=(x^ as tstr8).tag3;
+      3    :result:=(x^ as tstr8).tag4;
+      else  result:=0;
+      end;
+
       end
+
    else if (x^ is tstr9) then
       begin
-      (x^ as tstr9).tag1:=xval;
-      result:=true;
+
+      case xtagindex of
+      0    :result:=(x^ as tstr9).tag1;
+      1    :result:=(x^ as tstr9).tag2;
+      2    :result:=(x^ as tstr9).tag3;
+      3    :result:=(x^ as tstr9).tag4;
+      else  result:=0;
       end;
-   end;
+
+      end
+
+   else result:=0;
+
+   end
+else result:=0;
+
 end;
 
-function str__settag2(x:pobject;xval:longint):boolean;
+function str__settag1(const x:pobject;const xval:longint):boolean;
 begin
-result:=false;
+result:=str__settag(x,0,xval);
+end;
+
+function str__settag2(const x:pobject;const xval:longint):boolean;
+begin
+result:=str__settag(x,1,xval);
+end;
+
+function str__settag3(const x:pobject;const xval:longint):boolean;
+begin
+result:=str__settag(x,2,xval);
+end;
+
+function str__settag4(const x:pobject;const xval:longint):boolean;
+begin
+result:=str__settag(x,4,xval);
+end;
+
+function str__settag(const x:pobject;const xtagindex,xval:longint):boolean;
+begin
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then
       begin
-      (x^ as tstr8).tag2:=xval;
+
+      case xtagindex of
+      0:(x^ as tstr8).tag1:=xval;
+      1:(x^ as tstr8).tag2:=xval;
+      2:(x^ as tstr8).tag3:=xval;
+      3:(x^ as tstr8).tag4:=xval;
+      end;
+
       result:=true;
+
       end
+
    else if (x^ is tstr9) then
       begin
-      (x^ as tstr9).tag2:=xval;
-      result:=true;
-      end;
-   end;
-end;
 
-function str__settag3(x:pobject;xval:longint):boolean;
-begin
-result:=false;
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then
-      begin
-      (x^ as tstr8).tag3:=xval;
+      case xtagindex of
+      0:(x^ as tstr9).tag1:=xval;
+      1:(x^ as tstr9).tag2:=xval;
+      2:(x^ as tstr9).tag3:=xval;
+      3:(x^ as tstr9).tag4:=xval;
+      end;
+
       result:=true;
+
       end
-   else if (x^ is tstr9) then
-      begin
-      (x^ as tstr9).tag3:=xval;
-      result:=true;
-      end;
-   end;
+
+   else result:=false;
+
+   end
+else result:=false;
+
 end;
 
-function str__settag4(x:pobject;xval:longint):boolean;
+function str__pbytes0(const x:pobject;const xpos:longint64):byte;//not limited by internal count, but by datalen
 begin
-result:=false;
+
 if str__ok(x) then
    begin
-   if      (x^ is tstr8) then
-      begin
-      (x^ as tstr8).tag4:=xval;
-      result:=true;
-      end
-   else if (x^ is tstr9) then
-      begin
-      (x^ as tstr9).tag4:=xval;
-      result:=true;
-      end;
-   end;
+
+   if      (x^ is tstr8) then result:=(x^ as tstr8).pbytes[ int64__3264(xpos) ]
+   else if (x^ is tstr9) then result:=(x^ as tstr9).pbytes[ int64__3264(xpos) ]
+   else                       result:=0;
+
+   end
+else result:=0;
+
 end;
 
-function str__pbytes0(x:pobject;xpos:longint):byte;//not limited by internal count, but by datalen
+function str__bytes0(const x:pobject;const xpos:longint64):byte;
 begin
-result:=0;
+
 if str__ok(x) then
    begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).pbytes[xpos]
-   else if (x^ is tstr9) then result:=(x^ as tstr9).pbytes[xpos];
-   end;
+
+   if      (x^ is tstr8) then result:=(x^ as tstr8).bytes[ int64__3264(xpos) ]
+   else if (x^ is tstr9) then result:=(x^ as tstr9).bytes[ int64__3264(xpos) ]
+   else                       result:=0;
+
+   end
+else result:=0;
+
 end;
 
-function str__bytes0(x:pobject;xpos:longint):byte;
+function str__bytes1(const x:pobject;const xpos:longint64):byte;
 begin
-result:=0;
+
 if str__ok(x) then
    begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).bytes[xpos]
-   else if (x^ is tstr9) then result:=(x^ as tstr9).bytes[xpos];
-   end;
+
+   if      (x^ is tstr8) then result:=(x^ as tstr8).bytes[ int64__3264(xpos-1) ]
+   else if (x^ is tstr9) then result:=(x^ as tstr9).bytes[ int64__3264(xpos-1) ]
+   else                       result:=0;
+
+   end
+else result:=0;
+
 end;
 
-function str__bytes1(x:pobject;xpos:longint):byte;
+procedure str__setpbytes0(const x:pobject;const xpos:longint64;const xval:byte);
 begin
-result:=0;
+
 if str__ok(x) then
    begin
-   if      (x^ is tstr8) then result:=(x^ as tstr8).bytes[xpos-1]
-   else if (x^ is tstr9) then result:=(x^ as tstr9).bytes[xpos-1];
+
+   if      (x^ is tstr8) then (x^ as tstr8).pbytes[ int64__3264(xpos) ]:=xval
+   else if (x^ is tstr9) then (x^ as tstr9).pbytes[ int64__3264(xpos) ]:=xval;
+
    end;
+
 end;
 
-procedure str__setpbytes0(x:pobject;xpos:longint;xval:byte);
+procedure str__setbytes0(const x:pobject;const xpos:longint64;const xval:byte);
 begin
-if str__ok(x) then
-   begin
-   if      (x^ is tstr8) then (x^ as tstr8).pbytes[xpos]:=xval
-   else if (x^ is tstr9) then (x^ as tstr9).pbytes[xpos]:=xval;
-   end;
-end;
 
-procedure str__setbytes0(x:pobject;xpos:longint;xval:byte);
-begin
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then (x^ as tstr8).bytes[xpos]:=xval
    else if (x^ is tstr9) then (x^ as tstr9).bytes[xpos]:=xval;
+
    end;
+
 end;
 
-procedure str__setbytes1(x:pobject;xpos:longint;xval:byte);
+procedure str__setbytes1(const x:pobject;const xpos:longint64;const xval:byte);
 begin
+
 if str__ok(x) then
    begin
+
    if      (x^ is tstr8) then (x^ as tstr8).bytes[xpos-1]:=xval
    else if (x^ is tstr9) then (x^ as tstr9).bytes[xpos-1]:=xval;
+
    end;
+
 end;
 
-function str__moveto(s:pobject;var d;spos,ssize:longint):longint;//move memory from "s" to buffer "d" - 04may2025
+function str__moveto32(const s:pobject;var d;spos:longint64;const ssize:longint64):longint32;
+begin
+
+result:=restrict32( str__moveto(s,d,spos,ssize) );
+
+end;
+
+function str__moveto(const s:pobject;var d;spos:longint64;const ssize:longint64):longint64;//move memory from "s" to buffer "d" - 04may2025
 var
    s8   :tstr8;//pointer only
    slist:pdlbyte;
-   p    :longint;
+   p    :longint3264;
 begin
+
 //defaults
 result:=0;
 
@@ -9268,56 +10166,85 @@ if (spos<0)   then spos:=0;
 //get
 if str__ok(s) then
    begin
+
    //init
-   result:=frcmin32( frcmax32(ssize,str__len(s)-spos) ,0);
+   result:=int64__3264( frcmin64( frcmax64(ssize,str__len(s)-spos) ,0) );
 
    //get
    if (result>=1) then
       begin
-      s8   :=str__as8(s);
-      slist:=nil;
+
+      s8     :=str__as8(s);
+      slist  :=nil;
 
       try
-      getmem(slist,result);
 
-      //get
+      getmem(slist, int64__3264(result) );
+
+
+      {$ifdef 64bit}
+
       case (s8<>nil) of
       true:for p:=0 to (result-1) do slist[p]:=s8.bytes[p+spos];
       else for p:=0 to (result-1) do slist[p]:=str__bytes0(s,p+spos);
       end;//case
 
-      //set
-      move(slist^,d,result);
+      move(slist^ ,d ,result);
+
+      {$else}
+
+      case (s8<>nil) of
+      true:for p:=0 to int64__3264(result-1) do slist[p]:=s8.bytes[ int64__3264(p+spos) ];
+      else for p:=0 to int64__3264(result-1) do slist[p]:=str__bytes0(s,p+spos);
+      end;//case
+
+      move(slist^, d ,int64__3264(result) );
+
+      {$endif}
+
 
       finally
+
       //free
       if (slist<>nil) then freemem(slist);
+
       end;
+
       end;//if
 
    end;
 
 end;
 
-function str__movefrom(s:pobject;const d;ssize:longint):longint;//move memory from buffer "d" to "s" - 04may2025
+function str__movefrom32(const s:pobject;const d;ssize:longint64):longint32;
+begin
+
+result:=restrict32( str__movefrom(s,d,ssize) );
+
+end;
+
+function str__movefrom(const s:pobject;const d;const ssize:longint64):longint64;//move memory from buffer "d" to "s" - 04may2025
 var
    s8   :tstr8;//pointer only
    slist:pdlbyte;
 begin
+
 //defaults
-result:=frcmin32(ssize,0);
+result:=frcmin64(ssize,0);
 
 //get
 if (result>=1) and str__ok(s) then
    begin
-   s8   :=str__as8(s);
-   slist:=nil;
+
+   s8     :=str__as8(s);
+   slist  :=nil;
 
    try
-   getmem(slist,result);
+
+   getmem(slist, int64__3264(result) );
 
    //get
-   move(d,slist^,result);
+   move(d,slist^, int64__3264(result) );
 
    //set
    if (result>=1) then
@@ -9562,10 +10489,10 @@ else
    end;
 
 //get
-dlen:=0;
-slen:=str__len(@sptr);
-ll:=0;
-p:=1;
+dlen   :=0;
+slen   :=str__len32(@sptr);
+ll     :=0;
+p      :=1;
 if (linelength<0) then linelength:=0;
 str__minlen(d,4096+6);
 
@@ -9702,7 +10629,7 @@ else
 
 //get
 dlen:=0;
-slen:=str__len(@sptr);
+slen:=str__len32(@sptr);
 p:=frcmin32(xpos1,1);
 if (p>slen) then
    begin
@@ -9811,9 +10738,9 @@ var
 
       try
       //pre-clean
-      if (x<>'') then for p:=1 to low__len(x) do if xcharok( ord(x[p-1+stroffset]) ) then
+      if (x<>'') then for p:=1 to low__len32(x) do if xcharok( ord(x[p-1+stroffset]) ) then
          begin
-         result:=strcopy1(x,p,low__len(x));
+         result:=strcopy1(x,p,low__len32(x));
          break;
          end;//p
 
@@ -9822,7 +10749,7 @@ var
          begin
          bol1:=false;
 
-         for p:=low__len(result) downto 1 do if xcharok( ord(result[p-1+stroffset]) ) then
+         for p:=low__len32(result) downto 1 do if xcharok( ord(result[p-1+stroffset]) ) then
             begin
             result:=strcopy1(result,1,p);
             bol1  :=true;
@@ -9840,7 +10767,7 @@ var
    xline:=str__str0(x,lp,p-lp)+';';
    lp2:=1;
 
-   for p2:=1 to low__len(xline) do
+   for p2:=1 to low__len32(xline) do
    begin
    c:=ord(xline[p2-1+stroffset]);
 
@@ -9852,13 +10779,13 @@ var
       //.split into name+value
       if (n<>'') then
          begin
-         for p3:=1 to low__len(n) do
+         for p3:=1 to low__len32(n) do
          begin
          c:=ord(n[p3-1+stroffset]);
          if (c=ssColon) or (c=ssEqual) then
             begin
             //get
-            v:=xclean(strcopy1(n,p3+1,low__len(n)));
+            v:=xclean(strcopy1(n,p3+1,low__len32(n)));
             n:=xclean(strlow(strcopy1(n,1,p3-1)));
 
             //set
@@ -9893,17 +10820,17 @@ if (x=xoutdata) then goto skipend;
 
 //init
 str__clear(xoutdata);
-blen:=low__len(xboundary);
+blen:=low__len32(xboundary);
 if (blen<=0) then goto skipend;
 b1:=ord(xboundary[1-1+stroffset]);
 
-xlen:=str__len(x);
+xlen:=str__len32(x);
 if (xpos<0) then xpos:=0;
 if (xpos>=xlen) then goto skipend;
 
 //find boundary - start
 redo:
-if (xpos>smax) and (not block__fastinfo(x,xpos,smem,smin,smax)) then goto skipend;
+if (xpos>smax) and (not block64__fastinfo32(x,xpos,smem,smin,smax)) then goto skipend;
 if (smem[xpos-smin]=b1) and (xboundary=str__str1(x,xpos+1,blen)) then
    begin
    inc(xpos,blen);
@@ -9920,7 +10847,7 @@ goto skipend;
 
 //find boundary - finish
 redo2:
-if (xpos>smax) and (not block__fastinfo(x,xpos,smem,smin,smax)) then goto skipend;
+if (xpos>smax) and (not block64__fastinfo32(x,xpos,smem,smin,smax)) then goto skipend;
 if (smem[xpos-smin]=b1) then
    begin
    if (xboundary=str__str1(x,xpos+1,blen)) then
@@ -9983,7 +10910,7 @@ if str__lock(x) then
    begin
 
    try
-   for p:=1 to str__len(x) do if (str__pbytes0(x,p-1)=0) then
+   for p:=1 to str__len32(x) do if (str__pbytes0(x,p-1)=0) then
       begin
 
       low__setlen(result,p-1);
@@ -10000,7 +10927,7 @@ if str__lock(x) then
 
 end;
 
-function str__nextline0(xdata,xlineout:pobject;var xpos:longint):boolean;//07apr2025, 31mar2025, 17oct2018
+function str__nextline0(const xdata,xlineout:pobject;var xpos:longint):boolean;//07apr2025, 31mar2025, 17oct2018
 label
    skipend;
 var//0-base
@@ -10033,7 +10960,7 @@ if not str__lock2(xdata,xlineout) then goto skipend;
 //init
 str__clear(xlineout);
 if (xpos<0) then xpos:=0;
-xlen:=str__len(xdata);
+xlen:=str__len32(xdata);
 
 //get
 if (xlen>=1) and (xpos<xlen) then for p:=xpos to (xlen-1) do if vcheck1 then
@@ -10082,16 +11009,24 @@ except;end;
 try;str__autofree(@x);except;end;
 end;
 
-function _blen(x:tobject):longint;//does NOT destroy "x", keeps "x"
+function _blen(const x:tobject):longint64;//does NOT destroy "x", keeps "x"
 begin
-result:=0;
-try
+
 if zzok(x,1001) then
    begin
+
    if      (x is tstr8) then result:=(x as tstr8).len
-   else if (x is tstr9) then result:=(x as tstr9).len;
-   end;
-except;end;
+   else if (x is tstr9) then result:=(x as tstr9).len
+   else                      result:=0
+
+   end
+else result:=0
+
+end;
+
+function _blen32(const x:tobject):longint32;
+begin
+result:=restrict32( _blen(x) );
 end;
 
 procedure bdel1(x:tobject;xpos1,xlen:longint);
@@ -10354,7 +11289,7 @@ if (system_ms64_divval<=0) then
 
 //get
 win____QueryPerformanceCounter(result);
-result           :=result/system_ms64_divval;
+result           :=div64(result,system_ms64_divval);
 
 system_slowms64.ms   :=result;//auto-sync the ms63 timer
 system_slowms64.scan :=0;
@@ -10416,15 +11351,17 @@ if (system_ns64_divval<=0) then
 
 //get
 win____QueryPerformanceCounter(result);
-result:=result/system_ns64_divval;
+result:=div64(result,system_ns64_divval);
 
 end;
 
 function msr64:comp;//relative 64bit millisecond system timer - 20feb2021
 begin
+
 //was: result:=trunc((ms64-msr64__ref)*(msr64__speed/100));
 result:=div64(mult64(ms64-msr64__ref,msr64__speed),100);
 if (result<0) then result:=0;
+
 end;
 
 function msr64str:string;//20feb2021
@@ -10443,16 +11380,28 @@ except;end;
 end;
 
 function nowmin:longint;//03mar2022
+begin
+
+result:=nowmin2(date__now);
+
+end;
+
+function nowmin2(const xdate:tdatetime):longint;//03mar2022
 var
    h,min,sec,ms:word;
 begin
-result:=0;
+
+//defaults
+result :=0;
 
 try
-low__decodetime2(date__now,h,min,sec,ms);//h=0..23, min=0..59
-h:=frcrange32(h,0,23);
-min:=frcrange32(min,0,59);
-result:=frcrange32((h*60)+min,0,1439);
+
+//get
+low__decodetime2(xdate,h,min,sec,ms);//h=0..23, min=0..59
+h      :=frcrange32(h,0,23);
+min    :=frcrange32(min,0,59);
+result :=frcrange32((h*60)+min,0,1439);
+
 except;end;
 end;
 
@@ -10610,28 +11559,28 @@ if (x>=0) then
 //set
 if (dy>=1) or ok then
    begin
-   result:=result+insstr(xsep,low__len(result)>=1)+low__digpad20(dy,1)+xsep2+'d';//28apr2024: changed 'dy' to 'd', 02MAY2011
+   result:=result+insstr(xsep,low__len32(result)>=1)+low__digpad20(dy,1)+xsep2+'d';//28apr2024: changed 'dy' to 'd', 02MAY2011
    ok:=true;
    end;
 if (h>=1) or ok or xforcehr then
    begin
-   result:=result+insstr(xsep,low__len(result)>=1)+low__digpad20(h,2)+xsep2+'h';
+   result:=result+insstr(xsep,low__len32(result)>=1)+low__digpad20(h,2)+xsep2+'h';
    ok:=true;
    end;
 if (m>=1) or ok or xforcemin then
    begin
-   result:=result+insstr(xsep,low__len(result)>=1)+low__digpad20(m,2)+xsep2+'m';
+   result:=result+insstr(xsep,low__len32(result)>=1)+low__digpad20(m,2)+xsep2+'m';
    ok:=true;
    end;
 if (xshowsec or xshowms) and ((s>=1) or ok or xforcesec) then//01apr2024: xforcesec, fixed - 27dec2021
    begin
-   result:=result+insstr(xsep,low__len(result)>=1)+low__digpad20(s,2)+xsep2+'s';
+   result:=result+insstr(xsep,low__len32(result)>=1)+low__digpad20(s,2)+xsep2+'s';
    ok:=true;
    end;
 if xshowms then//fixed - 27dec2021
    begin
    //enforce range
-   result:=result+insstr(xsep,low__len(result)>=1)+low__digpad20(ms,low__insint(3,ok))+xsep2+'ms';
+   result:=result+insstr(xsep,low__len32(result)>=1)+low__digpad20(ms,low__insint(3,ok))+xsep2+'ms';
    //ok:=true;
    end;
 except;end;
@@ -10981,48 +11930,14 @@ begin
 result:=date__datetimetotimestamp(date).date mod 7 + 1;
 end;
 
-function date__datetimetotimestamp(datetime:tdatetime):ttimestamp;
-asm
-        MOV     ECX,EAX
-        FLD     datetime
-        FMUL    date__FMSecsPerDay
-        SUB     ESP,8
-        FISTP   QWORD PTR [ESP]
-        FWAIT
-        POP     EAX
-        POP     EDX
-        OR      EDX,EDX
-        JNS     @@1
-        NEG     EDX
-        NEG     EAX
-        SBB     EDX,0
-        DIV     date__IMSecsPerDay
-        NEG     EAX
-        JMP     @@2
-@@1:    DIV     date__IMSecsPerDay
-@@2:    ADD     EAX,date__DateDelta
-        MOV     [ECX].TTimeStamp.Time,EDX
-        MOV     [ECX].TTimeStamp.Date,EAX
+function date__datetimetotimestamp(datetime:tdatetime):ttimestamp;//15dec2025
+begin
+result:=gossroot.ttimestamp( DateTimeToTimeStamp(datetime) );
 end;
 
-function date__timestamptodatetime(const timestamp: ttimestamp):tdatetime;
-asm
-        MOV     ECX,[EAX].TTimeStamp.Time
-        MOV     EAX,[EAX].TTimeStamp.Date
-        SUB     EAX,date__DateDelta
-        IMUL    date__IMSecsPerDay
-        OR      EDX,EDX
-        JNS     @@1
-        SUB     EAX,ECX
-        SBB     EDX,0
-        JMP     @@2
-@@1:    ADD     EAX,ECX
-        ADC     EDX,0
-@@2:    PUSH    EDX
-        PUSH    EAX
-        FILD    QWORD PTR [ESP]
-        FDIV    date__FMSecsPerDay
-        ADD     ESP,8
+function date__timestamptodatetime(const timestamp: ttimestamp):tdatetime;//15dec2025
+begin
+result:=timestamptodatetime( sysutils.ttimestamp( timestamp ) );
 end;
 
 function date__isleapyear(year:word):boolean;
@@ -11184,19 +12099,19 @@ xmonthstr  :=low__month1(xmonth,xfullname);
 
 //init
 case xday of
-1,21,31:xth:='st';
-2,22:xth:='nd';
-3,23:xth:='rd';
-else xth:='th';
+1,21,31 :xth:='st';
+2,22    :xth:='nd';
+3,23    :xth:='rd';
+else     xth:='th';
 end;
 
 //get
 case frcrange32(xformat,0,4) of
-1:result:=low__digpad11(xday,1)+xth+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);
-2:result:=xmonthstr+#32+low__digpad11(xday,1)+insstr(', '+low__digpad11(xyear,4),xyear>=0);
-3:result:=xmonthstr+#32+low__digpad11(xday,1)+xth+insstr(', '+low__digpad11(xyear,4),xyear>=0);
-4:result:=low__digpad11(xday,2)+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);//03sep2025
-else result:=low__digpad11(xday,1)+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);
+1    :result:=low__digpad11(xday,1)+xth+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);
+2    :result:=xmonthstr+#32+low__digpad11(xday,1)+insstr(', '+low__digpad11(xyear,4),xyear>=0);
+3    :result:=xmonthstr+#32+low__digpad11(xday,1)+xth+insstr(', '+low__digpad11(xyear,4),xyear>=0);
+4    :result:=low__digpad11(xday,2)+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);//03sep2025
+else  result:=low__digpad11(xday,1)+#32+xmonthstr+insstr(#32+low__digpad11(xyear,4),xyear>=0);
 end;//case
 
 end;
@@ -11292,14 +12207,14 @@ function low__lcolumn(const x:string;xmaxwidth:longint):string;//left aligned co
 const
    xcolwidth='                                        ';//40c
 begin
-result:=x+strcopy1(xcolwidth,1,frcmax32(low__len(xcolwidth),xmaxwidth)-low__len(x));
+result:=x+strcopy1(xcolwidth,1,frcmax32(low__len32(xcolwidth),xmaxwidth)-low__len32(x));
 end;
 
 function low__rcolumn(const x:string;xmaxwidth:longint):string;//right aligned column
 const
    xcolwidth='                                        ';//40c
 begin
-result:=strcopy1(xcolwidth,1,frcmax32(low__len(xcolwidth),xmaxwidth)-low__len(x))+x;
+result:=strcopy1(xcolwidth,1,frcmax32(low__len32(xcolwidth),xmaxwidth)-low__len32(x))+x;
 end;
 
 function hex4__int2(const x:string):word;//26aug2025
@@ -11606,7 +12521,7 @@ dn:='';
 dv:=s;
 
 //get
-slen:=low__len(s);
+slen:=low__len32(s);
 if (slen>=1) then
    begin
    for p:=1 to slen do if (byte(s[p-1+stroffset])=ssplitval) then
@@ -11637,7 +12552,7 @@ s:=s+ssep;
 vcount:=0;
 //get
 redo:
-if (low__len(s)>=2) then for p:=1 to low__len(s) do if (s[p-1+stroffset]=ssep) then
+if (low__len32(s)>=2) then for p:=1 to low__len32(s) do if (s[p-1+stroffset]=ssep) then
    begin
    //get
    d.s['v'+intstr32(vcount)]:=strcopy1(s,1,p-1);
@@ -11660,7 +12575,7 @@ result:=0;
 
 try
 //init
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen<=0) then exit;
 if (xlen>high(p4INT32)) then xlen:=high(p4INT32);
 //get
@@ -11686,7 +12601,7 @@ result:=0;
 
 try
 //init
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen<=0) then exit;
 if (xlen>high(p8CMP256)) then xlen:=high(p8CMP256);
 //get
@@ -11706,7 +12621,7 @@ result:=0;
 
 try
 //init
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen<=0) then exit;
 if (xlen>high(p8CMP256)) then xlen:=high(p8CMP256);
 //get
@@ -11889,7 +12804,7 @@ result:=false;
 try
 //check
 if (xmask='') then exit;
-xlen:=low__len(xline);
+xlen:=low__len32(xline);
 if (xlen<=0) then exit;
 //init
 fs:=xmask;
@@ -11897,15 +12812,15 @@ fm:='';
 fe:='';
 fexact:=true;
 //.fs
-if (fs<>'') then for p:=1 to low__len(fs) do if (fs[p-1+stroffset]='*') then
+if (fs<>'') then for p:=1 to low__len32(fs) do if (fs[p-1+stroffset]='*') then
    begin
-   fe:=strcopy1(fs,p+1,low__len(fs));
+   fe:=strcopy1(fs,p+1,low__len32(fs));
    fs:=strcopy1(fs,1,p-1);
    fexact:=false;
    break;
    end;
 //.fe
-if (fe<>'') then for p:=low__len(fe) downto 1 do if (fe[p-1+stroffset]='*') then
+if (fe<>'') then for p:=low__len32(fe) downto 1 do if (fe[p-1+stroffset]='*') then
    begin
    fm:=strcopy1(fe,1,p-1);
    strdel1(fe,1,p);
@@ -11920,21 +12835,21 @@ if fexact and (not strmatch(fs,xline)) then goto skipend;
 //.fs
 if (fs<>'') then
    begin
-   if not strmatch(fs,strcopy1(xline,1,low__len(fs))) then goto skipend;
-   xpos:=low__len(fs)+1;
+   if not strmatch(fs,strcopy1(xline,1,low__len32(fs))) then goto skipend;
+   xpos:=low__len32(fs)+1;
    end;
 //.fe
 if (fe<>'') then
    begin
-   xpos2:=low__len(xline)-low__len(fe)+1;
+   xpos2:=low__len32(xline)-low__len32(fe)+1;
    if (xpos2<xpos) then goto skipend;
-   if not strmatch(fe,strcopy1(xline,xpos2,low__len(fe))) then goto skipend;
-   dec(xlen,low__len(fe));
+   if not strmatch(fe,strcopy1(xline,xpos2,low__len32(fe))) then goto skipend;
+   dec(xlen,low__len32(fe));
    end;
 //.fm
 if (fm<>'') then
    begin
-   fmlen:=low__len(fm);
+   fmlen:=low__len32(fm);
    xpos2:=xlen-fmlen+1;
    if (xpos2<xpos) then goto skipend;
    bol1:=false;
@@ -11967,7 +12882,7 @@ result:=false;
 
 try
 //init
-xlen:=low__len(xmasklist);
+xlen:=low__len32(xmasklist);
 if (xlen<=0) then exit;
 //get
 lp:=1;
@@ -12008,11 +12923,11 @@ var
    if (xdivfactor<=0) then goto skipend;
    //set
    vp:=strcopy1(v,vlen-frcmin32(xdivfactor-1,0),vlen);
-   vp:=strcopy1(strcopy1('000000000000',1,xdivfactor-low__len(vp))+vp,1,xpoints);
+   vp:=strcopy1(strcopy1('000000000000',1,xdivfactor-low__len32(vp))+vp,1,xpoints);
    if (xdivfactor>=1) then
       begin
       strdel1(v,vlen-(xdivfactor-1),vlen);
-      vlen:=low__len(v);
+      vlen:=low__len32(v);
       if (strbyte1(v,vlen)=ssComma) then strdel1(v,vlen,1);
       if (v='') then v:='0';
       end;
@@ -12029,7 +12944,7 @@ xpoints:=frcrange32(xpoints,0,3);
 xstyle:=strlow(xstyle);
 xorgstyle:=xstyle;
 v:=k64(x);
-vlen:=low__len(v);
+vlen:=low__len32(v);
 vp:='';
 vneg:='';
 
@@ -12038,7 +12953,7 @@ if (strbyte1(v,1)=ssdash) then
    begin
    vneg:='-';
    strdel1(v,1,1);
-   vlen:=low__len(v);
+   vlen:=low__len32(v);
    end;
 
 //automatic style
@@ -12254,7 +13169,11 @@ s.text:=x;
 //get
 if low__fromb641(s,d,1,e) then result:=d.text;
 except;end;
-try;str__free(@s);str__free(@d);except;end;
+
+//free
+str__free(@s);
+str__free(@d);
+
 end;
 
 //general procs ----------------------------------------------------------------
@@ -12348,10 +13267,30 @@ if (sizeof(a)=sizeof(b)) then
    end;
 end;
 
-function low__cls(x:pointer;xsize:longint):boolean;
+function low__cls(const x:pointer;const xsize:longint64):boolean;
 begin
+
 result:=(x<>nil);
+
+{$ifdef 64bit}
 if result then fillchar(x^,xsize,0);
+{$else}
+if result then fillchar(x^, restrict32(xsize) ,0);
+{$endif}
+
+end;
+
+function low__cls2(const x:pointer;const xsize:longint64;const xval:byte):boolean;//23dec2025
+begin
+
+result:=(x<>nil);
+
+{$ifdef 64bit}
+if result then fillchar(x^,xsize,xval);
+{$else}
+if result then fillchar(x^, restrict32(xsize) ,xval);
+{$endif}
+
 end;
 
 function low__intr(x:longint):longint;//reverse longint
@@ -12397,20 +13336,12 @@ end;
 
 function low__irollone(var x:longint):longint;//14jul2025, 06jan2025
 begin
-
-if (x<max32) then inc(x) else x:=0;
-
-result:=x;
-
+result:=roll32(x);
 end;
 
 function low__irollone64(var x:comp):comp;//25jul2025
 begin
-
-if (x<max64) then x:=add64(x,1) else x:=0;
-
-result:=x;
-
+result:=roll64(x);
 end;
 
 procedure low__croll(var x:currency;by:currency);//continuous incrementer with safe auto. reset
@@ -12480,11 +13411,11 @@ end;
 function strm(const sfullname,spartialname:string;var vs:string;var v:longint):boolean;//05oct2025
 begin
 
-result:=strmatch( spartialname, strcopy1(sfullname,1,low__len(spartialname)) );
+result:=strmatch( spartialname, strcopy1(sfullname,1,low__len32(spartialname)) );
 if result then
    begin
 
-   vs:=strcopy1(sfullname,low__len(spartialname)+1,low__len(sfullname));
+   vs:=strcopy1(sfullname,low__len32(spartialname)+1,low__len32(sfullname));
    v :=strint32(vs);
 
    end
@@ -12508,7 +13439,7 @@ result:='';
 
 try
 result:=x;
-for p:=1 to low__len(result) do
+for p:=1 to low__len32(result) do
    begin
    v:=byte(result[p-1+stroffset]);
    if (v>=uuA) and (v<=uuZ) then result[p-1+stroffset]:=char(v+vvUppertolower);
@@ -12526,7 +13457,7 @@ result:='';
 
 try
 result:=x;
-for p:=1 to low__len(result) do
+for p:=1 to low__len32(result) do
    begin
    v:=byte(result[p-1+stroffset]);
    if (v>=llA) and (v<=llZ) then result[p-1+stroffset]:=char(v-vvUppertolower);
@@ -12543,10 +13474,11 @@ function strmatch2(const a,b:string;xcasesensitive:boolean):boolean;//01may2025,
 var
    av,bv,p,alen,blen:longint;
 begin
+
 //defaults
 result:=false;
-alen  :=low__len(a);
-blen  :=low__len(b);
+alen  :=low__len32(a);
+blen  :=low__len32(b);
 
 //check
 if (alen<>blen) then exit;
@@ -12587,8 +13519,8 @@ var
 begin
 //defaults
 result:=0;
-alen  :=low__len(a);
-blen  :=low__len(b);
+alen  :=low__len32(a);
+blen  :=low__len32(b);
 
 //check
 plen  :=alen;
@@ -12643,7 +13575,7 @@ result:='';
 try
 bol1:=false;
 //get
-for p:=1 to low__len(x) do if (x[p-1+stroffset]=sep) then
+for p:=1 to low__len32(x) do if (x[p-1+stroffset]=sep) then
    begin
    result:=strcopy1(x,1,p-1);
    bol1:=true;
@@ -12668,7 +13600,7 @@ try
 //check
 if (x='') then exit;
 //get
-for p:=0 to (low__len(x)-1) do if (x[p+stroffset]=a) then x[p+stroffset]:=b;
+for p:=0 to (low__len32(x)-1) do if (x[p+stroffset]=a) then x[p+stroffset]:=b;
 except;end;
 end;
 
@@ -12680,7 +13612,7 @@ result:='';
 
 try
 result:=x;
-if (result<>'') then for p:=1 to low__len(result) do result[p-1+stroffset]:=n;
+if (result<>'') then for p:=1 to low__len32(result) do result[p-1+stroffset]:=n;
 except;end;
 end;
 
@@ -12705,9 +13637,9 @@ result:=false;
 
 try
 //init
-maxp:=low__len(x);
-lena:=low__len(a);
-lenb:=low__len(b);
+maxp:=low__len32(x);
+lena:=low__len32(a);
+lenb:=low__len32(b);
 p:=0;
 //get
 redo:
@@ -12751,7 +13683,7 @@ if (x='') then exit;
 //find
 case xstriptrailing of
 true:begin//trailing white space
-   for p:=low__len(x) downto 1 do
+   for p:=low__len32(x) downto 1 do
    begin
    case ord(x[p-1+stroffset]) of
    0..32,160:;
@@ -12764,13 +13696,13 @@ true:begin//trailing white space
    end;//p
    end;
 else begin//leading white space
-   for p:=1 to low__len(x) do
+   for p:=1 to low__len32(x) do
    begin
    case ord(x[p-1+stroffset]) of
    0..32,160:;
    else
       begin
-      result:=strcopy1(x,p,low__len(x));
+      result:=strcopy1(x,p,low__len32(x));
       break;
       end;
    end;//case
@@ -12780,13 +13712,13 @@ end;//case
 except;end;
 end;
 
-procedure str__stripwhitespace_lt(s:pobject);//strips leading and trailing white space
+procedure str__stripwhitespace_lt(const s:pobject);//strips leading and trailing white space
 begin
 str__stripwhitespace(s,false);
 str__stripwhitespace(s,true);
 end;
 
-procedure str__stripwhitespace(s:pobject;xstriptrailing:boolean);
+procedure str__stripwhitespace(const s:pobject;const xstriptrailing:boolean);
 label
    skipend;
 var
@@ -12797,7 +13729,7 @@ try
 if not str__lock(s) then goto skipend;
 
 //init
-slen:=str__len(s);
+slen:=str__len32(s);
 if (slen<=0) then goto skipend;
 
 //get
@@ -12846,7 +13778,7 @@ var
 begin
 try
 //remove last return codes
-if (x<>'') then for p:=low__len(x) downto 1 do if (x[p-1+stroffset]<>#10) and (x[p-1+stroffset]<>#13) then
+if (x<>'') then for p:=low__len32(x) downto 1 do if (x[p-1+stroffset]<>#10) and (x[p-1+stroffset]<>#13) then
    begin
    x:=strcopy1(x,1,p);
    break;
@@ -12896,6 +13828,26 @@ if xmustnil then x^:=nil;
 except;end;
 end;
 
+function math_abs(const x:longint):longint;//05jan2026
+begin//Lazarus can't handle minus values
+
+case (x>=0) of
+true:result:=abs(x);
+else result:=abs(-x);
+end;//case
+
+end;
+
+function math_absE(const x:extended):extended;//05jan2026
+begin
+
+case (x>=0) of
+true:result:=abs(x);
+else result:=abs(-x);
+end;//case
+
+end;
+
 function math__power32(xvalue:extended;xtothepowerof:longint):extended;
 var
    i:longint;
@@ -12920,174 +13872,140 @@ else
    end;
 end;
 
-function mult64(xval,xval2:comp):comp;//multiply
+function isNAN(const x:double):boolean;
 begin
-result:=xval;
-try;result:=result*xval2;except;end;
+
+result:=(tcmp8(x).ints[0]=0) and (tcmp8(x).ints[1]=-524288);
+
 end;
 
-function add64(xval,xval2:comp):comp;//add
+function round64(const xval:extended):comp;
 begin
-result:=xval;
-try;result:=result+xval2;except;end;
+
+if      (xval<min64) then result:=min64
+else if (xval>max64) then result:=max64
+else begin
+
+   {$ifdef d3}
+   result:=xval;//D3 does automatic 64bit rounding, and round() is only 32bit
+   {$else}
+   result:=round(xval);//Laz round() is 64bit
+   {$endif}
+
+   end;
+
 end;
 
-function sub64(xval,xval2:comp):comp;//subtract
-begin
-result:=xval;
-try;result:=result-xval2;except;end;
-end;
-
-function div64(xval,xdivby:comp):comp;//28dec2021, this proc performs proper "comp division" -> fixes Delphi's "comp" division error -> which raises POINTER EXCEPTION and MEMORY ERRORS when used at speed and repeatedly - 13jul2021, 19apr2021
-label
-   vsmall,x1b,x100m,x10m,x1m,x100K,x10K,x1K,x100,x10,x1;
+function add64(const xval,xval2:comp):comp;
 var
-   xminus:boolean;
-   vmax,v,xoutval:comp;
+   v:extended;
 begin
-//defaults
-result:=0;
 
-try
-xoutval:=0;
-//zero value - 13jul2021
-if (xval=0) then
-   begin
-   result:=0;
-   exit;
-   end;
-//.divide by zero - 28dec2021
-if (xdivby=0) then
-   begin
-   result:=0;
-   exit;
-   end;
-//init
-xminus:=(xval<0);
-if xminus then xval:=-xval;
-vmax:=mult64(100000000,1000);
-//decide
-if (xdivby>=vmax) then goto vsmall;
+v:=xval+xval2;
 
-//1b
-v:=xdivby*1000000000;
-x1b:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+1000000000;
-   xval:=xval-v;
-   goto x1b;
-   end;
+if      (v<min64) then result:=min64
+else if (v>max64) then result:=max64
+else                   result:=xval+xval2;
 
-//100m
-v:=xdivby*100000000;
-x100m:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+100000000;
-   xval:=xval-v;
-   goto x100m;
-   end;
-//10m
-v:=xdivby*10000000;
-x10m:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+10000000;
-   xval:=xval-v;
-   goto x10m;
-   end;
-//1m
-v:=xdivby*1000000;
-x1m:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+1000000;
-   xval:=xval-v;
-   goto x1m;
-   end;
-//100K
-v:=xdivby*100000;
-x100K:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+100000;
-   xval:=xval-v;
-   goto x100K;
-   end;
-//10K
-v:=xdivby*10000;
-x10K:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+10000;
-   xval:=xval-v;
-   goto x10K;
-   end;
-//1K
-v:=xdivby*1000;
-x1K:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+1000;
-   xval:=xval-v;
-   goto x1K;
-   end;
-//100
-v:=xdivby*100;
-x100:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+100;
-   xval:=xval-v;
-   goto x100;
-   end;
-//10
-vsmall:
-v:=xdivby*10;
-x10:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+10;
-   xval:=xval-v;
-   goto x10;
-   end;
-//1
-v:=xdivby;
-x1:
-if (v<=xval) then
-   begin
-   xoutval:=xoutval+1;
-   xval:=xval-v;
-   goto x1;
-   end;
-
-//set
-if xminus then result:=-xoutval else result:=xoutval;
-except;end;
 end;
 
-function add32(xval,xval2:comp):longint;//01sep2025
-begin
-result:=restrict32(add64(xval,xval2));
-end;
-
-function sub32(xval,xval2:comp):longint;//30sep2022, subtract
-begin
-result:=restrict32(sub64(xval,xval2));
-end;
-
-function div32(xval,xdivby:comp):longint;//proper "comp division" - 19apr2021
+function sub64(const xval,xval2:comp):comp;
 var
-   v:comp;
+   v:extended;
 begin
-result:=0;
-v:=div64(xval,xdivby);
-if (v<min32) then v:=min32 else if (v>max32) then v:=max32;
-result:=round(v);
+
+v:=xval-xval2;
+
+if      (v<min64) then result:=min64
+else if (v>max64) then result:=max64
+else                   result:=xval-xval2;
+
 end;
 
-function pert32(xval,xlimit:comp):longint;
+function mult64E(const xval,xval2:extended):comp;
+var
+   v:extended;
+begin
+
+v:=xval*xval2;
+
+if      (v<min64) then result:=min64
+else if (v>max64) then result:=max64
+else                   result:=round64( v );
+
+end;
+
+function mult64(const xval,xval2:comp):comp;
+var
+   v:extended;
+begin
+
+v:=xval*xval2;
+
+if      (v<min64) then result:=min64
+else if (v>max64) then result:=max64
+else                   result:=xval*xval2;
+
+end;
+
+function div64(const xval,xval2:comp):comp;
+var
+   v:extended;
+begin
+
+if (xval=0) or (xval2=0) then result:=0
+else
+   begin
+
+   v:=xval/xval2;
+
+   if      (v<min64) then result:=min64
+   else if (v>max64) then result:=max64
+   else                   result:=round64( int(v) );
+
+   end;
+
+end;
+
+function round32(const xval:extended):longint;
+begin
+
+if      (xval<min32) then result:=min32
+else if (xval>max32) then result:=max32
+else                      result:=round(xval);
+
+end;
+
+function add32(const xval,xval2:comp):longint;//01sep2025
+begin
+
+result:=restrict32( add64(xval,xval2) );
+
+end;
+
+function sub32(const xval,xval2:comp):longint;//30sep2022, subtract
+begin
+
+result:=restrict32( sub64(xval,xval2) );
+
+end;
+
+function mult32(const xval,xval2:comp):longint;
+begin
+
+result:=restrict32( mult64(xval,xval2) );
+
+end;
+
+function div32(const xval,xval2:comp):longint;//proper "comp division" - 12dec2025, 19apr2021
+begin
+
+result:=restrict32( div64(xval,xval2) );
+
+end;
+
+
+function pert32(const xval,xlimit:comp):longint;
 begin
 result:=frcrange32(div32(mult64(xval,100),xlimit),0,100);
 end;
@@ -13130,7 +14048,7 @@ if (xname<>'') then
    v[12]:=v32.bytes[2];
    v[13]:=v32.bytes[3];
    //.len
-   v32.val:=low__len(xname);
+   v32.val:=low__len32(xname);
    v[14]:=v32.bytes[0];
    v[15]:=v32.bytes[1];
    end;
@@ -13208,7 +14126,7 @@ var
 begin
 //defaults
 result :='';
-xlen   :=low__len(s);
+xlen   :=low__len32(s);
 xpos   :=1;
 xcount :=0;
 a      :=nil;
@@ -13296,7 +14214,7 @@ try
 //init
 aref   :=tdynamicstring.create;
 a      :=tdynamicstring.create;
-xlen   :=low__len(x);
+xlen   :=low__len32(x);
 xpos   :=1;
 acount :=0;
 
@@ -13336,27 +14254,33 @@ result:=x;
 x:='';
 end;
 
-function low__randomstr(x:tstr8;xlen:longint):boolean;//27apr2021
+function low__randomstr(const x:tstr8;const xlen:longint32):boolean;//27apr2021
 var
-   p:longint;
+   p:longint32;
 begin
+
 //defaults
 result:=false;
 
-try
+//check
+if not str__lock(@x) then exit;
+
 //get
-if str__lock(@x) then
+x.setlen(xlen);
+
+if (x.len>=1) then
    begin
-   x.setlen(xlen);
-   if (x.len>=1) then
-      begin
-      for p:=0 to (x.len-1) do x.pbytes[p]:=byte(random(256));
-      end;
+
+   for p:=0 to (x.len32-1) do x.pbytes[p]:=byte(random(256));
+
    end;
+
 //successful
 result:=true;
-except;end;
-try;str__uaf(@x);except;end;
+
+//free
+str__uaf(@x);
+
 end;
 
 function low__repeatstr(const x:string;xcount:longint):string;//15nov2022
@@ -13377,14 +14301,17 @@ if (xcount>=2) and (x<>'') then
    result:=a.text;
    end;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 function low__urlok(const xurl:string;xmailto:boolean):boolean;//19apr2021
 
    function xmatch(n:string):boolean;
    begin
-   result:=(n<>'') and strmatch(strcopy1(xurl,1,low__len(n)),n);
+   result:=(n<>'') and strmatch(strcopy1(xurl,1,low__len32(n)),n);
    end;
 begin
 result:=xmatch('http://') or xmatch('https://') or xmatch('ftp://') or xmatch('ftps://') or (xmailto and xmatch('mailto:'));
@@ -13430,7 +14357,7 @@ result:=0;//not found
 try
 cv:=byte(c);
 //get
-for p:=1 to low__len(x) do if (strbyte1(x,p)=cv) then
+for p:=1 to low__len32(x) do if (strbyte1(x,p)=cv) then
    begin
    result:=p;
    break;
@@ -13449,7 +14376,7 @@ result:=false;
 try
 cv:=byte(c);
 //get
-for p:=1 to low__len(x) do if (strbyte1(x,p)=cv) then
+for p:=1 to low__len32(x) do if (strbyte1(x,p)=cv) then
    begin
    result:=true;
    break;
@@ -13525,44 +14452,58 @@ var
    if (x<>'') then a.sins(x,p+1);
    end;
 begin
+
 //defaults
-result:='';
+result :='';
+a      :=nil;
 
 try
-a:=nil;
 //get
-a:=str__new8;
-a.text:=x;
-xlen:=a.len;
-xcount:=0;
-p:=0;
+a      :=str__new8;
+a.text :=x;
+xlen   :=a.len32;
+xcount :=0;
+p      :=0;
+
 redo:
+
 //.scan
 if (a.pbytes[p]=37) and ((p+2)<xlen) and (a.pbytes[p+2]=37) then//expects "%1%" format val names - 27jun2022
    begin
+
    v:=a.pbytes[p+1]-nn0;
+
    if (v>=0) and (v<=9) then
       begin
+
       inc(xcount);//limit cyclic loops
       a.del3(p,3);
       dec(p);
+
       case v of
       0:xadd(v0);
       1:xadd(v1);
       2:xadd(v2);
       3:xadd(v3);
       4:xadd(v4);
+      end;//case
+
       end;
-      end;
+
    end;
+
 //.inc
 inc(p);
 if (p>=0) and (p<xlen) and (xcount<=200) then goto redo;
 
 //set
 result:=a.text;
+
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 function strcopy0(const x:string;xpos,xlen:longint):string;//0based always -> forward compatible with D10 - 02may2020
@@ -13616,7 +14557,7 @@ end;
 
 function strlast(const x:string):string;//returns last char of string or nil if string is empty
 begin
-result:=strcopy1(x,low__len(x),1);
+result:=strcopy1(x,low__len32(x),1);
 end;
 
 procedure strdelfirst(var x:string);//delete first char of string - 18jun2025
@@ -13626,7 +14567,7 @@ end;
 
 procedure strdellast(var x:string);//delete last char of string - 18jun2025
 begin
-if (x<>'') then strdel1(x,low__len(x),1);
+if (x<>'') then strdel1(x,low__len32(x),1);
 end;
 
 function strdel0(var x:string;xpos,xlen:longint):boolean;//0based
@@ -13659,7 +14600,7 @@ result:=0;
 
 try
 if (xpos<0) then xpos:=0;
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen>=1) and (xpos<xlen) then result:=byte(x[xpos+stroffset]);
 except;end;
 end;
@@ -13677,7 +14618,7 @@ result:=0;
 
 try
 if (xpos<1) then xpos:=1;
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen>=1) and (xpos<=xlen) then result:=byte(x[xpos-1+stroffset]);
 except;end;
 end;
@@ -13697,20 +14638,23 @@ begin
 result:='';try;result:=x;strdef(result,xdef);except;end;
 end;
 
-function low__setlen(var x:string;xlen:longint):boolean;
+function low__setlen(var x:string;const xlen:longint64):boolean;
 begin
 result:=false;
 
 try
-if (xlen<=0) then x:='' else setlength(x,xlen);
+
+if (xlen<=0) then x:='' else setlength( x ,int64__3264(xlen) );
 result:=true;
+
 except;end;
 end;
 
-function low__setlen0(var x:string;xlen:longint):boolean;//clears memory to #0
+function low__setlen0(var x:string;const xlen:longint64):boolean;//clears memory to #0
 var
-   p:longint;
+   p:longint3264;
 begin
+
 result:=false;
 
 try
@@ -13718,8 +14662,9 @@ try
 if (xlen>=1) then
    begin
 
-   setlength(x,xlen);
-   for p:=1 to xlen do x[p-1+stroffset]:=#0;
+   setlength(x, int64__3264(xlen) );
+
+   for p:=1 to int64__3264(xlen) do x[p-1+stroffset]:=#0;
 
    end
 else x:='';
@@ -13729,21 +14674,20 @@ result:=true;
 except;end;
 end;
 
-function low__len(const x:string):longint;//19mar2025
+function low__len(const x:string):longint64;//19mar2025
 begin
 result:=length(x);
 end;
 
-function pchar__strlen(str:pchar):cardinal; assembler;
-asm
-MOV     EDX,EDI
-MOV     EDI,EAX
-MOV     ECX,0FFFFFFFFH
-XOR     AL,AL
-REPNE   SCASB
-MOV     EAX,0FFFFFFFEH
-SUB     EAX,ECX
-MOV     EDI,EDX
+function low__len32(const x:string):longint32;
+begin
+result:=restrict32( length(x) );
+end;
+
+
+function pchar__strlen(str:pchar):cardinal;
+begin
+result:=sysutils.strlen(str);
 end;
 
 function floattostrex2(x:extended):string;//19DEC2007
@@ -13752,7 +14696,7 @@ result:=floattostrex(x,18);
 end;
 
 function floattostrex(x:extended;dig:byte):string;//07NOV20210
-var//dig: 0=integer part only, 1-18=include partial content if present
+var//dig: 0=longint32 part only, 1-18=include partial content if present
    p:longint;
    a,b,c:string;
 begin
@@ -13766,7 +14710,7 @@ b:='';
 c:='';
 if (a<>'') then
    begin
-   for p:=0 to (low__len(a)-1) do if (a[p+stroffset]='.') then
+   for p:=0 to (low__len32(a)-1) do if (a[p+stroffset]='.') then
    begin
    if (dig>=1) then b:=strcopy0(a,p+1,dig);
    a:=strcopy0(a,0,p);
@@ -13776,7 +14720,7 @@ if (a<>'') then
 //scan
 if (b<>'') then
    begin
-   for p:=(low__len(b)-1) downto 0 do if (b[p+stroffset]<>'0') then
+   for p:=(low__len32(b)-1) downto 0 do if (b[p+stroffset]<>'0') then
    begin
    c:=strcopy0(b,0,p+1);//strip off excess zeros - 07NOV2010
    break;
@@ -13802,11 +14746,20 @@ if (result<min64) then result:=min64;
 except;end;
 end;
 
-function restrict32(x:comp):longint;//limit32 - 24jul2025, 24jan2016
+function restrict32(x:comp):longint;//limit32 - 14dec2025, 24jul2025, 24jan2016
 begin
+
 if (x>max32) then x:=max32;
 if (x<min32) then x:=min32;
-result:=round(x);
+
+result:=tint64(x).ints[0];
+//was: result:=round(x);
+
+end;
+
+function restrict3264(x:comp):comp;//03dec2025
+begin
+result:=restrict32(x);
 end;
 
 function fr64(x,xmin,xmax:extended):extended;
@@ -13852,7 +14805,7 @@ if (x<0) then
    end;
 y:=floattostrex2(x);
 z:='';
-xlen:=low__len(y);
+xlen:=low__len32(y);
 i:=0;
 if (xlen>=1) then
    begin
@@ -13889,7 +14842,7 @@ x:='';
 if low__setlen(x,xlen) then
    begin
    c:=char(xfillchar);
-   for p:=1 to low__len(x) do x[p-1+stroffset]:=c;
+   for p:=1 to low__len32(x) do x[p-1+stroffset]:=c;
    //successful
    result:=true;
    end;
@@ -14141,7 +15094,8 @@ begin
 result:=x;
 zzobj2(x,satStr8,xid);
 end;
-{$else}
+
+{$else}//-----------------------------------------------------------------------
 
 procedure ppadd(x:pointer);
 begin
@@ -14233,7 +15187,8 @@ function zzstr(x:tstr8;xid:longint):tstr8;
 begin
 result:=x;
 end;
-{$endif}
+{$endif}//----------------------------------------------------------------------
+
 
 //screen procs -----------------------------------------------------------------
 function scn__changed(xset:boolean):boolean;
@@ -14247,7 +15202,7 @@ result:=false;
 try
 //init
 scn__windowsize(ww,wh);
-system_scn_width :=frcrange32(ww,1, low__len(system_scn_lines[0]) );
+system_scn_width :=frcrange32(ww,1, low__len32(system_scn_lines[0]) );
 system_scn_height:=frcrange32(wh,1, high(system_scn_lines)+1 );
 //special width/height override -> allows the internal paint handler to continue to function even whem run as a service - 07mar2024
 if (system_scn_width<=1)  then system_scn_width:=100;
@@ -14434,7 +15389,7 @@ if (xstyle='clearline') then
    end
 else if (xstyle='text') then
    begin
-   for dx:=sx to frcmax32(sx+(low__len(xtext)-1),sw-1) do if xclipok(dx) then system_scn_lines[sy][dx+stroffset]:=xtext[dx-sx+stroffset];
+   for dx:=sx to frcmax32(sx+(low__len32(xtext)-1),sw-1) do if xclipok(dx) then system_scn_lines[sy][dx+stroffset]:=xtext[dx-sx+stroffset];
    end
 else if (xstyle='hline') then
    begin
@@ -14469,7 +15424,7 @@ b:=nil;
 if (xwidth<=0) or (xheight<=0) then exit;
 
 //range
-xwidth:=frcrange32(xwidth,1,low__len(system_scn_lines[0]));
+xwidth:=frcrange32(xwidth,1,low__len32(system_scn_lines[0]));
 xheight:=frcrange32(xheight,1,high(system_scn_lines)+1);
 
 //init
@@ -14481,7 +15436,10 @@ for dy:=0 to (xheight-1) do b.sadd(strcopy1(system_scn_lines[dy],1,xwidth)+#10);
 //set
 result:=b.text;
 except;end;
-try;str__free(@b);except;end;
+
+//free
+str__free(@b);
+
 end;
 
 
@@ -14505,9 +15463,23 @@ end;
 function app__folder3(xsubfolder:string;xcreate,xalongsideexe:boolean):string;//15jan2024
 begin
 
-//xalongsideexe=false="exe path\", true="exe path\<exe name>_storage\"
-result:=io__asfolder(io__extractfilepath(io__exename));
-if not xalongsideexe then result:=io__asfolder(result+io__extractfilename(io__exename)+'_storage');
+case system_msix of
+//.a MSIX app cannot use its own root folder for file stoage -> switch to "app data" - 08dec2025
+true:begin
+
+   result:=io__asfolder(io__appdata+io__extractfilename(io__exename)+'_storage');
+
+   end;
+
+//.normal desktop app can use its own root folder for files:
+else begin
+
+   //xalongsideexe=false="exe path\", true="exe path\<exe name>_storage\"
+   result:=io__asfolder(io__extractfilepath(io__exename));
+   if not xalongsideexe then result:=io__asfolder(result+io__extractfilename(io__exename)+'_storage');
+
+   end;
+end;//case
 
 //subfolder
 if (xsubfolder<>'') then result:=io__asfolder(result+xsubfolder);
@@ -14553,7 +15525,7 @@ if (system_settings_ref<>nil) then
    end;
 end;
 
-procedure app__ireg(xname:string;xdefval,xmin,xmax:longint);//register integer for settings
+procedure app__ireg(xname:string;xdefval,xmin,xmax:longint);//register longint32 for settings
 begin
 if (system_settings_ref<>nil) then
    begin
@@ -14623,7 +15595,10 @@ if (system_settings<>nil) then
    result:=true;
    end;
 except;end;
-try;str__free(@b);except;end;
+
+//free
+str__free(@b);
+
 end;
 
 procedure app__filtersettings;//19jun2025
@@ -14654,14 +15629,14 @@ if system_settings_ref.xnextname(xpos,str1) then
    if strmatch(strcopy1(str1,1,4),'nam.') then
       begin
       //init
-      n:=strcopy1(str1,5,low__len(str1));
+      n:=strcopy1(str1,5,low__len32(str1));
       //get
       if (n<>'') then
          begin
          c:=system_settings_ref.i['cla.'+n];//class - 0=boolean, 1=longint(32bit), 2=string, 3=comp(64bit)
          case c of
          0:if system_settings.found(n) then a.b[n]   :=system_settings.b[n]                                                                                     else a.b[n]   :=system_settings_ref.b['def.'+n];//boolean
-         1:if system_settings.found(n) then a.i[n]   :=frcrange32(system_settings.i[n],system_settings_ref.i['min.'+n],system_settings_ref.i['max.'+n])         else a.i[n]   :=frcrange32(system_settings_ref.i['def.'+n],system_settings_ref.i['min.'+n],system_settings_ref.i['max.'+n]);//integer
+         1:if system_settings.found(n) then a.i[n]   :=frcrange32(system_settings.i[n],system_settings_ref.i['min.'+n],system_settings_ref.i['max.'+n])         else a.i[n]   :=frcrange32(system_settings_ref.i['def.'+n],system_settings_ref.i['min.'+n],system_settings_ref.i['max.'+n]);//longint32
          2:if system_settings.found(n) then a.s[n]   :=strdefb(system_settings.s[n],system_settings_ref.s['def.'+n])                                            else a.s[n]   :=system_settings_ref.s['def.'+n];//19jun2025: fixed, was missing
          3:if system_settings.found(n) then a.i64[n] :=frcrange64(system_settings.i64[n],system_settings_ref.i64['min.'+n],system_settings_ref.i64['max.'+n])   else a.i64[n] :=frcrange64(system_settings_ref.i64['def.'+n],system_settings_ref.i64['min.'+n],system_settings_ref.i64['max.'+n]);//comp
          end;//case
@@ -14761,7 +15736,7 @@ if (system_settings<>nil) and (system_settings_ref<>nil) and system_settings_ref
 else result:='';
 end;
 
-function app__eventproc(ctrltype:dword):bool; stdcall;//detects shutdown requests from Windows
+function app__eventproc(ctrltype:dword32):bool; stdcall;//detects shutdown requests from Windows
 label//WARNING: This event is run by Windows in a separate thread -> thus be careful to be thread safe
    redo;
 var
@@ -14803,6 +15778,7 @@ var
    end;
 begin
 try
+
 //init
 xonce:=true;
 
@@ -14815,7 +15791,6 @@ c('check.mode');
 {$ifdef gui}
 c('width');
 c('height');
-c('screensizelimit%');
 c('focused.opacity');
 c('unfocused.opacity');
 c('opacity.speed');
@@ -14839,6 +15814,7 @@ c('font2.name');
 c('font2.size');
 c('help.maxwidth');
 {$endif}
+
 except;end;
 end;
 
@@ -14857,7 +15833,6 @@ else if (xname='service.name')        then result:=info__app('name')
 else if (xname='service.displayname') then result:=info__app('service.name')
 else if (xname='service.description') then result:=info__app('des')
 else if (xname='new.instance')        then result:='1'//1=allow new instance, else=only one instance of app permitted
-else if (xname='screensizelimit%')    then result:='95'//95% of screen area
 else if (xname='realtimehelp')        then result:='0'//1=show realtime help, 0=don't
 else if (xname='hint')                then result:='1'//1=show hints, 0=don't
 
@@ -15004,12 +15979,13 @@ end;//case
 end;
 
 procedure app__boot(xEventDriven,xFileCache,xGUImode:boolean);//28sep2025, 19aug2025
+var
+   int1:longint;
 begin
 try
 
 //check
 if (system_runstyle>rsBooting) then exit else system_runstyle:=rsUnknown;
-
 
 //------------------------------------------------------------------------------
 //-- Thread Safe Memory --------------------------------------------------------
@@ -15031,9 +16007,9 @@ if win____emergencyfallback_engaged then
 
    end;
 
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 //critical - make app DPI aware per monitor V2 - for Win10 (late) and Win 11 - 27nov2024
 if win__ok(vwin2____SetProcessDpiAwarenessContext) then system_monitors_dpiAwareV2:=(0<>win2____SetProcessDpiAwarenessContext(-4));
@@ -15041,6 +16017,10 @@ if win__ok(vwin2____SetProcessDpiAwarenessContext) then system_monitors_dpiAware
 //init
 system_eventdriven:=xeventdriven;
 filecache__setenable(xFileCache);//28sep2025
+
+//is the app running in msix mode - 10dec2025, 08dec2025
+int1        :=0;
+system_msix :=(win2____GetCurrentPackageFullName(int1,nil)<>15700);//15700=app is not running as a MSIX package app - 08dec2025
 
 
 //GUI
@@ -15153,60 +16133,93 @@ if (not ismultithread) then
 except;end;
 end;
 
-procedure app__run;//run - 07sep2025, 17jun2025, 19aug2024: adjust GUI start position
+procedure app__run;//run - 30dec2025: better timing control and accuracy, 07sep2025, 17jun2025, 19aug2024: adjust GUI start position
 label
    redo,loop,skipremove,shutdown;
 var
-   int1,p,p2:longint;
+   dscale:double;
+   dw,dh,int1,p,p2:longint;
    xref64,painttimer,timer1000,timer30:comp;
-   xremove,xguimode,xlastturbo,xmustshutdown,xlastvisible:boolean;
+   xremove,xguimode,xlastturbo,xlastvisible:boolean;
 
    procedure xmn32;
    begin
    system_min32_val:=frcmin32(restrict32(div64(ms64,60000)),0);
    end;
 
-   function xboolcheck:boolean;//triggered when "Complete boolean eval=ticked" - 01jul2021
-   begin
-   result:=true;try;showerror2('Logic failure - boolean parameters are being read past the first left-most TRUE value. Turn off "Complete boolean eval" processing in the compiler options.',10);xmustshutdown:=true;except;end;
-   end;
-
-   procedure xparamcheck; pascal;
+   function xlogicCheck:boolean;//17dec2025
    var
-      xerr,xfirst:boolean;
-      v:longint;
+      zorder:string;
 
-      function a:longint;
+      procedure se(const x:string);
       begin
-      result:=-10;
-      if xfirst then xerr:=false;
+      showerror2(x,10);
       end;
 
-      function b:longint;
+      function v3(const x:boolean):boolean;
       begin
-      result:=10;
-      xfirst:=false;
+      result:=x;
+      zorder:=zorder+'3';
       end;
 
-      function xtest(v1,v2:longint):longint; pascal;
+      function v2(const x:boolean):boolean;
       begin
-      result:=v1*v2;
+      result:=x;
+      zorder:=zorder+'2';
       end;
+
+      function v1(const x:boolean;const n1,n2,n3:longint):boolean;
+      begin
+      result:=((n1=n2) and (n2=n3) and (n1=n3)) or x;
+      zorder:=zorder+'1';
+      end;
+
+      function v0:boolean;//requires "short-circuit evaluation code", triggered when "Complete boolean eval=ticked" - 01jul2021
+      begin
+      result:=true;
+      se('Boolean logic failure - short-circuit evaluation is not set, reading past first TRUE boolean evaluation: turn off "Complete boolean eval" processing in compiler options or set unit compiler tag to "$B-".');
+      end;
+
    begin
-   try
+
    //defaults
-   xfirst:=true;
-   xerr:=true;
-   //get
-   v:=xtest(a,b);
-   //check
-   if xerr then
+   result:=true;
+
+   //read past 1st true check
+   if true or v0 then zorder:='123';
+
+   //"and" left-to-right order check
+   zorder:='';
+   if v1(false,0,random(1000)*random(1000),-100) or v2(false) or v3(true) or true then
       begin
-      xmustshutdown:=true;
-      showerror2('Logic failure - proc parameters are being read from right-to-left.  Parameters must be passed left-to-right. Ref('+intstr32(v)+')',10);
+
+      if (zorder<>'123') then
+         begin
+
+         if result then se('Boolean AND logic failure - must evaluate left-to-right: "'+zorder+'" should be "123"');
+         result:=false;
+
+         end;
+
       end;
-   except;end;
+
+   //"or" left-to-right order check
+   zorder:='';
+   if v1(true,0,random(1000)*random(1000),-100) and v2(true) and v3(true) then
+      begin
+
+      if (zorder<>'123') then
+         begin
+
+         if result then se('Boolean OR logic failure - must evaluate left-to-right: "'+zorder+'" should be "123"');
+         result:=false;
+
+         end;
+
+      end;
+
    end;
+
 begin
 try
 //check
@@ -15218,10 +16231,8 @@ if (system_state=ssMustStart) then system_state:=ssStarting else exit;
 //defaults
 xremove        :=strmatch(low__paramstr1,'/remove');
 xguimode       :=app__guimode;
-xmustshutdown  :=false;
 low__handlenone(system_stdin);
 xlastturbo     :=false;
-
 
 //------------------------------------------------------------------------------
 //--< starting >----------------------------------------------------------------
@@ -15301,16 +16312,19 @@ for p:=0 to high(system_scn_lines) do makestr(system_scn_lines[p] ,300,32);//18 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //init system vars and procs that may be required in a unit's start proc -------
+
 randomize;
 xmn32;
-system_boot:=ms64;
-system_boot_date:=date__now;
-timer30:=0;
-timer1000:=0;
-painttimer:=0;
-xlastvisible:=scn__visible;
+
+system_boot        :=ms64;
+system_boot_date   :=date__now;
+timer30            :=0;
+timer1000          :=0;
+painttimer         :=0;
+xlastvisible       :=scn__visible;
+
 //.std in/out
-system_stdin:=low__stdin;
+system_stdin       :=low__stdin;
 
 
 //------------------------------------------------------------------------------
@@ -15322,6 +16336,23 @@ gossimg__start;
 gossio__start;
 gossnet__start;
 {$ifdef snd}gosssnd__start;{$endif}
+gossres__start;//19dec2025
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//-- System Logic Checks -------------------------------------------------------
+
+//boolean check - > check compiler is generating expected boolean behaviour, e.g left-to-right boolean evaluation -> "strict boolean evaluation" mode
+if not xlogicCheck then goto shutdown;
+
+
+//system blocksize min size check
+if (system_blocksize<4096) then
+   begin
+   showerror2('System memory block size set to '+k64(system_blocksize)+'.  Should be atleast 4096.',10);
+   goto shutdown;
+   end;
 
 
 //------------------------------------------------------------------------------
@@ -15343,28 +16374,6 @@ app__checkvars;
 scn__settitle(app__info('name'));
 
 
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//-- System Logic Checks -------------------------------------------------------
-//check compiler is NOT set to evaluate all boolean expressions -> e.g. read past the first TRUE value
-if true or xboolcheck then
-   begin
-   //nil
-   end;
-
-//check compiler is NOT set to pass values to procs in right-to-left fashion
-xparamcheck;
-
-//one or more logic checks failed -> must shutdown as program cannot function under these logic conditions - 09feb2024
-if xmustshutdown then goto shutdown;
-
-//system blocksize min size check
-if (system_blocksize<4096) then
-   begin
-   showerror2('System memory block size set to '+k64(system_blocksize)+'.  Should be atleast 4096.',10);
-   goto shutdown;
-   end;
-
 //console creation point -> "app__create" used to create support objects required for program's operation
 if not xguimode then
    begin
@@ -15380,9 +16389,11 @@ monitors__sync;
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+
 //GUI: application start and form setup ----------------------------------------
 {$ifdef gui}
 gui__initing:=true;
+
 
 //.start the GUI library, load settings and sync, then CREATE gui app - 19aug2024
 gossgui__start;//load controls and settings
@@ -15422,29 +16433,59 @@ if (app__gui=nil) then showerror('Main form failed to create correctly');//In La
 //.do again to sync "on top" etc which requires a valid form to be present -> also required to sync BEFORE using "vistartstyle" below - 21jul2024
 visync;
 
-//.show
+
+//.show gui
 if (app__gui<>nil) then
    begin
+
+   //restore pos / size -> "retain pos/size" - 17dec2025, 13dec2025
+   if (app__gui<>nil) and syssettings.b['retainpos']  and syssettings.found('left')      and
+                          syssettings.found('top')    and syssettings.found('width')     and
+                          syssettings.found('height') then
+         begin
+         try
+
+         //scale at which width and height were stored at in %
+         int1  :=syssettings.i['wh.scale'];//in %
+
+         if not syssettings.found('wh.scale') then int1:=100
+         else                                      int1:=frcrange32( int1 ,round32(gui__scalemin*100) ,round32(gui__scalemax*100) );
+
+         dscale  :=frcrangeD64( (viscale*100) / frcmin32(int1,1) ,gui__scalemin ,gui__scalemax );
+
+         //calculate final width and height
+         dw      :=round32( syssettings.i['width']  * dscale );
+         dh      :=round32( syssettings.i['height'] * dscale );
+
+         //set width and height
+         app__gui.setbounds( syssettings.i['left'] ,syssettings.i['top'] ,dw ,dh );
+
+         except;end;
+         end;
+
+   //show style
    case vistartstyle of
    1   :app__gui.state:='-';
    2   :app__gui.state:='+';
    3   :app__gui.state:='f';
    else app__gui.state:='n';
    end;//case
+
    end;
 
 {$endif}
 
 
 //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //.compiler check - 15jul2025
 
 app__checkCompilerOptionsForMaxSpeed;
 
 
-
 //------------------------------------------------------------------------------
 //app is now running -----------------------------------------------------------
+
 //.first timer
 system_firsttimer:=true;
 app__timers;
@@ -15453,7 +16494,11 @@ system_firsttimer:=false;
 //.start system timer -> basic timer using the Windows event queue -> this timer
 // acts as a basic action pump, allowing passive checkers and procs to activate when
 // required, performing actions indirectly and without direct user interaction.
-if system_eventdriven then win____settimer(app__wproc.window,1,system_timerinterval,nil);
+
+
+//new timing contoller - 30dec2025
+//was: if system_eventdriven then win____settimer(app__wproc.window,1,system_timerinterval,nil);
+if system_eventdriven then system_stophere:=tstophere.create;//more accurate and consistent timing
 
 
 //------------------------------------------------------------------------------
@@ -15470,19 +16515,24 @@ system_slowms64.ms   :=ms64;
 //.pause
 if system_pause then
    begin
+
    app__waitms(1000);
    goto loop;
+
    end;
 
 //.paint screen
 if (not xguimode) and ((system_scn_visible<>system_scn_ref1) or system_scn_mustpaint) and msok(painttimer) then
    begin
+
    //get
    system_scn_mustpaint:=false;
    app__paintnow;
    if low__setbol(xlastvisible,system_scn_visible) and (not system_scn_visible) then app__onpaintOFF;
+
    //reset
    msset(painttimer,100);
+
    end;
 
 //.1000ms
@@ -15506,6 +16556,7 @@ if msok(timer1000) then
 //.30sec
 if msok(timer30) then
    begin
+
    //minute counter
    xmn32;
 
@@ -15519,13 +16570,28 @@ if msok(timer30) then
 
    //reset
    msset(timer30,30000);
+
    end;
 
 //.messages
 case system_eventdriven of
-true:if (not app__processmessages) and (system_state=ssRunning) and (not system_musthalt) then win____waitmessage;//don't switch to wait mode if we're not running, e.g. shuting down etc - 28apr2024
-else app__processmessages;//time sliced
-end;
+true:if (not app__processmessages) and (system_state=ssRunning) and (not system_musthalt) then
+   begin
+
+   if (system_stophere<>nil) then
+      begin
+
+      case app__turbook of
+      true:system_stophere.stop2( 1 );//1ms
+      else system_stophere.stop2( system_timerinterval );//15ms
+      end;//case
+
+      end
+   else win____waitmessage;//don't switch to wait mode if we're not running, e.g. shuting down etc - 28apr2024
+
+   end;
+else app__processmessages;//time sliced - custom ms/processing
+end;//case
 
 //.timers
 app__timers;
@@ -15553,8 +16619,10 @@ if {$ifdef gui}gui__running and{$endif} (system_state=ssRunning) and (not system
 //--< stopping >----------------------------------------------------------------
 system_state:=ssStopping;
 
-//.stop system timer
-if system_eventdriven and (system_wproc<>nil) then win____killtimer(app__wproc.window,1);
+//.stop timing handler - 30dec2025
+//was: if system_eventdriven and (system_wproc<>nil) then win____killtimer(app__wproc.window,1);
+freeobj(@system_stophere);
+
 
 //.last timer
 system_lasttimer:=true;
@@ -15657,29 +16725,39 @@ var
    msg:tmsg;
    v64:comp;
 begin
+
 //defaults
-result:=false;
-v64:=ms64;;
+result :=false;
+v64    :=ms64;
 
 //get
 redo:
+
 if win____peekmessage(msg,0,0,0,PM_REMOVE) then
    begin
+
    result:=true;//13mar2022
 
    if (msg.message=WM_QUIT) then app__closeinited:=true//was "app__halt" - 07jul2025
    else
       begin
+
       xhandled:=false;
+
       //if assigned(application.onmessage) then application.onmessage(msg,xhandled);
       if not xhandled then
          begin
+
          win____translatemessage(msg);
          win____dispatchmessage(msg);
+
          end;
+
       //loop - process multiple message for upto just less than 2ms - 30sep2021
       if ((ms64-v64)<=5) then goto redo;
+
       end;
+
    end;
 end;
 
@@ -15801,7 +16879,7 @@ case v of
       //shift cursor left 1 place -> cannot delete to beginning when wrapped to next line
       if xecho then app__write(#8#32#8);//shift left -> flush char with a space -> shift left
       //remove trailing char from buffer
-      strdel1(system_line_str,low__len(system_line_str),1);
+      strdel1(system_line_str,low__len32(system_line_str),1);
       end;
    end;
 13:begin
@@ -15833,6 +16911,7 @@ end;
 
 procedure app__timers;
 begin
+
 //app info
 if msok(system_timer500) then
    begin
@@ -15855,6 +16934,10 @@ if assigned(system_timer5) then system_timer5(nil);
 
 //.gui timers
 {$ifdef gui}gui__timers;{$endif}
+
+//.resource timer -> "gossres.pas"
+res__slowtimer;
+
 end;
 
 procedure app__turbo;
@@ -15888,7 +16971,7 @@ begin
 result:=win__ok(vwin2____SetLayeredWindowAttributes);
 end;
 
-function app__setwindowalpha(xwindow:hwnd;xalpha:longint):boolean;//27nov2024: sets the alpha level of window, also automatically upgrades window's extended style to support alpha values
+function app__setwindowalpha(xwindow:hauto;xalpha:longint):boolean;//27nov2024: sets the alpha level of window, also automatically upgrades window's extended style to support alpha values
 label//dwFlags: LWA_ALPHA=2, LWA_COLORKEY=1
    skipend;
 var
@@ -15907,12 +16990,15 @@ if (xwindow=0) then goto skipend;
 //get
 if app__cansetwindowalpha then
    begin
+
    //ensure window has "WS_EX_LAYERED" in its extended window style
    v:=win____GetWindowLong(xwindow,GWL_EXSTYLE);
    if not bit__hasval32(v,WS_EX_LAYERED) then
       begin
+
       v:=v or WS_EX_LAYERED;
-      if (0=win____SetWindowLong(xwindow,GWL_EXSTYLE,v)) then goto skipend;
+      if (0=win____SetWindowLong(xwindow,GWL_EXSTYLE,v)) then goto skipend;//?????????????????????
+
       end;
 
    //set alpha value
@@ -15927,11 +17013,11 @@ skipend:
 except;end;
 end;
 
-function app__monitorProc(unnamedParam1:HMONITOR;unnamedParam2:HDC;unnamedParam3:pwinrect;unnamedParam4:LPARAM):lresult; stdcall;//26sep2025, 26nov2024
+function app__monitorProc(unnamedParam1:HMONITOR;unnamedParam2:HDC;unnamedParam3:pwinrect;unnamedParam4:msg_LPARAM):msg_result; stdcall;//26sep2025, 26nov2024
 var
    m:tmonitorinfoex;
    i:longint;
-   v,v2:dword;
+   v,v2:dword32;
 
    function mprimary:boolean;
    begin
@@ -15981,6 +17067,16 @@ if win__ok(vwin2____GetMonitorInfo) then
    end;//if
 except;end;
 {$endif}
+
+end;
+
+function monitors__mustsync(const xwinmsg:longint):boolean;//01feb2026
+begin
+
+case xwinmsg of
+WM_DISPLAYCHANGE,WM_SETTINGCHANGE:result:=true;
+else result:=false;
+end;//case
 
 end;
 
@@ -16298,17 +17394,17 @@ begin
 result:=system_monitors_totalarea.bottom-system_monitors_totalarea.top+1;
 end;
 
-function app__handle:tbasic_handle;
+function app__handle:hauto;
 begin
 {$ifdef gui}if (app__gui<>nil) then result:=app__gui.handle else result:=0;{$else}result:=0;{$endif}
 end;
 
-function app__activehandle:tbasic_handle;
+function app__activehandle:hauto;
 begin
 {$ifdef gui}if (app__guiactive<>nil) then result:=app__guiactive.handle else result:=0;{$else}result:=0;{$endif}
 end;
 
-function app__hinstance:tbasic_handle;
+function app__hinstance:hauto;
 begin
 result:=win____GetModuleHandle(nil);
 end;
@@ -16344,9 +17440,18 @@ begin
 {$ifdef snd} {$else}showerror('CHIMES support required');{$endif}
 end;
 
-procedure need_mm;
+procedure need_mm;//31jan2026, 10dec2025
 begin
-{$ifdef snd} {$else}showerror('MM support required');{$endif}
+
+{$ifdef snd}
+//.ensure the correct tags are specified for MSIX support - 31jan2026, 10dec2025
+if not msix__hastag('M') then msix__showTagError('Midi','M');//required to include MIDI dependency within MSIX to enable "Microsoft GS Wavetable Synth" to load due to a long standing system bug - 31jan2026
+//if not msix__hastag('W') then msix__showTagError('Wave','W');
+
+{$else}
+showerror('MM support required');
+{$endif}
+
 end;
 
 procedure need_filecache;
@@ -16354,9 +17459,22 @@ begin
 if not filecache__enabled then showerror('Filecache support required');
 end;
 
-procedure need_net;
+procedure need_net;//10dec2025
 begin
+
 if (system_net_limit<=10) then showerror('Net support required');
+
+//.ensure the correct tag is specified for MSIX support - 10dec2025
+//if not msix__hastag('N') then msix__showTagError('Network','N');
+
+end;
+
+procedure need_xbox;//10dec2025
+begin
+
+//.ensure the correct tag is specified for MSIX support - 10dec2025
+//if not msix__hastag('X') then msix__showTagError('Xbox Controller','X');
+
 end;
 
 procedure need_ipsec;
@@ -16432,7 +17550,7 @@ end;
 
 
 //numerical procs --------------------------------------------------------------
-function low__sum32(x:array of longint):longint;
+function low__sum32(const x:array of longint):longint;
 var//Add N longint's (32bit) numbers together and limit to longint range min32..max32 - 08may2020
    v:comp;
    p:longint;
@@ -16528,70 +17646,96 @@ var
    p2,p,tcount:longint;
    xenlarged:boolean;
 
-   function awithin(xtest,xbase:twinrect):boolean;//equal to or inside the base
+   function awithin(const xtest,xbase:twinrect):boolean;//equal to or inside the base
    begin
+
    result:=(xtest.left>=xbase.left) and (xtest.right<=xbase.right) and (xtest.top>=xbase.top) and (xtest.bottom<=xbase.bottom);
+
    end;
 
-   function xoverlap(xtest,xbase:twinrect):boolean;
+   function xoverlap(const xtest,xbase:twinrect):boolean;
    begin
+
    result:=(xtest.left<=xbase.right) and (xtest.right>=xbase.left) and (xtest.top<=xbase.bottom) and (xtest.bottom>=xbase.top);
+
    end;
 
-   procedure xenlarge(xtest:twinrect;var xbase:twinrect);//enlarge the base
+   procedure xenlarge(const xtest:twinrect;var xbase:twinrect);//enlarge the base
    begin
+
    //left
    if (xtest.left<xbase.left) then
       begin
-      xbase.left:=xtest.left;
-      xenlarged:=true;
+
+      xbase.left   :=xtest.left;
+      xenlarged    :=true;
+
       end;
+
    //right
    if (xtest.right>xbase.right) then
       begin
-      xbase.right:=xtest.right;
-      xenlarged:=true;
+
+      xbase.right  :=xtest.right;
+      xenlarged    :=true;
+
       end;
+
    //top
    if (xtest.top<xbase.top) then
       begin
-      xbase.top:=xtest.top;
-      xenlarged:=true;
+
+      xbase.top    :=xtest.top;
+      xenlarged    :=true;
+
       end;
+
    //bottom
    if (xtest.bottom>xbase.bottom) then
       begin
-      xbase.bottom:=xtest.bottom;
-      xenlarged:=true;
+
+      xbase.bottom  :=xtest.bottom;
+      xenlarged     :=true;
+
       end;
+
    end;
 
-   procedure taddnew(x:twinrect);
+   procedure taddnew(const x:twinrect);
    var
       p:longint;
       xwithin:boolean;
    begin
+
    //defaults
    xwithin:=false;
 
    //find existing
    if (tcount>=1) then
       begin
+
       for p:=0 to (tcount-1) do if awithin(x,slist[p]) then
          begin
+
          xwithin:=true;
          break;
+
          end;//p
+
       end;
 
    //add
    if not xwithin then
       begin
+
       slist[tcount]:=x;
       inc(tcount);
+
       end;
+
    end;
 begin
+
 //check
 if (scount<=0) then exit;
 
@@ -16602,9 +17746,10 @@ for p:=0 to (scount-1) do for p2:=0 to (scount-1) do if xoverlap(slist[p2],slist
 if xenlarged then goto redo;
 
 //remove duplicates
-tcount:=0;
+tcount  :=0;
 for p:=0 to (scount-1) do taddnew(slist[p]);
-scount:=tcount;
+scount  :=tcount;
+
 end;
 
 function area__nil:twinrect;
@@ -16638,6 +17783,14 @@ result.left   :=xleft;
 result.top    :=xtop;
 result.right  :=xright;
 result.bottom :=xbottom;
+end;
+
+procedure area__makefast(const xleft,xtop,xright,xbottom:longint;var x:twinrect);//23dec2025
+begin
+x.left   :=xleft;
+x.top    :=xtop;
+x.right  :=xright;
+x.bottom :=xbottom;
 end;
 
 function area__makewh(const xleft,xtop,xwidth,xheight:longint):twinrect;//28jul2025
@@ -16778,82 +17931,77 @@ b.bytes[1]:=a.bytes[0];
 result:=b.val;
 end;
 
-procedure low__divmod(dividend:longint;divisor:word;var result,remainder:word);
-asm
-PUSH    EBX
-MOV     EBX,EDX
-MOV     EDX,EAX
-SHR     EDX,16
-DIV     BX
-MOV     EBX,Remainder
-MOV     [ECX],AX
-MOV     [EBX],DX
-POP     EBX
+procedure low__divmod(const xval:longint;const xdivby:word;var result,remainder:word);//14dec2025
+begin
+
+result     :=frcrange32(xval div frcmin32(xdivby,1),0,max16);
+remainder  :=frcrange32(xval-(result*xdivby),0,max16);
+
 end;
 
-function low__insd64(x:double;y:boolean):double;//06jul2025
+function low__insd64(const x:double;const y:boolean):double;//06jul2025
 begin
 if y then result:=x else result:=0;
 end;
 
-function low__insint(x:longint;y:boolean):longint;
+function low__insint(const x:longint;const y:boolean):longint;
 begin
 if y then result:=x else result:=0;
 end;
 
-function insbol(x,y:boolean):boolean;//05jul2025
+function insbol(const x,y:boolean):boolean;//05jul2025
 begin
 if y then result:=x else result:=false;
 end;
 
-function insint(x:longint;y:boolean):longint;
+function insint(const x:longint;const y:boolean):longint;
 begin
 if y then result:=x else result:=0;
 end;
 
-function insint32(x:longint;y:boolean):longint;
+function insint32(const x:longint;const y:boolean):longint;
 begin
 if y then result:=x else result:=0;
 end;
 
-function insint64(x:comp;y:boolean):comp;
+function insint64(const x:comp;const y:boolean):comp;
 begin
 if y then result:=x else result:=0;
 end;
 
-function low__inscmp(x:comp;y:boolean):comp;
+function low__inscmp(const x:comp;const y:boolean):comp;
 begin
 if y then result:=x else result:=0;
 end;
 
-function frcmin32(x,min:longint):longint;
+function frcmin32(const x,min:longint):longint;
 begin
 if (x<min) then result:=min else result:=x;
 end;
 
-function frcmax32(x,max:longint):longint;
+function frcmax32(const x,max:longint):longint;
 begin
 if (x>max) then result:=max else result:=x;
 end;
 
-function frcrange32(x,min,max:longint):longint;
+function frcrange32(const x,min,max:longint):longint;
 begin
 result:=x;
 if (result<min) then result:=min;
 if (result>max) then result:=max;
 end;
 
-function frcminD64(x,min:double):double;//05jul2025
+function frcminD64(const x,min:double):double;//05jul2025
 begin
 if (x<min) then result:=min else result:=x;
 end;
 
-function frcmaxD64(x,max:double):double;
+function frcmaxD64(const x,max:double):double;
 begin
 if (x>max) then result:=max else result:=x;
 end;
 
-function frcrangeD64(x,min,max:double):double;
+function frcrangeD64(const x,min,max:double):double;
 begin
 result:=x;
 if (result<min) then result:=min;
@@ -16864,7 +18012,7 @@ function str__to32(const x:string):longint;//02oct2025, 21jun2024, 29AUG2007
 var
    a:tint4;
 begin
-if (low__len(x)>=4) then
+if (low__len32(x)>=4) then
    begin
    a.bytes[0]:=ord(x[0+stroffset]);
    a.bytes[1]:=ord(x[1+stroffset]);
@@ -16875,7 +18023,7 @@ if (low__len(x)>=4) then
 else result:=0;
 end;
 
-function str__from32(x:longint):string;//02oct2025, 21jun2024, 29AUG2007
+function str__from32(const x:longint):string;//02oct2025, 21jun2024, 29AUG2007
 var
    a:tint4;
 begin
@@ -16888,38 +18036,41 @@ result[2+stroffset]:=char(a.bytes[2]);
 result[3+stroffset]:=char(a.bytes[3]);
 end;
 
-function frcrange2(var x:longint;xmin,xmax:longint):boolean;//20dec2023, 29apr2020
+function frcrange322(var x:longint32;const xmin,xmax:longint32):boolean;//14dec2025, 20dec2023, 29apr2020
 begin
+
 result:=true;//pass-thru
+
 if (x<xmin) then x:=xmin;
 if (x>xmax) then x:=xmax;
+
 end;
 
-function smallest32(a,b:longint):longint;
+function smallest32(const a,b:longint):longint;
 begin
 result:=a;
 if (result>b) then result:=b;
 end;
 
-function largest32(a,b:longint):longint;
+function largest32(const a,b:longint):longint;
 begin
 result:=a;
 if (result<b) then result:=b;
 end;
 
-function smallestD64(a,b:double):double;//21jul2025
+function smallestD64(const a,b:double):double;//21jul2025
 begin
 result:=a;
 if (result>b) then result:=b;
 end;
 
-function largestD64(a,b:double):double;
+function largestD64(const a,b:double):double;
 begin
 result:=a;
 if (result<b) then result:=b;
 end;
 
-function largestarea32(s,d:twinrect):twinrect;//25dec2024
+function largestarea32(const s,d:twinrect):twinrect;//25dec2024
 begin
 result:=s;
 
@@ -16929,139 +18080,153 @@ if (d.top<result.top)       then result.top   :=d.top;
 if (d.bottom>result.bottom) then result.bottom:=d.bottom;
 end;
 
-function cfrcrange32(x,min,max:currency):currency;//date: 02-APR-2004
+function cfrcrange32(const x,min,max:currency):currency;//date: 02-APR-2004
 begin
 result:=x;
 if (result<min) then result:=min;
 if (result>max) then result:=max;
 end;
 
-function strbol(x:string):boolean;//27aug2024, 02aug2024
+function strbol(const x:string):boolean;//27aug2024, 02aug2024
 begin
-result:=(x<>'') and (strint(x)<>0);
+result:=(x<>'') and (strint32(x)<>0);
 end;
 
-function bolstr(x:boolean):string;
+function bolstr(const x:boolean):string;
 begin
 if x then result:='1' else result:='0';
 end;
 
-function strint(x:string):longint;//skip over pluses "+" - 22jan2022, skip over commas - 05jun2021, date: 16aug2020, 25mar2016 v1.00.50 / 10DEC2009, v1.00.045
-var //Similar speed to "strtoint" - no erros are produced though
-    //Fixed "integer out of range" error, for data sets that fall outside of range
-   n,xlen,z,y:longint;
-   tmp:currency;
-begin
-//defaults
-result:=0;
-
-try
-tmp:=0;
-if (x='') then exit;
-//init
-xlen:=low__len(x);
-n:=1;
-//get
-z:=1;
-while true do
-begin
-y:=byte(x[z-1+stroffset]);
-if (y=45) then n:=-1
-else if (y=43) then
-   begin
-   //do nothing as "+" does nothing - 22jan2022
-   end
-else if (y=ssComma) then//05jun2021
-   begin
-   //nil
-   end
-else
-    begin
-    if (y<48) or (y>57) then break;
-    tmp:=(tmp*10)+y-48;
-    end;
-inc(z);
-if (z>xlen) then break;
-//.range limit => prevent error "EInvalidOP - Invalid floating point operation" - 25mar2016
-if (tmp>max32) then
-   begin
-   tmp:=max32;
-   break;
-   end;
-end;//loop
-//n
-tmp:=cfrcrange32(tmp*n,min32,max32);
-result:=round(tmp);
-except;end;
-end;
-
-function frcmin64(x,min:comp):comp;//24jan2016
+function frcmin64(const x,min:comp):comp;//24jan2016
 begin
 if (x<min) then result:=min else result:=x;
 end;
 
-function frcmax64(x,max:comp):comp;//24jan2016
+function frcmax64(const x,max:comp):comp;//24jan2016
 begin
 if (x>max) then result:=max else result:=x;
 end;
 
-function frcrange64(x,min,max:comp):comp;//24jan2016
+function frcrange64(const x,min,max:comp):comp;//24jan2016
 begin
 result:=x;
 if (result<min) then result:=min;
 if (result>max) then result:=max;
 end;
 
-function frcrange642(var x:comp;xmin,xmax:comp):boolean;//20dec2023
+function frcrange642(var x:longint64;const xmin,xmax:longint64):boolean;//14dec2025, 20dec2023, 29apr2020
 begin
+
 result:=true;//pass-thru
+
 if (x<xmin) then x:=xmin;
 if (x>xmax) then x:=xmax;
+
 end;
 
-function smallest64(a,b:comp):comp;
+function smallest64(const a,b:comp):comp;
 begin
 if (a>b) then result:=b else result:=a;
 end;
 
-function largest64(a,b:comp):comp;
+function largest64(const a,b:comp):comp;
 begin
 if (a<b) then result:=b else result:=a;
 end;
 
-function strint32(x:string):longint;//01nov2024
+function strint32(const x:string):longint;//01nov2024
 begin
 result:=restrict32(int__fromstr(x));
 end;
 
-function intstr32(x:longint):string;//01nov2024
+function intstr32(const x:longint):string;//01nov2024
 begin
 result:=int__tostr(x);
 end;
 
-function sign32(xpositive:boolean):longint;//29jul2025
+function sign32(const xpositive:boolean):longint;//29jul2025
 begin
 if xpositive then result:=1 else result:=-1;
 end;
 
-procedure inc32(var x:longint;xby:longint);
+function or32(const v1,v2:comp):longint;//safe 32bit OR handler for Lazarus, which complains when v1 or v2 reaches max32 and does NOT roll the value over to the minus range using the upper level of the 32bit longint32 as Delphi 3 does - 03dec2025
 begin
+result:=tcmp8(v1).ints[0] or tcmp8(v2).ints[0];
+end;
+
+function int32(const v:comp):longint;//03dec2025
+begin
+result:=tcmp8(v).ints[0];
+end;
+
+function rollid32(var x:longint32):longint32;//1..max32, never <=0
+begin
+
+if      (x<=0)    then x:=1
+else if (x<max32) then x:=x+1
+else                   x:=1;
+
+result:=x;
+
+end;
+
+function roll32(var x:longint32):longint32;
+begin
+
+if (x<max32) then x:=x+1 else x:=0;
+result:=x;
+
+end;
+
+procedure inc32(var x:longint32;const xby:longint32);
+begin
+inc(x,xby);
+end;
+
+procedure dec32(var x:longint32;const xby:longint32);
+begin
+dec(x,-xby);
+end;
+
+function rollid64(var x:longint64):longint64;//1..max64, never <=0
+begin
+
+if      (x<=0)    then x:=1
+else if (x<max64) then x:=x+1
+else                   x:=1;
+
+result:=x;
+
+end;
+
+function roll64(var x:longint64):longint64;
+begin
+
+if (x<max64) then x:=x+1 else x:=0;
+result:=x;
+
+end;
+
+procedure inc64(var x:longint64;const xby:longint64);
+begin
+
+{$ifdef 64bit}
+inc(x,xby);
+{$else}
 x:=x+xby;
+{$endif}
+
 end;
 
-procedure dec32(var x:longint;xby:longint);
+procedure dec64(var x:longint64;const xby:longint64);
 begin
+
+{$ifdef 64bit}
+dec(x,xby);
+{$else}
 x:=x-xby;
-end;
+{$endif}
 
-procedure inc64(var x:comp;xby:comp);
-begin
-x:=x+xby;
-end;
-
-procedure dec64(var x:comp;xby:comp);
-begin
-x:=x-xby;
 end;
 
 procedure inc132(var x:longint);
@@ -17084,27 +18249,38 @@ begin
 if (x>min64) then x:=x-1;
 end;
 
-function strint64(x:string):comp;//01nov2024, 05jun2021, 28jan2017
+function strint64(const x:string):comp;//01nov2024, 05jun2021, 28jan2017
 begin
 result:=int__fromstr(x);
 end;
 
-function intstr64(x:comp):string;//01nov2024, 30jan2017
+function intstr64(const x:comp):string;//01nov2024, 30jan2017
 begin
 result:=int__tostr(x);
 end;
 
-function int__tostr(x:extended):string;
+function int64__3264(const x:longint64):longint3264;//14dec2025
+begin
+
+{$ifdef 64bit}
+result:=x;
+{$else}
+result:=restrict32(x);
+{$endif}
+
+end;
+
+function int__tostr(const x:extended):string;
 begin
 result:=float__tostr3(x,ssdot,false);
 end;
 
-function int__fromstr(x:string):comp;
+function int__fromstr(const x:string):comp;
 begin
-result:=float__fromstr3(x,ssdot,false);
+result:=round64( float__fromstr3(x,ssdot,false) );
 end;
 
-function int__byteX(xindex,x:longint):byte;
+function int__byteX(xindex:longint;const x:longint):byte;
 begin
 //range
 if (xindex<0) then xindex:=0 else if (xindex>3) then xindex:=3;
@@ -17112,33 +18288,33 @@ if (xindex<0) then xindex:=0 else if (xindex>3) then xindex:=3;
 result:=tint4(x).bytes[xindex];
 end;
 
-function int__byte0(x:longint):byte;
+function int__byte0(const x:longint):byte;
 begin
 result:=int__byteX(0,x);
 end;
 
-function int__byte1(x:longint):byte;
+function int__byte1(const x:longint):byte;
 begin
 result:=int__byteX(1,x);
 end;
 
-function int__byte2(x:longint):byte;
+function int__byte2(const x:longint):byte;
 begin
 result:=int__byteX(2,x);
 end;
 
-function int__byte3(x:longint):byte;
+function int__byte3(const x:longint):byte;
 begin
 result:=int__byteX(3,x);
 end;
 
-function int__round4(x:longint):longint;//round X up to nearest 4 - 26apr2025
+function int__round4(const x:longint):longint;//round X up to nearest 4 - 26apr2025
 begin
 result:=x;
 if (result<>((result div 4)*4)) then result:=((result div 4)+1)*4;
 end;
 
-function float__tostr_divby(xvalue,xdivby:extended):string;//12dec2024
+function float__tostr_divby(const xvalue,xdivby:extended):string;//12dec2024
 var//performs a nice division, e.g. 500/1000 = 0.5, and not 0.999999 when values passed in directly without first being converted to a double
    v,v2:double;
 begin
@@ -17149,23 +18325,23 @@ v:=v/v2;
 result:=float__tostr3(v,ssdot,true);
 end;
 
-function float__tostr(x:extended):string;//31oct2024: system independent
+function float__tostr(const x:extended):string;//31oct2024: system independent
 begin
 result:=float__tostr3(x,ssdot,true);
 end;
 
-function float__tostr2(x:extended;xsep:byte):string;//31oct2024: system independent
+function float__tostr2(const x:extended;const xsep:byte):string;//31oct2024: system independent
 begin
 result:=float__tostr3(x,xsep,true);
 end;
 
-function float__tostr3(x:extended;xsep:byte;xallowdecimal:boolean):string;//31oct2024: system independent
+function float__tostr3(x:extended;const xsep:byte;const xallowdecimal:boolean):string;//15dec2025, 31oct2024: system independent
 var//Speed   : ~1.07 million cycles/sec vs "floattostrf" ~2.66 million cycles/sec on an icore 5
    //Accuracy: 18 digit combined left and right of decimal point
    //Range   : -999999999999999999.0 to 999999999999999999.0 (min64..max64)
    //Format  : System independent decimal point/formatting
    //Note    : Replaces "floattostrf()"
-   sv:comp;
+   sv:extended;
    slen,rlen,rlastnonzero,rseplen,alen,blen:longint;
    rok,sforce0:boolean;
 
@@ -17184,7 +18360,7 @@ var//Speed   : ~1.07 million cycles/sec vs "floattostrf" ~2.66 million cycles/se
 
    end;
 
-   procedure xscan(xmin:comp);
+   procedure xscan(const xmin:extended);
    var
       p:longint;
    begin
@@ -17243,9 +18419,9 @@ if (x<0) then
 
 //get
 //.whole number -> left of decimal point, stored in "astr" -> 1-18 digits
-sv     :=int(x);
-slen   :=0;
-sforce0:=false;
+sv      :=x;
+slen    :=0;
+sforce0 :=false;
 
 xscan(100000000000000000.0);
 xscan(10000000000000000.0);
@@ -17342,17 +18518,17 @@ else result:='0';//should never be required -> but here just in case
 
 end;
 
-function float__fromstr(x:string):extended;//31oct2024: system independent
+function float__fromstr(const x:string):extended;//31oct2024: system independent
 begin
 result:=float__fromstr3(x,ssDot,true);
 end;
 
-function float__fromstr2(x:string;xsep:byte):extended;//31oct2024: system independent
+function float__fromstr2(const x:string;const xsep:byte):extended;//31oct2024: system independent
 begin
 result:=float__fromstr3(x,xsep,true);
 end;
 
-function float__fromstr3(x:string;xsep:byte;xallowdecimal:boolean):extended;//01nov2024, 31oct2024: system independent
+function float__fromstr3(const x:string;const xsep:byte;const xallowdecimal:boolean):extended;//01nov2024, 31oct2024: system independent
 var//Speed   : ~3.09 million cycles/sec vs "strtofloat" ~9.09 million cycles/sec on an icore 5
    //Accuracy: 18 digit combined left and right of decimal point
    //Range   : -999999999999999999.0 to 999999999999999999.0 (min64..max64)
@@ -17366,27 +18542,33 @@ var//Speed   : ~3.09 million cycles/sec vs "strtofloat" ~9.09 million cycles/sec
    vval2:extended;
    aok,dneg:boolean;
 begin
+
 //defaults
-result:=0;
+result    :=0;
 
 //check
 if (x='') then exit;
 
 //init
-dsep:=char(xsep);
-a   :='';
-b   :='';
-rlen:=0;
-dneg:=false;
+dsep      :=char(xsep);
+a         :='';
+b         :='';
+rlen      :=0;
+dneg      :=false;
 
 //split
-aok:=false;
-for p:=1 to low__len(x) do if (x[p-1+stroffset]=dsep) then
+aok       :=false;
+
+for p:=1 to low__len32(x) do if (x[p-1+stroffset]=dsep) then
    begin
-   aok:=true;
-   a:=strcopy1(x,1,p-1);
-   if xallowdecimal then b:=strcopy1(x,p+1,low__len(x));
+
+   aok   :=true;
+   a     :=strcopy1(x,1,p-1);
+
+   if xallowdecimal then b:=strcopy1(x,p+1,low__len32(x));
+
    break;
+
    end;
 
 if not aok then a:=x;
@@ -17395,22 +18577,32 @@ if not aok then a:=x;
 //.a - left of decimal point
 if (a<>'') then
    begin
-   vval:=1;
 
-   for p:=low__len(a) downto 1 do
+   vval   :=1;
+
+   for p:=low__len32(a) downto 1 do
    begin
-   v:=ord(a[p-1+stroffset]);
+
+   v     :=ord(a[p-1+stroffset]);
+
    if (v>=48) and (v<=57) then
       begin
+
       inc(rlen);
+
       if (rlen<=18) then//allows for negative sign to still be detected for extremely long numbers, numbers that exceed 18 digits - 01nov2024
          begin
-         result:=result+((v-48)*vval);
-         vval:=vval*10;
+
+         result :=result + ((v-48)*vval);
+         vval   :=vval*10;
+
          end;
+
       end
    else if (v=ssDash) and (not dneg) then dneg:=true;
+
    end;//p
+
    end;
 
 //.b - right of decimal point
@@ -17418,21 +18610,29 @@ if (b<>'') then
    begin
    vval2:=0.1;
 
-   for p:=1 to low__len(b) do
+   for p:=1 to low__len32(b) do
    begin
+
    v:=ord(b[p-1+stroffset]);
+
    if (v>=48) and (v<=57) then
       begin
+
       inc(rlen);
       if (rlen>18) then break;
-      result:=result+((v-48)*vval2);
-      vval2:=vval2*0.1;
+
+      result  :=result+((v-48)*vval2);
+      vval2   :=vval2*0.1;
+
       end;
+
    end;//p
+
    end;
 
 //.negative
 if dneg then result:=-result;
+
 end;
 
 function strdec(x:string;y:byte;xcomma:boolean):string;
@@ -17447,7 +18647,7 @@ try
 if (y>10) then y:=10;
 //init
 a:=x;
-alen:=low__len(a);
+alen:=low__len32(a);
 b:='';
 //get
 if (alen>=1) then
@@ -17490,15 +18690,15 @@ if (x<0) then
    end;
 //.dec point fix - 01aug2017
 y:=floattostrex2(x);
-if (y<>'') then for p:=0 to (low__len(y)-1) do if (y[p+stroffset]='.') then
+if (y<>'') then for p:=0 to (low__len32(y)-1) do if (y[p+stroffset]='.') then
    begin
-   decbit:=strcopy0(y,p,low__len(y));
+   decbit:=strcopy0(y,p,low__len32(y));
    y:=strcopy0(y,0,p);
    break;
    end;
 //get
 z:='';
-xlen:=low__len(y);
+xlen:=low__len32(y);
 i:=0;
 if (xlen>=1) then
    begin
@@ -17537,7 +18737,7 @@ begin
 result:=false;
 
 try
-xlen:=low__len(x);
+xlen:=low__len32(x);
 i:=0;
 //get
 if (xlen>=1) then
@@ -17561,7 +18761,7 @@ begin
 result:=false;
 
 try
-xlen:=low__len(x);
+xlen:=low__len32(x);
 i:=0;
 //get
 if (xlen>=1) then
@@ -17586,7 +18786,7 @@ result:='';
 try
 v:=restrict64(v);
 result:=floattostrex2(v);
-result:=strcopy1b(p,1,frcmin32(s-low__len(result),0))+result;
+result:=strcopy1b(p,1,frcmin32(s-low__len32(result),0))+result;
 except;end;
 end;
 
@@ -17598,7 +18798,7 @@ result:='';
 
 try
 result:=intstr32(v);
-result:=strcopy1b(p,1,frcmin32(s-low__len(result),0))+result;
+result:=strcopy1b(p,1,frcmin32(s-low__len32(result),0))+result;
 except;end;
 end;
 
@@ -17754,7 +18954,7 @@ end;
 
 
 //object procs -----------------------------------------------------------------
-function obj__readitem(xdata:pobject;var xpos:integer;var xname:string;xvalue:pobject;var xvalue32:integer;var xusevalue32:boolean):boolean;
+function obj__readitem(xdata:pobject;var xpos:longint32;var xname:string;xvalue:pobject;var xvalue32:longint32;var xusevalue32:boolean):boolean;
 label//reads a Delphi 3 object data stream
    skipend;
 const
@@ -17817,7 +19017,7 @@ if not low__true2( str__lock(xdata), str__lock(xvalue) ) then goto skipend;
 
 //init
 str__clear(xvalue);
-xlen         :=str__len(xdata);
+xlen         :=str__len32(xdata);
 xmax         :=pred(xlen);
 s            :=sname;
 
@@ -17888,7 +19088,7 @@ else if (s=svalue) then
       result                   :=true;
 
       end;
-   vaInt32:begin//4=integer=4bytes
+   vaInt32:begin//4=longint32=4bytes
 
       tint4(xvalue32).bytes[0] :=v1;
       tint4(xvalue32).bytes[1] :=v1;
@@ -18002,7 +19202,7 @@ if zip__refOK(xdata,xlist) and (xdata.tag2=1) then//overview: add list -> signat
    begin
 
    //init
-   xlen:=xlist.len;
+   xlen:=xlist.len32;
 
    //mark as stopped
    xdata.tag2:=2;
@@ -18020,7 +19220,7 @@ if zip__refOK(xdata,xlist) and (xdata.tag2=1) then//overview: add list -> signat
    xlist.addint4(xlen);
 
    //xlist.startpos(4)
-   xlist.addint4(xdata.len);//was: xdata.tag2);//xlen1b
+   xlist.addint4(xdata.len32);//was: xdata.tag2);//xlen1b
 
    //comment.len(2)
    xlist.aadd([0,0]);
@@ -18060,8 +19260,8 @@ try
 if (not low__true2(str__lock(@sdata),zip__refOK(xdata,xlist))) or (xdata.tag2<>1) or (sname='') then goto skipend;
 
 //init
-nlen  :=frcrange32(low__len(sname),0,maxword);
-dlen  :=sdata.len;
+nlen  :=frcrange32(low__len32(sname),0,maxword);
+dlen  :=sdata.len32;
 x32   :=low__crc32seedable(sdata,0);//MS uses seed "0"
 
 //.filter
@@ -18084,10 +19284,10 @@ if not xstoreonly then
 inc(xdata.tag1);
 
 //dlen2 -> remove leading 2 bytes AND remove trailing 4 bytes for compressed stream - 24aug2025
-dlen2:=sdata.len - insint( 2 + 4 , xcompressed);
+dlen2:=sdata.len32 - insint( 2 + 4 , xcompressed);
 
 //add file - signature(4)  version(2)  flags(2)  no compression(2)  mod:time(2)  mod:date(2)  crc32(4)   comp.size(4)  decm.size(4)  filename.size(2) extras.size(2)  filename(n)  file.data(n2)
-xpos:=xdata.len;
+xpos:=xdata.len32;
 xdata.aadd([  80,75,3,4,    low__aorbbyte(10,20,xcompressed),0,      0,0,      low__aorbbyte(0,8,xcompressed),0,               0,0,         0,0]);
 xdata.addint4(x32);//crc32(4)
 xdata.addint4(dlen2);//data.size(4)
@@ -18098,7 +19298,7 @@ xdata.addstr(sname);//sname
 
 //24aug2025: OK
 case xcompressed of
-true:xdata.add2( sdata, 2, pred(sdata.len) - 4 );//remove leading 2 bytes AND remove trailing 4 bytes for compressed stream - 24aug2025
+true:xdata.add2( sdata, 2, pred(sdata.len32) - 4 );//remove leading 2 bytes AND remove trailing 4 bytes for compressed stream - 24aug2025
 else xdata.add(sdata);//store "sdata"
 end;
 
@@ -18170,7 +19370,7 @@ if zip__refOK(xdata,xlist) and (sfilename<>'') then
    true:sname:=io__extractfilename(sfilename);//name only
    else begin
       srootfolder:=io__asfolder(srootfolder);//force trailing slash
-      sname:=strcopy1(sfilename,low__len(srootfolder)+1,low__len(sfilename));//relative name to root packing folder
+      sname:=strcopy1(sfilename,low__len32(srootfolder)+1,low__len32(sfilename));//relative name to root packing folder
       end;
    end;
 
@@ -18409,82 +19609,82 @@ begin
 try;win____shellexecute(0,nil,pchar(fDoc),pchar(fPARMS),nil,1);except;end;
 end;
 
-function low__aorb(a,b:longint;xuseb:boolean):longint;
+function low__aorb(const a,b:longint;const xuseb:boolean):longint;
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbD64(a,b:double;xuseb:boolean):double;//04sep2025
+function low__aorbD64(const a,b:double;const xuseb:boolean):double;//04sep2025
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorb32(a,b:longint;xuseb:boolean):longint;//27aug2024
+function low__aorb32(const a,b:longint;const xuseb:boolean):longint;//27aug2024
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorb64(a,b:comp;xuseb:boolean):comp;//27aug2024
+function low__aorb64(const a,b:comp;const xuseb:boolean):comp;//27aug2024
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbrect(a,b:twinrect;xuseb:boolean):twinrect;//25nov2023
+function low__aorbrect(const a,b:twinrect;const xuseb:boolean):twinrect;//25nov2023
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbbyte(a,b:byte;xuseb:boolean):byte;//11feb2023
+function low__aorbbyte(const a,b:byte;const xuseb:boolean):byte;//11feb2023
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbcur(a,b:currency;xuseb:boolean):currency;//07oct2022
+function low__aorbcur(const a,b:currency;const xuseb:boolean):currency;//07oct2022
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbcomp(a,b:comp;xuseb:boolean):comp;//19feb2024
+function low__aorbcomp(const a,b:comp;const xuseb:boolean):comp;//19feb2024
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__yes(x:boolean):string;//16sep2022
+function low__yes(const x:boolean):string;//16sep2022
 begin
 result:=low__aorbstr('No','Yes',x);
 end;
 
-function low__enabled(x:boolean):string;//29apr2024
+function low__enabled(const x:boolean):string;//29apr2024
 begin
 result:=low__aorbstr('Disabled','Enabled',x);
 end;
 
-function low__aorbstr8(a,b:tstr8;xuseb:boolean):tstr8;//06dec2023
+function low__aorbstr8(const a,b:tstr8;const xuseb:boolean):tstr8;//06dec2023
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbvars8(a,b:tvars8;xuseb:boolean):tvars8;//06dec2023
+function low__aorbvars8(const a,b:tvars8;const xuseb:boolean):tvars8;//06dec2023
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbstr(a,b:string;xuseb:boolean):string;
+function low__aorbstr(const a,b:string;const xuseb:boolean):string;
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbobj(a,b:tobject;xuseb:boolean):tobject;//08may2025
+function low__aorbobj(const a,b:tobject;const xuseb:boolean):tobject;//08may2025
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbchar(a,b:char;xuseb:boolean):char;
+function low__aorbchar(const a,b:char;const xuseb:boolean):char;
 begin
 if xuseb then result:=b else result:=a;
 end;
 
-function low__aorbbol(a,b:boolean;xuseb:boolean):boolean;
+function low__aorbbol(const a,b:boolean;const xuseb:boolean):boolean;
 begin
 if xuseb then result:=b else result:=a;
 end;
@@ -18537,7 +19737,7 @@ try
 _crc32:=0;
 
 //check
-if (not str__lock(@x)) or (x.count<=0) then goto skipend else xlen:=x.count;
+if (not str__lock(@x)) or (x.count<=0) then goto skipend else xlen:=x.count32;
 
 //init
 if not sys_initcrc32 then low__initcrc32;
@@ -18565,7 +19765,7 @@ end;
 function low__crc32b(x:tstr8):longint;
 begin
 result:=0;
-if str__lock(@x) then low__crc32(result,x,1,x.count);
+if str__lock(@x) then low__crc32(result,x,1,x.count32);
 str__uaf(@x);
 end;
 
@@ -18603,7 +19803,7 @@ for k:=0 to 7 do if boolean(c and 1) then c:=xseed xor (c shr 1) else c:=c shr 1
 xref[n]:=c;
 end;//n
 //get
-for n:=1 to x.count do
+for n:=1 to x.count32 do
 begin
 c:=result xor crc_against;//was $ffffffff;
 c:=xref[(c xor x.bytes1[n]) and $ff] xor (c shr 8);
@@ -18654,7 +19854,7 @@ result:=0;
 if str__lock(@xdata) then
    begin
 
-   for p:=0 to (xdata.count-1) do
+   for p:=0 to (xdata.count32-1) do
    begin
 
    x.val     :=x.xresult xor crc_against;//was $ffffffff;
@@ -18676,7 +19876,7 @@ end;//n
 
 //## tstophere #################################################################
 
-procedure tstophere__timerproc(uid,umsg:uint;dwUser,dw1,dw2:dword); stdcall;
+procedure tstophere__timerproc(uid,umsg:uint32;dwUser,dw1,dw2:dword32); stdcall;
 begin
 
 if (dwUser<>0) then tstophere(nil).safecall__start2(dwUser);
@@ -18914,7 +20114,7 @@ safecall__start2(ihandle);
 
 end;
 
-procedure tstophere.safecall__start2(const x:thandle);
+procedure tstophere.safecall__start2(const x:longint3264);
 begin//Note: This proc can be used even if the object itself is no longer valid, e.g "tstophere(nil).safecall__start2(some value)"
      //      will function safely without error.  Do NOT refer to any object based variables here -> will raise an exception.
 
@@ -19111,7 +20311,7 @@ end;
 
 //## tbasicthread ##############################################################
 
-function tbasicthread__oversightproc(x:tbasicthread):dword; stdcall;
+function tbasicthread__oversightproc(x:tbasicthread):dword32; stdcall;
 begin//run flow: host.obj.create -> createthread -> run.xoversight ->  run.xrunprocs -> return exit code -> mark finished (below) -> host.obj.destroy
 
 //get
@@ -19261,7 +20461,7 @@ begin
 istoprun.halt;
 end;
 
-function tbasicthread.xoversight:dword;
+function tbasicthread.xoversight:dword32;
 begin
 
 //start COM system for thread -> not all machines do this
@@ -19317,7 +20517,7 @@ if result and (ims<>iprocms) then iproctimer:=add64(ms64,iprocms);
 
 end;
 
-function tbasicthread.xrunprocs:dword;
+function tbasicthread.xrunprocs:dword32;
 label
    redo;
 var
@@ -19763,10 +20963,11 @@ end;
 
 
 //## twproc ####################################################################
-function wproc__windowproc(h:tbasic_handle;m:tbasic_message;w:tbasic_wparam;l:tbasic_lparam):lresult; stdcall;//07jul2025, 17jun2025
+function wproc__windowproc(h:hauto;m:msg_message;w:msg_wparam;l:msg_lparam):msg_result; stdcall;//07jul2025, 17jun2025
 begin
 //defaults
 result:=0;
+
 
 try
 
@@ -19806,12 +21007,15 @@ else if (m=wm_onmessage_wave)                  then result:=gosssnd__onmessage_w
 
 else
    begin
-   //detect changes in monitor settings and setup - 18feb2025: updated to include "WM_SETTINGCHANGE"
-   if (m=WM_DISPLAYCHANGE) or (m=WM_SETTINGCHANGE) then monitors__sync;
+
+   //detect changes in monitor settings and setup
+   if monitors__mustsync(m) then monitors__sync;//01feb2026
 
    //pass message onto subsystem
    result:=win____defwindowproc(h,m,w,l);//app__onmessage(msg,wparam,lparam);
+
    end;
+
 except;end;
 end;
 
@@ -19822,77 +21026,91 @@ var
    a:twndclass;
 begin
 try
+
 //self
 if classnameis('twproc') then track__inc(satWproc,1);
 zzadd(self);
 inherited create;
+
 //make class
+low__cls(@a,sizeof(a));
+
 with a do
 begin
-style           :=0;
 lpfnWndProc     :=@wproc__windowproc;
-cbClsExtra      :=0;
-cbWndExtra      :=0;
-hInstance       :=0;
-hIcon           :=0;
-hCursor         :=0;
-hbrBackground   :=0;
-lpszMenuName    :=nil;
 lpszClassName   :=pchar(xclassname);
 end;
+
 //register class
 win____registerclassa(a);
+
 //make window
 //iwindow:=win____createwindow(pchar(xclassname),'',0,0,0,0,0,0,0,hinstance,nil);
+
 except;end;
 end;
 
 destructor twproc.destroy;
 begin
 try
+
+//controls
 win____destroywindow(iwindow);
 iwindow:=0;
+
+//self
 inherited destroy;
+
+//track
 if classnameis('twproc') then track__inc(satWproc,-1);
+
 except;end;
 end;
 
 //## tdynamiclist ##############################################################
 constructor tdynamiclist.create;
 begin
+
 //self
 if classnameis('tdynamiclist') then track__inc(satDynlist,1);
 zzadd(self);
 inherited create;
-//sd
+
 //vars
-sorted:=nil;
-icore:=nil;
-ilockedBPI:=false;
-isize:=0;
-icount:=0;
-ibpi:=1;
-ilimit:=max32;
+sorted       :=nil;
+icore        :=nil;
+ilockedBPI   :=false;
+isize        :=0;
+icount       :=0;
+ibpi         :=1;
+ilimit       :=max32;
+
 if (globaloverride_incSIZE>=1) then iincsize:=globaloverride_incSIZE else iincsize:=200;//22MAY2010
-freesorted:=true;
+freesorted   :=true;
+
 //defaults
 _createsupport;
 _init;
 _corehandle;
+
 end;
 
 destructor tdynamiclist.destroy;
 begin
 try
+
 //clear
 clear;
+
 //controls
 _destroysupport;
 mem__free(icore);
 if freesorted and (sorted<>nil) then freeobj(@sorted);
+
 //self
 inherited destroy;
 if classnameis('tdynamiclist') then track__inc(satDynlist,-1);
+
 except;end;
 end;
 
@@ -20298,14 +21516,14 @@ begin
 iitems:=core;
 end;
 
-function tdynamicword.getvalue(_index:integer):word;
+function tdynamicword.getvalue(_index:longint32):word;
 begin
 //.check
 if (_index<0) or (_index>=count) then result:=0
 else result:=items[_index];
 end;
 
-procedure tdynamicword.setvalue(_index:integer;_value:word);
+procedure tdynamicword.setvalue(_index:longint32;_value:word);
 begin
 //.check
 if (_index<0) then exit
@@ -20316,19 +21534,19 @@ if (_index>=icount) then icount:=_index+1;
 items[_index]:=_value;
 end;
 
-function tdynamicword.getsvalue(_index:integer):word;
+function tdynamicword.getsvalue(_index:longint32):word;
 begin
 result:=value[sindex(_index)];
 end;
 
-procedure tdynamicword.setsvalue(_index:integer;_value:word);
+procedure tdynamicword.setsvalue(_index:longint32;_value:word);
 begin
 value[sindex(_index)]:=_value;
 end;
 
-function tdynamicword.find(_start:integer;_value:word):integer;
+function tdynamicword.find(_start:longint32;_value:word):longint32;
 var
-   p:integer;
+   p:longint32;
 begin
 //defaults
 result:=-1;
@@ -20350,10 +21568,10 @@ begin
 __sort(items,sorted.items,0,count-1,_asc);
 end;
 
-procedure tdynamicword.__sort(a:pdlWORD;b:pdlLONGINT;l,r:integer;_asc:boolean);
+procedure tdynamicword.__sort(a:pdlWORD;b:pdlLONGINT;l,r:longint32;_asc:boolean);
 var
   p:word;
-  tmp,i,j:integer;
+  tmp,i,j:longint32;
 begin
 try
 repeat
@@ -20562,13 +21780,13 @@ begin
 //nil
 end;
 
-function tdynamicpoint.getvalue(_index:integer):tpoint;
+function tdynamicpoint.getvalue(_index:longint32):tpoint;
 begin
 //.check
 if (_index<0) or (_index>=count) then result:=low__point(0,0) else result:=items[_index];
 end;
 
-procedure tdynamicpoint.setvalue(_index:integer;_value:tpoint);
+procedure tdynamicpoint.setvalue(_index:longint32;_value:tpoint);
 begin
 //.check
 if (_index<0) then exit
@@ -20579,19 +21797,19 @@ if (_index>=icount) then icount:=_index+1;
 items[_index]:=_value;
 end;
 
-function tdynamicpoint.getsvalue(_index:integer):tpoint;
+function tdynamicpoint.getsvalue(_index:longint32):tpoint;
 begin
 result:=value[sindex(_index)];
 end;
 
-procedure tdynamicpoint.setsvalue(_index:integer;_value:tpoint);
+procedure tdynamicpoint.setsvalue(_index:longint32;_value:tpoint);
 begin
 value[sindex(_index)]:=_value;
 end;
 
-function tdynamicpoint.find(_start:integer;_value:tpoint):integer;
+function tdynamicpoint.find(_start:longint32;_value:tpoint):longint32;
 var
-   p:integer;
+   p:longint32;
 begin
 //defaults
 result:=-1;
@@ -20608,9 +21826,9 @@ for p:=_start to (icount-1) do if (iitems[p].x=_value.x) and (iitems[p].y=_value
 except;end;
 end;
 
-function tdynamicpoint.areaTOTAL(var x1,y1,x2,y2:integer):boolean;//18OCT2011
+function tdynamicpoint.areaTOTAL(var x1,y1,x2,y2:longint32):boolean;//18OCT2011
 var
-   p,sx,sy:integer;
+   p,sx,sy:longint32;
 begin
 //defaults
 result:=false;
@@ -20659,7 +21877,7 @@ end;
 
 procedure tdynamicdatetime._init;
 begin
-_setparams(0,0,8,false);
+_setparams(0,0,sizeof(tdatetime),false);
 ilockedBPI:=true;
 itextsupported:=true;
 end;
@@ -21129,7 +22347,7 @@ end;
 
 procedure tdynamicpointer._init;
 begin
-_setparams(0,0,4,false);
+_setparams(0,0,sizeof(pointer3264),false);//18dec2025
 ilockedBPI:=true;
 itextsupported:=true;
 end;
@@ -21186,17 +22404,22 @@ for p:=_start to (icount-1) do if (iitems[p]=_value) then
 except;end;
 end;
 
+
 //## tdynamicstring ############################################################
 constructor tdynamicstring.create;//01may2019
 begin
+
 if classnameis('tdynamicstring') then track__inc(satDynstr,1);
 inherited create;
+
 end;
 
 destructor tdynamicstring.destroy;//01may2019
 begin
+
 inherited destroy;
 if classnameis('tdynamicstring') then track__inc(satDynstr,-1);
+
 end;
 
 function tdynamicstring.copyfrom(s:tdynamicstring):boolean;
@@ -21214,13 +22437,16 @@ if (s=self) then
    exit;
    end;
 if (s=nil) then exit;
+
 //get
-freesorted:=s.freesorted;
-utag:=s.utag;
-xcount:=s.count;
-size:=s.size;
-count:=xcount;
+freesorted :=s.freesorted;
+utag       :=s.utag;
+xcount     :=s.count;
+size       :=s.size;
+count      :=xcount;
+
 for p:=(xcount-1) downto 0 do value[p]:=s.value[p];
+
 if (s.sorted=nil) then
    begin
    if (sorted<>nil) then nosort;
@@ -21230,6 +22456,7 @@ else
    nullsort;
    for p:=(s.sorted.count-1) downto 0 do sorted.value[p]:=s.sorted.value[p];
    end;
+
 except;end;
 end;
 
@@ -21238,18 +22465,23 @@ var
    a:tstr8;
    p:longint;
 begin
+
 //defaults
-result:='';
+result :='';
+a      :=nil;
 
 try
-a:=nil;
 //get
 a:=str__new8;
 for p:=0 to (count-1) do a.sadd(value[p]+rcode);
+
 //set
 result:=a.text;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 procedure tdynamicstring.settext(const x:string);
@@ -21291,12 +22523,15 @@ for p:=0 to (count-1) do a.sadd(svalue[p]+rcode);
 //set
 result:=a.text;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 procedure tdynamicstring._init;
 begin
-_setparams(0,0,4,false);
+_setparams(0,0,sizeof(pointer3264),false);//18dec2025
 ilockedBPI:=true;
 end;
 
@@ -21407,31 +22642,40 @@ end;
 //## tlitestrings ##############################################################
 constructor tlitestrings.create;
 begin
+
 //track
 if classnameis('tlitestrings') then track__inc(satDynstr,1);
+
 //self
 inherited create;
+
 //vars
 isharecount:=100;//share ONE string between "100" user "value[x]" strings
 icount:=0;
 ibytes:=0;
+
 //controls
 idata:=tdynamicstring.create;
 ipos:=tdynamicinteger.create;
 ilen:=tdynamicinteger.create;
+
 end;
 
 destructor tlitestrings.destroy;
 begin
 try
+
 //controls
 freeobj(@idata);
 freeobj(@ipos);
 freeobj(@ilen);
+
 //self
 inherited destroy;
+
 //track
 if classnameis('tlitestrings') then track__inc(satDynstr,-1);
+
 except;end;
 end;
 
@@ -21452,11 +22696,14 @@ _size:=frcmin32(_size,0);
 //set
 if (_size<>ilen.size) then
    begin
+
    ilen.size:=_size;
    ipos.size:=_size;
+
    //.data.size - 07sep2015
    if (_size<=0) then idata.size:=0 else idata.size:=(_size div nozero__int32(1000004,isharecount))+1;
-   end;//end of if
+
+   end;
 
 //vars
 icount:=frcrange32(_count,0,_size);
@@ -21553,9 +22800,9 @@ str__free(@xdata);
 str__free(@xline);
 end;
 
-function tlitestrings.find(_start:integer;_value:string;_casesensitive:boolean):integer;
+function tlitestrings.find(_start:longint32;_value:string;_casesensitive:boolean):longint32;
 var
-   p:integer;
+   p:longint32;
 begin
 //defaults
 result:=-1;
@@ -21584,12 +22831,12 @@ else
 except;end;
 end;
 
-function tlitestrings.getsize:integer;
+function tlitestrings.getsize:longint32;
 begin
 result:=ilen.size;
 end;
 
-function tlitestrings.getvalue(_index:integer):string;
+function tlitestrings.getvalue(_index:longint32):string;
 begin
 //defaults
 result:='';
@@ -21602,9 +22849,9 @@ else result:=strcopy1(idata.items[_index div nozero__int32(1000005,isharecount)]
 except;end;
 end;
 
-procedure tlitestrings.setvalue(_index:integer;_value:string);
+procedure tlitestrings.setvalue(_index:longint32;_value:string);
 var
-   _index2,minp,p,opos,len,posCHANGE:integer;
+   _index2,minp,p,opos,len,posCHANGE:longint32;
 begin
 try
 //-- get
@@ -21619,7 +22866,7 @@ if (_index>=ilen.size) then setparams(icount,_index+500);
 
 //-- set
 //init
-len:=low__len(_value);
+len:=low__len32(_value);
 _index2:=_index div nozero__int32(1000006,isharecount);
 
 //new - append to end of "data.string"
@@ -21628,7 +22875,7 @@ if (ipos.items[_index]<=0) then
 
    if (len>=1) then//ignore empty strings, no setup required for these
       begin
-      ipos.items[_index]:=low__len(idata.items[_index2]^)+1;
+      ipos.items[_index]:=low__len32(idata.items[_index2]^)+1;
       ilen.items[_index]:=len;
       idata.items[_index2]^:=idata.items[_index2]^+_value;
       inc(ibytes,len);//07sep2014
@@ -21644,7 +22891,7 @@ else
    minp:=(_index div nozero__int32(1000007,isharecount))*isharecount;
 
    //adjust "dp.string"
-   idata.items[_index2]^:=strcopy1(idata.items[_index2]^,1,opos-1)+_value+strcopy1(idata.items[_index2]^,opos+ilen.items[_index],low__len(idata.items[_index2]^));
+   idata.items[_index2]^:=strcopy1(idata.items[_index2]^,1,opos-1)+_value+strcopy1(idata.items[_index2]^,opos+ilen.items[_index],low__len32(idata.items[_index2]^));
 
    //adjust current item's "ilen"
    ilen.items[_index]:=len;
@@ -21659,6 +22906,7 @@ else
    end;
 except;end;
 end;
+
 
 //## tdynamicname ##############################################################
 constructor tdynamicname.create;//01may2019
@@ -21691,7 +22939,8 @@ end;
 
 procedure tdynamicname.shift(s,by:longint);
 begin
-inherited shift(s,by);iref.shift(s,by);
+inherited shift(s,by);
+iref.shift(s,by);
 end;
 
 function tdynamicname._setparams(_count,_size,_bpi:longint;_notify:boolean):boolean;
@@ -21743,6 +22992,7 @@ procedure tdynamicname.sync(x:longint);
 begin
 iref.value[x]:=low__ref256U(items[x]^);
 end;
+
 
 //## tdynamicnamelist ##########################################################
 constructor tdynamicnamelist.create;
@@ -21924,32 +23174,43 @@ else
    end;
 end;
 
+
 //## tdynamicvars ##############################################################
 constructor tdynamicvars.create;
 begin
+
 if classnameis('tdynamicvars') then track__inc(satDynvars,1);
 zzadd(self);
+
 //self
 inherited create;
+
 //controls
-inamesREF:=tdynamiccomp.create;//09apr2024
-inames:=tdynamicstring.create;
-ivalues:=tdynamicstring.create;
+inamesREF :=tdynamiccomp.create;//09apr2024
+inames    :=tdynamicstring.create;
+ivalues   :=tdynamicstring.create;
+
 //.incsize
 if (globaloverride_incSIZE>=1) then incsize:=globaloverride_incSIZE else incsize:=10;//22MAY2010
+
 end;
 
 destructor tdynamicvars.destroy;
 begin
+
+//track
 if classnameis('tdynamicvars') then track__inc(satDynvars,-1);
+
 try
+
 //controls
 freeObj(@inamesREF);
 freeObj(@inames);
 freeObj(@ivalues);
+
 //self
 inherited destroy;
-//sd
+
 except;end;
 end;
 
@@ -21957,9 +23218,11 @@ function tdynamicvars.getbytes:longint;//13apr2018
 var
    p:longint;
 begin
+
 result:=frcmin32(inamesREF.count,0)*8;
-if (inames.count>=1) then for p:=(inames.count-1) downto 0 do inc(result,low__len(inames.items[p]^));
-if (ivalues.count>=1) then for p:=(ivalues.count-1) downto 0 do inc(result,low__len(ivalues.items[p]^));
+if (inames.count>=1)  then for p:=(inames.count-1)  downto 0 do inc(result,low__len32(inames.items[p]^));
+if (ivalues.count>=1) then for p:=(ivalues.count-1) downto 0 do inc(result,low__len32(ivalues.items[p]^));
+
 end;
 
 procedure tdynamicvars.sortbyVALUE(_asc,_asnumbers:boolean);//04JUL2013
@@ -21998,7 +23261,7 @@ for p:=0 to (ncount-1) do
 begin
 n.items[p]^:=names.items[p]^;
 v.items[p]^:=values.items[p]^;
-try;vi.items[p]:=strint(values.items[p]^);except;end;
+try;vi.items[p]:=strint32(values.items[p]^);except;end;
 end;
 //.sort that copy
 case _asnumbers of
@@ -22077,7 +23340,7 @@ freeobj(@v);
 except;end;
 end;
 
-procedure tdynamicvars.roll(x:string;by:currency);
+procedure tdynamicvars.croll(x:string;by:currency);
 var
    a:currency;
 begin
@@ -22138,12 +23401,12 @@ end;
 
 function tdynamicvars.getni(x:string):longint;
 begin
-result:=strint(swapstrsb(value[x],',',''));
+result:=strint32(swapstrsb(value[x],',',''));
 end;
 
 function tdynamicvars.geti(x:string):longint;
 begin
-result:=strint(value[x]);
+result:=strint32(value[x]);
 end;
 
 procedure tdynamicvars.seti(x:string;y:longint);
@@ -22163,14 +23426,14 @@ try
 //get
 a:=value[x];
 b:='';
-for p:=1 to low__len(a) do if (a[p-1+stroffset]='|') then
+for p:=1 to low__len32(a) do if (a[p-1+stroffset]='|') then
    begin
-   b:=strcopy1(a,p+1,low__len(a));
+   b:=strcopy1(a,p+1,low__len32(a));
    a:=strcopy1(a,1,p-1);
    break;
    end;
 //set
-result:=low__point(strint(a),strint(b));
+result:=low__point(strint32(a),strint32(b));
 except;end;
 end;
 
@@ -22241,10 +23504,13 @@ end;
 function tdynamicvars._find(n,v:string;_newedit:boolean):longint;
 var
    i:longint;
-   nREF:currency;
+   nREF:comp;
 begin
+
 //defaults
 result:=-1;
+
+//check
 if (n='') then exit;
 
 try
@@ -22254,17 +23520,23 @@ nREF:=low__ref256U(n);//now using "ref256U()" - 14NOV2010
 //get
 i:=0;
 repeat
+
 i:=inamesREF.find(i,nREF);
+
 if (i<>-1) and strmatch(inames.items[i]^,n) then
    begin
    result:=i;
    break;
    end;
+
 if (i<>-1) then inc(i);
+
 until (i=-1);
+
 //.new/edit
 if _newedit then
     begin
+
     if (result=-1) then
        begin
        //.new empty
@@ -22272,10 +23544,13 @@ if _newedit then
        //.new
        if (result=-1) then result:=inamesREF.count;
        end;
-    inamesREF.value[result]:=nREF;
-    inames.value[result]:=n;
-    ivalues.value[result]:=v;
+
+    inamesREF.value[result] :=nREF;
+    inames.value[result]    :=n;
+    ivalues.value[result]   :=v;
+
     end;
+
 except;end;
 end;
 
@@ -22352,7 +23627,7 @@ end;
 
 function tdynamicvars.getvaluelen(x:longint):longint;//20oct2018
 begin
-if (x<0) or (x>=inames.count) then result:=0 else result:=low__len(ivalues.items[x]^);
+if (x<0) or (x>=inames.count) then result:=0 else result:=low__len32(ivalues.items[x]^);
 end;
 
 function tdynamicvars.getvalueiptr(x:longint):pstring;
@@ -22495,23 +23770,38 @@ for p:=_start to (icount-1) do if (iitems[p]=_value) then
 except;end;
 end;
 
+
 //## tdynamicstr9 ##############################################################
 constructor tdynamicstr9.create;//17feb2024
 begin
+
+//track
 if classnameis('tdynamicstr9') then track__inc(satDynstr9,1);
-ifallback:=str__new9;
-ilist:=tintlist.create;
+
+//controls
+ifallback :=str__new9;
+ilist     :=tintlist64.create;
+
+//self
 inherited create;
+
 end;
 
 destructor tdynamicstr9.destroy;
 begin
 try
+
+//controls
 clear;
 str__free(@ifallback);
 freeobj(@ilist);
+
+//self
 inherited destroy;
+
+//track
 if classnameis('tdynamicstr9') then track__inc(satDynstr9,-1);
+
 except;end;
 end;
 
@@ -22520,15 +23810,20 @@ begin
 count:=0;
 end;
 
-function tdynamicstr9.mem:longint;
+function tdynamicstr9.mem:longint64;
 var
    p:longint;
 begin
+
 result:=ilist.mem;
+
 if (count>=1) then
    begin
-   for p:=0 to (count-1) do if (ilist.ptr[p]<>nil) then inc(result,tstr9(ilist.ptr[p]).mem);
+
+   for p:=0 to (count-1) do if (ilist.ptr[p]<>nil) then inc64( result, tstr9(ilist.ptr[p]).mem );
+
    end;
+
 end;
 
 function tdynamicstr9.getcount:longint;
@@ -22600,7 +23895,7 @@ procedure tdynamicstr9.setvalue(x:longint;xval:tstr9);
 var
    a:pointer;
 begin
-if (x>=0) and ((x<ilist.count) or ilist.mincount(x+1)) and ((xval=nil) or (xval is tstr9)) and (tstr9(ilist.ptr[x])<>xval) then
+if (x>=0) and ((x<ilist.count) or ilist.minslotcount(x+1)) and ((xval=nil) or (xval is tstr9)) and (tstr9(ilist.ptr[x])<>xval) then
    begin
    if (ilist.ptr[x]<>nil) then
       begin
@@ -22611,11 +23906,15 @@ if (x>=0) and ((x<ilist.count) or ilist.mincount(x+1)) and ((xval=nil) or (xval 
    end;
 end;
 
+
 //## tstr8 #####################################################################
-constructor tstr8.create(xlen:longint);
+constructor tstr8.create(const xlen:longint64);
 begin
+
 if classnameis('tstr8') then track__inc(satStr8,1);
+
 inherited create;
+
 otestlock1 :=false;
 oautofree  :=false;
 ifloatsize :=0;
@@ -22638,12 +23937,15 @@ tag2       :=0;
 tag3       :=0;
 tag4       :=0;
 seekpos    :=0;
+
 xresize(xlen,true);
+
 end;
 
 destructor tstr8.destroy;
 begin
 try
+
 //free
 if iownmemory then
    begin
@@ -22654,192 +23956,252 @@ if iownmemory then
    end;
 
 inherited destroy;
+
 if classnameis('tstr8') then track__inc(satStr8,-1);
+
 except;end;
 end;
 
-function tstr8.splice(xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;//25feb2024
+function tstr8.getdatalen32:longint32;
 begin
+result:=restrict32(idatalen);
+end;
+
+function tstr8.getcount32:longint32;
+begin
+result:=restrict32(icount);
+end;
+
+function tstr8.splice(const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;//14dec2025, 25feb2024
+begin
+
 //defaults
-result:=false;
-xoutmem:=nil;
-xoutlen:=0;
+result    :=false;
+xoutmem   :=nil;
+xoutlen   :=0;
 
 //check
 if (xpos<0) or (xpos>=icount) or (xlen<=0) or (idata=nil) then exit;
 
 //get
-xoutmem:=ptr__shift(idata,xpos);
-xoutlen:=icount-xpos;
+xoutmem   :=ptr__shift(idata,xpos);
+xoutlen   :=icount-xpos;
 if (xoutlen>xlen) then xoutlen:=xlen;
+
 //successful
-result:=(xoutmem<>nil) and (xoutlen>=1);
+result    :=(xoutmem<>nil) and (xoutlen>=1);
+
 end;
 
-function tstr8.copyfrom(s:tstr8):boolean;//09feb2022
+function tstr8.copyfrom(const s:tstr8):boolean;//09feb2022
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if (s=self) then
    begin
+
    result:=true;
    exit;
+
    end;
+
 if (s=nil) or (not str__lock(@s)) then exit;
+
 //clear
 clear;
+
 //get
-oautofree:=s.oautofree;
-otestlock1:=s.otestlock1;
+oautofree  :=s.oautofree;
+otestlock1 :=s.otestlock1;
 add(s);
-except;end;
-try;str__uaf(@s);except;end;
+
+//free
+str__uaf(@s);
+
 end;
 
 function tstr8.maplist:tlistptr;//26apr2021, 07apr2021
 begin
-result.count:=len;
+
+result.count:=len32;
 result.bytes:=idata;
 //was: result.bytes:=@idata^;
 //was: result.bytes:=idata;
 //was: result.bytes:=@core^;
 //was: result.bytes:=core;//<-- Not sure if this caused the intermittent CRASHING of Gossamer, duplicate fix at "low__maplist2"
+
 end;
 
 procedure tstr8.lock;
 begin
+
 inc(ilockcount);
+
 end;
 
 procedure tstr8.unlock;
 begin
+
 ilockcount:=frcmin32(ilockcount-1,0);
+
 end;
 
-function tstr8.writeto1(a:pointer;asize,xfrom1,xlen:longint):boolean;
+function tstr8.writeto1(const a:pointer;const asize,xfrom1,xlen:longint64):boolean;
 begin
+
 result:=writeto(a,asize,xfrom1-1,xlen);
+
 end;
 
-function tstr8.writeto1b(a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
+function tstr8.writeto1b(const a:pointer;const asize:longint64;var xfrom1:longint64;xlen:longint64):boolean;
 begin
-xlen:=frcrange32(xlen,0,frcmin32(asize,0));//fixed - 22may2022
-result:=writeto(a,asize,xfrom1-1,xlen);
-if result then inc(xfrom1,xlen)
+
+xlen    :=frcrange64( xlen ,0, frcmin64(asize,0) );//fixed - 22may2022
+result  :=writeto(a,asize,xfrom1-1,xlen);
+
+if result then inc64(xfrom1,xlen)
+
 end;
 
-function tstr8.writeto(a:pointer;asize,xfrom0,xlen:longint):boolean;//28jul2021
+function tstr8.writeto(const a:pointer;const asize,xfrom0:longint64;xlen:longint64):boolean;//28jul2021
 var
-   sp,slen,p:longint;
-   b:pdlBYTE;
-   v:byte;
+   slen,sp,p:longint3264;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not iownmemory then exit;
-if (a=nil) then exit;
+if (a=nil)        then exit;
 
 //init
-slen:=len;//our length
-fillchar(a^,asize,0);
-b:=a;
-xlen:=frcmax32(xlen,asize);
+slen      :=int64__3264(len);//our length
+xlen      :=frcmax64(xlen,asize);
+low__cls(a,asize);
+
 if (xlen<=0) then
    begin
+
    result:=true;
    exit;
+
    end;
 
 //get
-sp:=xfrom0;
-for p:=0 to (xlen-1) do
+sp        :=int64__3264(xfrom0);
+
+for p:=0 to int64__3264(xlen-1) do
 begin
+
 if (sp>=0) then
    begin
+
    //was: if (sp<slen) then b[p]:=pbytes[sp] else break;
    //faster - 22apr2022
-   if (sp<slen) then
-      begin
-      v:=pbytes[sp];
-      b[p]:=v;
-      end
-   else break;
+   if (sp<slen) then pdlbyte(a)[p]:=pbytes[sp] else break;
+
    end;
+
 inc(sp);
-end;
+
+end;//p
 
 //successful
 result:=true;
-except;end;
+
 end;
 
-procedure tstr8.setfloatsize(x:longint);//29aug2025
+procedure tstr8.setfloatsize(x:longint64);//29aug2025
 begin//0..100 Mb
-ifloatsize:=frcrange32(x,0,100000000);
+ifloatsize:=frcrange32(restrict32(x),0,100000000);
 end;
 
-procedure tstr8.setbdata(x:tstr8);//27apr2021
+procedure tstr8.setbdata(const x:tstr8);//27apr2021
 begin
 clear;
 add(x);
 end;
 
-procedure tstr8.setbappend(x:tstr8);//27apr2021
+procedure tstr8.setbappend(const x:tstr8);//27apr2021
 begin
 add(x);
 end;
 
 function tstr8.getbdata:tstr8;//27apr2021, 28jan2021
 begin
+
 result:=str__new8;
+
 if (result<>nil) then
    begin
    result.add(self);
    result.oautofree:=true;
    end;
+
 end;
 
-function tstr8.datpush(n:longint;x:tstr8):boolean;//27jun2022
+function tstr8.datpush(const n:longint32;const x:tstr8):boolean;//27jun2022
 begin
+
 addint4(n);
-if str__lock(@x) then result:=addint4(x.len) and add(x) else result:=addint4(0);
+if str__lock(@x) then result:=addint4(x.len32) and add(x) else result:=addint4(0);
 str__uaf(@x);
+
 end;
 
-function tstr8.datpull(var xpos,n:longint;x:tstr8):boolean;//27jun2022
+function tstr8.datpull32(var xpos,n:longint32;const x:tstr8):boolean;//14dec205
+var
+   xpos64:longint64;
+begin
+
+xpos64:=xpos;
+result:=datpull(xpos64,n,x);
+xpos:=restrict32(xpos64);
+
+end;
+
+function tstr8.datpull(var xpos:longint64;var n:longint32;const x:tstr8):boolean;//27jun2022
 label
    skipend;
 var
-   int1,xlen:longint;
+   xlen:longint32;
 begin
+
 //defaults
-result:=false;
+result  :=false;
+n       :=-1;
 
 try
-n:=-1;
 //range
-if (xpos<0) then xpos:=0;
+if (xpos<0)           then xpos:=0;
+
 //check
-if str__lock(@x) then x.clear;
+if str__lock(@x)      then x.clear;
 if ((xpos+7)>=icount) then goto skipend;
+
 //get
-n   :=int4[xpos]; inc(xpos,4);
-xlen:=int4[xpos]; inc(xpos,4);
-int1:=xpos;
-inc(xpos,xlen);//inc over data EVEN if an error occurs - 27jun2022
+n   :=int4[xpos]; inc64(xpos,4);
+xlen:=int4[xpos]; inc64(xpos,4);
+
 //.read data
-if (xlen>=1) and (x<>nil) then x.add3(self,int1,xlen);
+if (xlen>=1) and (x<>nil) then x.add3(self,xpos,xlen);
+
+//inc over data EVEN if an error occurs - 27jun2022
+inc64(xpos,xlen);
+
 //successful
 result:=true;
+
 skipend:
 except;end;
-try;str__unlockautofree(@x);except;end;
+
+//free
+str__uaf(@x);
+
 end;
 
 function tstr8.empty:boolean;
@@ -22857,28 +24219,34 @@ begin
 result:=uppercase1(1,len);
 end;
 
-function tstr8.uppercase1(xpos1,xlen:longint):boolean;
+function tstr8.uppercase1(const xpos1:longint64;xlen:longint64):boolean;
 var
-   p:longint;
+   p:longint3264;
 begin
+
 //defaults
 result:=false;
 
 //check
 if not iownmemory then exit;
 
-try
-xlen:=frcmax32(xlen,len);
+//init
+xlen:=frcmax64(xlen,len);
+
 //get
 if (xpos1>=1) and (xpos1<=xlen) and (xlen>=1) and (ibytes<>nil) then
    begin
-   for p:=xpos1 to xlen do if (ibytes[p-1]>=97) and (ibytes[p-1]<=122) then
+
+   for p:=int64__3264(xpos1) to int64__3264(xlen) do if (ibytes[p-1]>=97) and (ibytes[p-1]<=122) then
       begin
+
       ibytes[p-1]:=byte(ibytes[p-1]-32);
       result:=true;
+
       end;//p
+
    end;
-except;end;
+
 end;
 
 function tstr8.lowercase:boolean;
@@ -22886,105 +24254,133 @@ begin
 result:=lowercase1(1,len);
 end;
 
-function tstr8.lowercase1(xpos1,xlen:longint):boolean;
+function tstr8.lowercase1(const xpos1:longint64;xlen:longint64):boolean;
 var
-   p:longint;
+   p:longint3264;
 begin
+
 //defaults
 result:=false;
 
 //check
 if not iownmemory then exit;
 
-try
-xlen:=frcmax32(xlen,len);
+//init
+xlen:=frcmax64(xlen,len);
+
 //get
 if (xpos1>=1) and (xpos1<=xlen) and (xlen>=1) and (ibytes<>nil) then
    begin
-   for p:=xpos1 to xlen do if (ibytes[p-1]>=65) and (ibytes[p-1]<=90) then
+
+   for p:=int64__3264(xpos1) to int64__3264(xlen) do if (ibytes[p-1]>=65) and (ibytes[p-1]<=90) then
       begin
+
       ibytes[p-1]:=byte(ibytes[p-1]+32);
       result:=true;
+
       end;//p
+
    end;
-except;end;
+
 end;
 
-function tstr8.swap(s:tstr8):boolean;//27dec2021
+function tstr8.swap(const s:tstr8):boolean;//27dec2021
 var
    t:tstr8;
 begin
+
 //defaults
-result:=false;
+result :=false;
+t      :=nil;
 
 //check
 if (not iownmemory) or ( (s=nil) or (not s.ownmemory) ) then exit;
 
-try
-t:=nil;
 //check
 if not str__lock(@s) then exit;
+
+try
 //init
 t:=str__new8;
+
 //self -> t
 t.add(self);
+
 //s -> self
 clear;
 add(s);
+
 //t -> s
 s.clear;
 s.add(t);
+
 //successful
 result:=true;
 except;end;
-try;str__uaf(@s);except;end;
+
+//free
+str__uaf(@s);
+
 end;
 
-function tstr8.same(var x:tstr8):boolean;
+function tstr8.same(const x:tstr8):boolean;
 begin
 result:=same2(0,x);
 end;
 
-function tstr8.same2(xfrom:longint;var x:tstr8):boolean;
+function tstr8.same2(xfrom:longint64;const x:tstr8):boolean;
 label
    skipend;
 var
-   i,p:longint;
+   p:longint3264;
+   i:longint64;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if (x=idata) then
    begin
+
    result:=true;
    exit;
+
    end;
+
+//check
+if not str__lock(@x) then exit;
+if (ibytes=nil)      then goto skipend;
+
+//init
+if (xfrom<0) then xfrom:=0;
+
 //get
-if str__lock(@x) then
+if (x.count>=1) and (x.pbytes<>nil) then
    begin
-   //init
-   if (xfrom<0) then xfrom:=0;
-   //get
-   if (x.count>=1) and (x.pbytes<>nil) then
-      begin
-      //check
-      if (ibytes=nil) then goto skipend;
-      //get
-      for p:=0 to (x.count-1) do
-      begin
-      i:=xfrom+p;
-      if (i>=icount) or (ibytes[i]<>x.pbytes[p]) then goto skipend;
-      end;//p
-      end;
-   //successful
-   result:=true;
+
+   for p:=0 to int64__3264(x.count-1) do
+   begin
+
+   i:=xfrom+p;
+
+   {$ifdef 64bit}
+   if (i>=icount) or (ibytes[i]<>x.pbytes[p])                then goto skipend;
+   {$else}
+   if (i>=icount) or (ibytes[ int64__3264(i) ]<>x.pbytes[p]) then goto skipend;
+   {$endif}
+
+   end;//p
+
    end;
+
+//successful
+result:=true;
 skipend:
-except;end;
+
 //free
 str__uaf(@x);
+
 end;
 
 function tstr8.asame(const x:array of byte):boolean;
@@ -22992,64 +24388,80 @@ begin
 result:=asame3(0,x,true);
 end;
 
-function tstr8.asame2(xfrom:longint;const x:array of byte):boolean;
+function tstr8.asame2(const xfrom:longint64;const x:array of byte):boolean;
 begin
 result:=asame3(xfrom,x,true);
 end;
 
-function tstr8.asame3(xfrom:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+function tstr8.asame3(const xfrom:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
 begin
 result:=asame4(xfrom,low(x),high(x),x,xcasesensitive);
 end;
 
-function tstr8.asame4(xfrom,xmin,xmax:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+function tstr8.asame4(xfrom,xmin,xmax:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
 label
    skipend;
 var
-   i,p:longint;
+   i,p:longint3264;
    sv,v:byte;
 begin
-//defaults
-result:=false;
 
-try
+//defaults
+result :=false;
+
 //check
 if (sizeof(x)=0) or (ibytes=nil) then exit;
+
 //range
 if (xfrom<0) then xfrom:=0;
+
 //init
-xmin:=frcrange32(xmin,low(x),high(x));
-xmax:=frcrange32(xmax,low(x),high(x));
+xmin   :=frcrange64(xmin,low(x),high(x));
+xmax   :=frcrange64(xmax,low(x),high(x));
 if (xmin>xmax) then exit;
+
 //get
-for p:=xmin to xmax do
+for p:=int64__3264(xmin) to int64__3264(xmax) do
 begin
+
+{$ifdef 64bit}
 i:=xfrom+(p-xmin);
-if (i>=icount) or (i<0) then goto skipend//22aug2020
+{$else}
+i:=restrict32( xfrom+(p-xmin) );
+{$endif}
+
+if      (i>=icount) or (i<0)                 then goto skipend//22aug2020
 else if xcasesensitive and (x[p]<>ibytes[i]) then goto skipend
 else
    begin
-   sv:=x[p];
-   v:=ibytes[i];
+
+   sv  :=x[p];
+   v   :=ibytes[i];
+
    if (sv>=65) and (sv<=90) then inc(sv,32);
    if (v>=65)  and (v<=90)  then inc(v,32);
-   if (sv<>v) then goto skipend;
+   if (sv<>v)               then goto skipend;
+
    end;
+
 end;//p
+
 //successful
 result:=true;
 skipend:
-except;end;
+
 end;
 
-function tstr8.gethandle:hglobal;//19may2025: fixed reference to "nil"
+function tstr8.gelongint3264:hglobal;//19may2025: fixed reference to "nil"
 begin
-if iglobal and (idata<>nil) then result:=win____GlobalHandle(idata) else result:=0;
+if iglobal and (idata<>nil) then result:=global__handle(idata) else result:=0;
 end;
 
 function tstr8.makelocal:boolean;
 begin
-result:=true;//pass-thru
+
+//pass-thru
+result :=true;
 
 //free previous
 setlen(0);
@@ -23059,14 +24471,17 @@ ejectcore;
 iownmemory :=true;
 iglobal    :=false;
 xsyncvars;
+
 end;
 
 function tstr8.makeglobal:boolean;
 begin
-result:=true;//pass-thru
+
+//pass-thru
+result:=true;
 
 //free previous
-ifloatsize:=0;//01sep2025
+ifloatsize :=0;//01sep2025
 setlen(0);
 ejectcore;
 
@@ -23074,11 +24489,14 @@ ejectcore;
 iownmemory :=true;
 iglobal    :=true;
 xsyncvars;
+
 end;
 
-function tstr8.makeglobalFROM(xmem:hglobal;xownmemory:boolean):boolean;
+function tstr8.makeglobalFROM(const xmem:hglobal;const xownmemory:boolean):boolean;
 begin
-result:=true;//pass-thru
+
+//pass-thru
+result:=true;
 
 //free previous
 setlen(0);
@@ -23087,13 +24505,16 @@ ejectcore;
 //get
 iownmemory :=xownmemory;
 iglobal    :=true;
-if (xmem<>0)    then idata:=win____GlobalLock(xmem)              else idata:=nil;//get pointer to memory block
-if (idata<>nil) then idatalen:=restrict32( global__size(idata) ) else idatalen:=0;
+
+if (xmem<>0)    then idata      :=win____GlobalLock(xmem)              else idata:=nil;//get pointer to memory block
+if (idata<>nil) then idatalen   :=global__size(idata)                  else idatalen:=0;
+
 icount     :=idatalen;
 xsyncvars;
 
 //track
 if iownmemory then system_memory_bytes:=add64(system_memory_bytes,idatalen);
+
 end;
 
 function tstr8.ejectcore:boolean;
@@ -23108,28 +24529,28 @@ if iownmemory then system_memory_bytes:=frcmin64( sub64(system_memory_bytes,idat
 //disown
 if iglobal and (handle<>0) then win____GlobalUnlock(handle);//unlock global memory
 
-iownmemory:=true;
-idata     :=nil;
-idatalen  :=0;
-icount    :=0;
+iownmemory :=true;
+idata      :=nil;
+idatalen   :=0;
+icount     :=0;
 xsyncvars;
 
 end;
 
-function tstr8.xresize(x:longint;xsetcount:boolean):boolean;//29aug2025
+function tstr8.xresize(const x:longint64;const xsetcount:boolean):boolean;//29aug2025
 var
-   int1,dnew,xnew,xold:longint;
+   dnew,xnew,xold:longint64;
 begin
+
 //defaults
 result:=false;
 
 //check
 if not iownmemory then exit;
 
-try
 //init
-xold         :=frcrange32(idatalen,0,max32);
-xnew         :=frcrange32(x,0,max32);
+xold         :=frcrange64(idatalen,0,maxslot8+1);
+xnew         :=frcrange64(x,0,maxslot8+1);
 dnew         :=xnew;
 
 //float size -> when engaged, resizes the memory buffer less often by retaining data and adjust size vars - 29aug2025
@@ -23137,7 +24558,7 @@ if (ifloatsize>=1) then
    begin
 
    //enlarge
-   if (dnew>=xold) then dnew:=restrict32( add64(dnew,ifloatsize) )
+   if (dnew>=xold) then dnew:=add64(dnew,ifloatsize)
 
    //shrink
    else if not (dnew < (xold-(2*ifloatsize))  ) then dnew:=xold;
@@ -23171,21 +24592,23 @@ if (dnew<>xold) then
    //set
    idatalen :=dnew;
    xsyncvars;
+
    end;
 
 //sync
 case xsetcount of
 true:icount:=xnew;
-else icount:=frcrange32(icount,0,xnew);
+else icount:=frcrange64(icount,0,xnew);
 end;
 
 //successful
 result:=true;//27apr2021
-except;end;
+
 end;
 
 procedure tstr8.xsyncvars;
 begin
+
 ibytes   :=idata;
 ichars   :=idata;
 iints4   :=idata;
@@ -23194,6 +24617,7 @@ irows15  :=idata;
 irows16  :=idata;
 irows24  :=idata;
 irows32  :=idata;
+
 end;
 
 function tstr8.clear:boolean;
@@ -23201,240 +24625,285 @@ begin
 result:=setlen(0);
 end;
 
-procedure tstr8.setcount(x:longint);//07dec2023
+procedure tstr8.setcount(const x:longint64);//07dec2023
 begin
-icount:=frcrange32(x,0,idatalen);
+icount:=frcrange64(x,0,idatalen);
 end;
 
-function tstr8.setlen(x:longint):boolean;
+function tstr8.setlen(const x:longint64):boolean;
 begin
 result:=xresize(x,true);
 end;
 
-function tstr8.minlen(x:longint):boolean;//atleast this length - 21mar2025: fixed
+function tstr8.minlen(x:longint64):boolean;//atleast this length - 21mar2025: fixed
 var
-   int1:longint;
+   int1:longint64;
 begin
-//defaults
-result:=false;
 
-try
+//defaults
+result :=false;
+
 //get
-x:=frcrange32(x,0,max32);
+x      :=frcrange64(x,0,maxslot8+1);
 
 if (x>idatalen) then
    begin
+
    //check
    if not iownmemory then exit;
 
    //get
-   case largest32(idatalen,x) of
-   0..100      :int1:=100;//100b
-   101..1000   :int1:=1000;//1K
-   1001..10000 :int1:=10000;//10K - 11jan2022
-   10001..100000:int1:=100000;//100K
-   else         int1:=1000000;//1M
+   case restrict32( largest64(idatalen,x) ) of
+   0..100        :int1:=100;//100b
+   101..1000     :int1:=1000;//1K
+   1001..10000   :int1:=10000;//10K - 11jan2022
+   10001..100000 :int1:=100000;//100K
+   else           int1:=1000000;//1M
    end;//case
 
-   result:=xresize(x+int1,false);//requested len + some more for extra speed - 29apr2020
+   result:=xresize( x+int1 ,false );//requested len + some more for extra speed - 29apr2020
+
    end
 else result:=true;//27apr2021
 
 //enlarge - 21mar2025: fixed "icount/len" update failure
-if (x>icount) then icount:=frcrange32(x,0,idatalen);
-except;end;
-end;
-
-function tstr8.fill(xfrom,xto:longint;xval:byte):boolean;
-var
-   p:longint;
-begin
-result:=(ibytes<>nil) and iownmemory;
-try
-if result and (xfrom<=xto) and (icount>=1) and frcrange2(xfrom,0,icount-1) and frcrange2(xto,xfrom,icount-1) then
+if (x>icount) then
    begin
-   for p:=xfrom to xto do ibytes[p]:=xval;
+
+   icount:=frcrange64(x,0,idatalen);
+
    end;
-except;end;
+
 end;
 
-function tstr8.del3(xfrom,xlen:longint):boolean;//27jan2021
+function tstr8.fill(xfrom,xto:longint64;const xval:byte):boolean;
+var
+   p:longint3264;
+begin
+
+//defaults
+result:=(ibytes<>nil) and iownmemory;
+
+if result and (xfrom<=xto) and (icount>=1) and frcrange642(xfrom,0,icount-1) and frcrange642(xto,xfrom,icount-1) then
+   begin
+
+   for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[p]:=xval;
+
+   end;
+
+end;
+
+function tstr8.del3(const xfrom,xlen:longint64):boolean;//27jan2021
 begin
 result:=del(xfrom,xfrom+xlen-1);
 end;
 
-function tstr8.del(xfrom,xto:longint):boolean;//27apr2021
+function tstr8.del(xfrom,xto:longint64):boolean;//27apr2021
 var
-   p,int1:longint;
-   v:byte;
+   p:longint3264;
+   int1:longint64;
 begin
+
 //defaults
 result:=true;//pass-thru
 
 //check
 if not iownmemory then
    begin
+
    result:=false;
    exit;
+
    end;
 
-try
 //check
 if (icount<=0) or (xfrom>xto) or (xto<0) or (xfrom>=icount) then exit;
+
 //get
-if frcrange2(xfrom,0,icount-1) and frcrange2(xto,xfrom,icount-1) then
+if frcrange642(xfrom,0,icount-1) and frcrange642(xto,xfrom,icount-1) then
    begin
+
    //shift down
    int1:=xto+1;
+
    //was: if (int1<icount) and (ibytes<>nil) then for p:=int1 to (icount-1) do ibytes[xfrom+p-int1]:=ibytes[p];
    if (int1<icount) and (ibytes<>nil) then
       begin
-      //assigning value using "v" SPEEDS things up - 22apr2022
-      for p:=int1 to (icount-1) do
-      begin
-      v:=ibytes[p];
-      ibytes[xfrom+p-int1]:=v;
-      end;//p
+
+      {$ifdef 64bit}
+      for p:=int1 to (icount-1) do ibytes[xfrom+p-int1] :=ibytes[p]
+      {$else}
+      for p:=int64__3264(int1) to int64__3264(icount-1) do ibytes[ int64__3264(xfrom+p-int1) ] :=ibytes[p]
+      {$endif}
+
       end;
+
    //resize
    result:=xresize(icount-(xto-xfrom+1),true);//27apr2021
+
    end;
-except;end;
+
 end;
 
 //object support ---------------------------------------------------------------
-function tstr8.add(var x:tstr8):boolean;//27apr2021
+function tstr8.add(const x:tstr8):boolean;//27apr2021
 begin
-result:=ins2(x,icount,0,max32);
+result:=ins2(x,icount,0,maxslot8);
 end;
 
-function tstr8.addb(x:tstr8):boolean;
-begin
-result:=add(x);
-end;
-
-function tstr8.add2(var x:tstr8;xfrom,xto:longint):boolean;//27apr2021
+function tstr8.add2(const x:tstr8;const xfrom,xto:longint64):boolean;//27apr2021
 begin
 result:=ins2(x,icount,xfrom,xto);
 end;
 
-function tstr8.add3(var x:tstr8;xfrom,xlen:longint):boolean;//27apr2021
+function tstr8.add3(const x:tstr8;const xfrom,xlen:longint64):boolean;//27apr2021
 begin
 if (xlen>=1) then result:=ins2(x,icount,xfrom,xfrom+xlen-1) else result:=true;
 end;
 
-function tstr8.add31(var x:tstr8;xfrom1,xlen:longint):boolean;//28jul2021
+function tstr8.add31(const x:tstr8;const xfrom1,xlen:longint64):boolean;//28jul2021
 begin
 if (xlen>=1) then result:=ins2(x,icount,(xfrom1-1),(xfrom1-1)+xlen-1) else result:=true;
 end;
 
-function tstr8.ins(var x:tstr8;xpos:longint):boolean;//27apr2021
+function tstr8.ins(const x:tstr8;const xpos:longint64):boolean;//27apr2021
 begin
-result:=ins2(x,xpos,0,max32);
+result:=ins2(x,xpos,0,maxslot8);
 end;
 
-function tstr8.ins2(var x:tstr8;xpos,xfrom,xto:longint):boolean;//22apr2022, 27apr2021, 26apr2021
+function tstr8.ins2(const x:tstr8;const xpos,xfrom,xto:longint64):boolean;//22apr2022, 27apr2021, 26apr2021
 begin
 result:=_ins2(@x,xpos,xfrom,xto);
 end;
 
-function tstr8._ins2(x:pobject;xpos,xfrom,xto:longint):boolean;//08feb2024: tstr9 support, 22apr2022, 27apr2021, 26apr2021
+function tstr8._ins2(const x:pobject;xpos,xfrom,xto:longint64):boolean;//08feb2024: tstr9 support, 22apr2022, 27apr2021, 26apr2021
 label
    skipend;
 var
-   smin,smax,dcount,p,int1:longint;
+   p:longint3264;
+   smin,smax,dcount,int1:longint64;
    smem:pdlbyte;
-   v:byte;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not iownmemory then exit;
 
 //check
 if (not str__ok(x)) or (x=@self) then
    begin
+
    result:=true;
    exit;
+
    end;
+
 //init
-xpos:=frcrange32(xpos,0,icount);//allow to write past end
+xpos:=frcrange64(xpos,0,icount);//allow to write past end
+
 //check
 int1:=str__len(x);
+
 if (int1=0) then//06jul2021
    begin
+
    result:=true;
    goto skipend;
+
    end;
+
 if (int1<=0) or (xfrom>xto) or (xto<0) or (xfrom>=int1) then goto skipend;
+
 //init
-xfrom:=frcrange32(xfrom,0,int1-1);
-xto:=frcrange32(xto,xfrom,int1-1);
-dcount:=icount+(xto-xfrom+1);//always means to increase the size - 26apr2021
+xfrom    :=frcrange64(xfrom,0,int1-1);
+xto      :=frcrange64(xto,xfrom,int1-1);
+dcount   :=icount+(xto-xfrom+1);//always means to increase the size - 26apr2021
+
 //check
 if not minlen(dcount) then goto skipend;//27apr2021
+
 //shift up
 if (xpos<icount) and (ibytes<>nil) then//27apr2021
    begin
+
    int1:=xto-xfrom+1;
    //was: for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
    //assigning value indirectly using "v" SPEEDS things up drastically - 22apr2022
-   for p:=(dcount-1) downto (xpos+int1) do
-   begin
-   v:=ibytes[p-int1];
-   ibytes[p]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
+   {$else}
+   for p:=int64__3264(dcount-1) downto int64__3264(xpos+int1) do ibytes[p]:=ibytes[ int64__3264(p-int1) ];
+   {$endif}
+
    end;
+
 //copy + size
 if (ibytes<>nil) then//27apr2021
    begin
+
    //was: for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x.pbytes[p];
    //assigning value indirectly using "v" SPEEDS things up drastically - 22apr2022
    if (x^ is tstr8) then
       begin
-      for p:=xfrom to xto do
-      begin
-      v:=(x^ as tstr8).pbytes[p];
-      ibytes[xpos+p-xfrom]:=v;
-      end;//p
+
+      {$ifdef 64bit}
+      for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=(x^ as tstr8).pbytes[p];
+      {$else}
+      for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[ int64__3264(xpos+p-xfrom) ]:=(x^ as tstr8).pbytes[p];
+      {$endif}
+
       end
    else if (x^ is tstr9) then
       begin
+
       smax:=-2;
-      for p:=xfrom to xto do
+
+      for p:=int64__3264(xfrom) to int64__3264(xto) do
       begin
-      if (p>smax) and (not block__fastinfo(x,p,smem,smin,smax)) then goto skipend;
-      v:=smem[p-smin];
-      ibytes[xpos+p-xfrom]:=v;
+
+      if (p>smax) and (not block64__fastinfo64(x,p,smem,smin,smax)) then goto skipend;
+
+      {$ifdef 64bit}
+      ibytes[xpos+p-xfrom]:=smem[p-smin];
+      {$else}
+      ibytes[ int64__3264(xpos+p-xfrom) ]:=smem[ int64__3264(p-smin) ];
+      {$endif}
+
       end;//p
+
       end;
    end;
+
 icount:=dcount;
+
 //successful
 result:=true;
 skipend:
-except;end;
-try;str__autofree(x);except;end;
+
+//free
+str__autofree(x);
+
 end;
 
-function tstr8.owr(var x:tstr8;xpos:longint):boolean;//overwrite -> enlarge if required - 27apr2021, 01oct2020
+function tstr8.owr(const x:tstr8;const xpos:longint64):boolean;//overwrite -> enlarge if required - 27apr2021, 01oct2020
 begin
-result:=owr2(x,xpos,0,max32);
+result:=owr2(x,xpos,0,maxslot8);
 end;
 
-function tstr8.owr2(var x:tstr8;xpos,xfrom,xto:longint):boolean;//22apr2022
+function tstr8.owr2(const x:tstr8;xpos,xfrom,xto:longint64):boolean;//22apr2022
 label
    skipend;
 var
-   dcount,p,int1:longint;
-   v:byte;
+   p:longint3264;
+   dcount,int1:longint64;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not iownmemory then exit;
 
@@ -23444,124 +24913,146 @@ if zznil(x,2251) or (x=idata) then
    result:=true;
    exit;
    end;
+
+try
+
 //init
-xpos:=frcmin32(xpos,0);
+xpos:=frcmin64(xpos,0);
+
 //check
 int1:=x.count;
+
 if (int1<=0) or (xfrom>xto) or (xto<0) or (xfrom>=int1) then
    begin
+
    result:=true;//27apr2021
    goto skipend;
+
    end;
+
 //init
-xfrom:=frcrange32(xfrom,0,int1-1);
-xto:=frcrange32(xto,xfrom,int1-1);
-dcount:=xpos+(xto-xfrom+1);
+xfrom  :=frcrange64(xfrom,0,int1-1);
+xto    :=frcrange64(xto,xfrom,int1-1);
+dcount :=xpos+(xto-xfrom+1);
+
 //check
 if not minlen(dcount) then goto skipend;
+
 //copy + size
 if (ibytes<>nil) and (x.pbytes<>nil) then//27apr2021
    begin
-   //was: for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x.pbytes[p];
-   //local var "v" makes things FASTER - 22apr2022
-   for p:=xfrom to xto do
-   begin
-   v:=x.pbytes[p];
-   ibytes[xpos+p-xfrom]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x.pbytes[p];
+   {$else}
+   for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[ int64__3264(xpos+p-xfrom) ]:=x.pbytes[p];
+   {$endif}
+
    end;
-icount:=largest32(dcount,icount);
+
+icount:=largest64(dcount,icount);
+
 //successful
 result:=true;
 skipend:
 except;end;
+
 //free
 str__autofree(@x);
+
 end;
 
 //array support ----------------------------------------------------------------
 function tstr8.aadd(const x:array of byte):boolean;//27apr2021
 begin
-result:=ains2(x,icount,0,max32);
+result:=ains2(x,icount,0,maxslot8);
 end;
 
-function tstr8.aadd1(const x:array of byte;xpos1,xlen:longint):boolean;//1based - 27apr2021, 19aug2020
+function tstr8.aadd1(const x:array of byte;const xpos1,xlen:longint64):boolean;//1based - 27apr2021, 19aug2020
 begin
 result:=ains2(x,icount,xpos1-1,xpos1-1+xlen);
 end;
 
-function tstr8.aadd2(const x:array of byte;xfrom,xto:longint):boolean;//27apr2021
+function tstr8.aadd2(const x:array of byte;const xfrom,xto:longint64):boolean;//27apr2021
 begin
 result:=ains2(x,icount,xfrom,xto);
 end;
 
-function tstr8.ains(const x:array of byte;xpos:longint):boolean;//27apr2021
+function tstr8.ains(const x:array of byte;const xpos:longint64):boolean;//27apr2021
 begin
-result:=ains2(x,xpos,0,max32);
+result:=ains2(x,xpos,0,maxslot8);
 end;
 
-function tstr8.ains2(const x:array of byte;xpos,xfrom,xto:longint):boolean;//26apr2021
+function tstr8.ains2(const x:array of byte;xpos,xfrom,xto:longint64):boolean;//26apr2021
 var
-   dcount,p,int1:longint;
-   v:byte;
+   p:longint3264;
+   dcount,int1:longint64;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if (xto<xfrom) then exit;
+
+try
 //range
-xfrom:=frcrange32(xfrom,low(x),high(x));
-xto  :=frcrange32(xto  ,low(x),high(x));
+xfrom  :=frcrange64(xfrom,low(x),high(x));
+xto    :=frcrange64(xto  ,low(x),high(x));
 if (xto<xfrom) then exit;
+
 //init
-xpos:=frcrange32(xpos,0,icount);//allow to write past end
-dcount:=icount+(xto-xfrom+1);
+xpos   :=frcrange64(xpos,0,icount);//allow to write past end
+dcount :=icount+(xto-xfrom+1);
 minlen(dcount);
+
 //shift up
 if (xpos<icount) and (ibytes<>nil) then//27apr2021
    begin
+
    int1:=xto-xfrom+1;
-   //was: for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
-   //faster - 22apr2022
-   for p:=(dcount-1) downto (xpos+int1) do
-   begin
-   v:=ibytes[p-int1];
-   ibytes[p]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
+   {$else}
+   for p:=int64__3264(dcount-1) downto int64__3264(xpos+int1) do ibytes[p]:=ibytes[ int64__3264(p-int1) ];
+   {$endif}
+
    end;
+
 //copy + size
 if (ibytes<>nil) then//27apr2021
    begin
-   //was: for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x[p];
-   //faster - 22apr2022
-   for p:=xfrom to xto do
-   begin
-   v:=x[p];
-   ibytes[xpos+p-xfrom]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x[p];
+   {$else}
+   for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[ int64__3264(xpos+p-xfrom) ]:=x[p];
+   {$endif}
+
    end;
+
 icount:=dcount;
+
 //successful
 result:=true;
 except;end;
 end;
 
-function tstr8.padd(x:pdlbyte;xsize:longint):boolean;//15feb2024
+function tstr8.padd(const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
 begin
 if (xsize<=0) then result:=true else result:=pins2(x,xsize,icount,0,xsize-1);
 end;
 
-function tstr8.pins2(x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;//07feb2022
+function tstr8.pins2(const x:pdlbyte;xcount,xpos,xfrom,xto:longint64):boolean;//07feb2022
 var
-   dcount,p,int1:longint;
-   v:byte;
+   p:longint3264;
+   dcount,int1:longint64;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if (x=nil) or (xcount<=0) then
    begin
@@ -23569,54 +25060,62 @@ if (x=nil) or (xcount<=0) then
    exit;
    end;
 if (xto<xfrom) then exit;
+
+try
 //range
-xfrom:=frcrange32(xfrom,0,xcount-1);
-xto  :=frcrange32(xto  ,0,xcount-1);
+xfrom  :=frcrange64(xfrom,0,xcount-1);
+xto    :=frcrange64(xto  ,0,xcount-1);
 if (xto<xfrom) then exit;
+
 //init
-xpos:=frcrange32(xpos,0,icount);//allow to write past end
-dcount:=icount+(xto-xfrom+1);
+xpos   :=frcrange64(xpos,0,icount);//allow to write past end
+dcount :=icount+(xto-xfrom+1);
 minlen(dcount);
+
 //shift up
 if (xpos<icount) and (ibytes<>nil) then//27apr2021
    begin
+
    int1:=xto-xfrom+1;
-   //was: for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
-   //faster - 22apr2022
-   for p:=(dcount-1) downto (xpos+int1) do
-   begin
-   v:=ibytes[p-int1];
-   ibytes[p]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
+   {$else}
+   for p:=int64__3264(dcount-1) downto int64__3264(xpos+int1) do ibytes[p]:=ibytes[ int64__3264(p-int1) ];
+   {$endif}
+
    end;
+
 //copy + size
 if (ibytes<>nil) then//27apr2021
    begin
-   //was: for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x[p];
-   //faster - 22apr2022
-   for p:=xfrom to xto do
-   begin
-   v:=x[p];
-   ibytes[xpos+p-xfrom]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=x[p];
+   {$else}
+   for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[ int64__3264(xpos+p-xfrom) ]:=x[p];
+   {$endif}
+
    end;
+
 icount:=dcount;
+
 //successful
 result:=true;
 except;end;
 end;
 
-function tstr8.insbyt1(xval:byte;xpos:longint):boolean;
+function tstr8.insbyt1(const xval:byte;const xpos:longint64):boolean;
 begin
 result:=ains2([xval],xpos,0,0);
 end;
 
-function tstr8.insbol1(xval:boolean;xpos:longint):boolean;
+function tstr8.insbol1(const xval:boolean;const xpos:longint64):boolean;
 begin
 if xval then result:=ains2([1],xpos,0,0) else result:=ains2([0],xpos,0,0);
 end;
 
-function tstr8.insint4(xval,xpos:longint):boolean;
+function tstr8.insint4(const xval:longint32;const xpos:longint64):boolean;
 var
    a:tint4;
 begin
@@ -23626,77 +25125,87 @@ end;
 //string support ---------------------------------------------------------------
 function tstr8.sadd(const x:string):boolean;//26dec2023, 27apr2021
 begin
-result:=sins2(x,icount,0,max32);
+result:=sins2(x,icount,0,maxslot8);
 end;
 
-function tstr8.sadd2(const x:string;xfrom,xto:longint):boolean;//26dec2023, 27apr2021
+function tstr8.sadd2(const x:string;const xfrom,xto:longint64):boolean;//26dec2023, 27apr2021
 begin
 result:=sins2(x,icount,xfrom,xto);
 end;
 
-function tstr8.sadd3(const x:string;xfrom,xlen:longint):boolean;//26dec2023, 27apr2021
+function tstr8.sadd3(const x:string;const xfrom,xlen:longint64):boolean;//26dec2023, 27apr2021
 begin
 if (xlen>=1) then result:=sins2(x,icount,xfrom,xfrom+xlen-1) else result:=true;
 end;
 
-function tstr8.sins(const x:string;xpos:longint):boolean;//27apr2021
+function tstr8.sins(const x:string;const xpos:longint64):boolean;//27apr2021
 begin
-result:=sins2(x,xpos,0,max32);
+result:=sins2(x,xpos,0,maxslot8);
 end;
 
-function tstr8.sins2(const x:string;xpos,xfrom,xto:longint):boolean;
+function tstr8.sins2(const x:string;xpos,xfrom,xto:longint64):boolean;
 label
    skipend;
 var//Always zero based for "xfrom" and "xto"
-   xlen,dcount,p,int1:longint;
-   v:byte;
+   p:longint3264;
+   xlen,dcount,int1:longint64;
 begin
-//defaults
-result:=false;
 
-try
+//defaults
+result :=false;
+
 //check
-xlen:=low__len(x);
+xlen   :=low__len(x);
 if (xlen<=0) then
    begin
    result:=true;
    exit;
    end;
+
 //check #2
 if (xto<xfrom) then exit;//27apr2021
+
+try
 //range
-xfrom:=frcrange32(xfrom,0,xlen-1);
-xto  :=frcrange32(xto  ,0,xlen-1);
+xfrom  :=frcrange64(xfrom,0,xlen-1);
+xto    :=frcrange64(xto  ,0,xlen-1);
 if (xto<xfrom) then exit;
+
 //init
-xpos:=frcrange32(xpos,0,icount);//allow to write past end
-dcount:=icount+(xto-xfrom+1);
+xpos   :=frcrange64(xpos,0,icount);//allow to write past end
+dcount :=icount+(xto-xfrom+1);
+
 //check
 if not minlen(dcount) then goto skipend;
+
 //shift up
 if (xpos<icount) and (ibytes<>nil) then//27apr2021
    begin
+
    int1:=xto-xfrom+1;
-   //was: for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
-   //faster - 22apr2022
-   for p:=(dcount-1) downto (xpos+int1) do
-   begin
-   v:=ibytes[p-int1];;
-   ibytes[p]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=(dcount-1) downto (xpos+int1) do ibytes[p]:=ibytes[p-int1];
+   {$else}
+   for p:=int64__3264(dcount-1) downto int64__3264(xpos+int1) do ibytes[p]:=ibytes[ int64__3264(p-int1) ];
+   {$endif}
+
    end;
+
 //copy + size
 if (ibytes<>nil) then//27apr2021
    begin
-   //was: for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=byte(x[p+stroffset]);//force 8bit conversion from unicode to 8bit binary - 02may2020
-   //faster - 22apr2022
-   for p:=xfrom to xto do
-   begin
-   v:=byte(x[p+stroffset]);//force 8bit conversion from unicode to 8bit binary - 02may2020
-   ibytes[xpos+p-xfrom]:=v;
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=xfrom to xto do ibytes[xpos+p-xfrom]:=byte(x[p+stroffset]);
+   {$else}
+   for p:=int64__3264(xfrom) to int64__3264(xto) do ibytes[ int64__3264(xpos+p-xfrom) ]:=byte(x[ p+stroffset ]);
+   {$endif}
+
    end;
+
 icount:=dcount;
+
 //successful
 result:=true;
 skipend:
@@ -23704,99 +25213,99 @@ except;end;
 end;
 
 //push support -----------------------------------------------------------------
-function tstr8.pushcmp8(var xpos:longint;xval:comp):boolean;
+function tstr8.pushcmp8(var xpos:longint64;const xval:comp):boolean;
 begin
 result:=ains(tcmp8(xval).bytes,xpos);
-if result then inc(xpos,8);
+if result then inc64(xpos,8);
 end;
 
-function tstr8.pushcur8(var xpos:longint;xval:currency):boolean;
+function tstr8.pushcur8(var xpos:longint64;const xval:currency):boolean;
 begin
 result:=ains(tcur8(xval).bytes,xpos);
-if result then inc(xpos,8);
+if result then inc64(xpos,8);
 end;
 
-function tstr8.pushint4(var xpos:longint;xval:longint):boolean;
+function tstr8.pushint4(var xpos:longint64;const xval:longint):boolean;
 begin
 result:=ains(tint4(xval).bytes,xpos);
-if result then inc(xpos,4);
+if result then inc64(xpos,4);
 end;
 
-function tstr8.pushint4R(var xpos:longint;xval:longint):boolean;
+function tstr8.pushint4R(var xpos:longint64;xval:longint):boolean;
 begin
 xval:=low__intr(xval);//swap round
 result:=ains(tint4(xval).bytes,xpos);
-if result then inc(xpos,4);
+if result then inc64(xpos,4);
 end;
 
-function tstr8.pushint3(var xpos:longint;xval:longint):boolean;
+function tstr8.pushint3(var xpos:longint64;const xval:longint):boolean;
 var
    r,g,b:byte;
 begin
 low__int3toRGB(xval,r,g,b);
 result:=ains([r,g,b],xpos);
-if result then inc(xpos,3);
+if result then inc64(xpos,3);
 end;
 
-function tstr8.pushwrd2(var xpos:longint;xval:word):boolean;
+function tstr8.pushwrd2(var xpos:longint64;const xval:word):boolean;
 begin
 result:=ains(twrd2(xval).bytes,xpos);
-if result then inc(xpos,2);
+if result then inc64(xpos,2);
 end;
 
-function tstr8.pushwrd2R(var xpos:longint;xval:word):boolean;
+function tstr8.pushwrd2R(var xpos:longint64;xval:word):boolean;
 begin
 xval:=low__wrdr(xval);
 result:=ains(twrd2(xval).bytes,xpos);
-if result then inc(xpos,2);
+if result then inc64(xpos,2);
 end;
 
-function tstr8.pushbyt1(var xpos:longint;xval:byte):boolean;
+function tstr8.pushbyt1(var xpos:longint64;const xval:byte):boolean;
 begin
 result:=ains([xval],xpos);
-if result then inc(xpos,1);
+if result then inc64(xpos,1);
 end;
 
-function tstr8.pushbol1(var xpos:longint;xval:boolean):boolean;
+function tstr8.pushbol1(var xpos:longint64;const xval:boolean):boolean;
 begin
 if xval then result:=ains([1],xpos) else result:=ains([0],xpos);
-if result then inc(xpos,1);
+if result then inc64(xpos,1);
 end;
 
-function tstr8.pushchr1(var xpos:longint;xval:char):boolean;
+function tstr8.pushchr1(var xpos:longint64;const xval:char):boolean;
 begin
 result:=ains([byte(xval)],xpos);
-if result then inc(xpos,1);
+if result then inc64(xpos,1);
 end;
 
-function tstr8.pushstr(var xpos:longint;xval:string):boolean;
+function tstr8.pushstr(var xpos:longint64;const xval:string):boolean;
 begin
 result:=sins(xval,xpos);
-if result then inc(xpos,low__len(xval));
+if result then inc64(xpos,low__len(xval));
 end;
 
 //add support ------------------------------------------------------------------
-function tstr8.addcmp8(xval:comp):boolean;
+function tstr8.addcmp8(const xval:comp):boolean;
 begin
 result:=aadd(tcmp8(xval).bytes);
 end;
 
-function tstr8.addcur8(xval:currency):boolean;
+function tstr8.addcur8(const xval:currency):boolean;
 begin
 result:=aadd(tcur8(xval).bytes);
 end;
 
-function tstr8.addRGBA4(r,g,b,a:byte):boolean;
+function tstr8.addRGBA4(const r,g,b,a:byte):boolean;
 begin
 result:=aadd([r,g,b,a]);
 end;
 
-function tstr8.addRGB3(r,g,b:byte):boolean;
+function tstr8.addRGB3(const r,g,b:byte):boolean;
 begin
 result:=aadd([r,g,b]);
 end;
 
-function tstr8.addint4(xval:longint):boolean;
+function tstr8.addint4(const xval:longint):boolean;
 begin
 result:=aadd(tint4(xval).bytes);
 end;
@@ -23807,7 +25316,7 @@ xval:=low__intr(xval);//swap round
 result:=aadd(tint4(xval).bytes);
 end;
 
-function tstr8.addint3(xval:longint):boolean;
+function tstr8.addint3(const xval:longint):boolean;
 var
    r,g,b:byte;
 begin
@@ -23815,7 +25324,7 @@ low__int3toRGB(xval,r,g,b);
 result:=aadd([r,g,b]);
 end;
 
-function tstr8.addwrd2(xval:word):boolean;
+function tstr8.addwrd2(const xval:word):boolean;
 begin
 result:=aadd(twrd2(xval).bytes);//16aug2020
 end;
@@ -23826,7 +25335,7 @@ xval:=low__wrdr(xval);//swap round
 result:=aadd(twrd2(xval).bytes);//16aug2020
 end;
 
-function tstr8.addsmi2(xval:smallint):boolean;//01aug2021
+function tstr8.addsmi2(const xval:smallint):boolean;//01aug2021
 var
    a:twrd2;
 begin
@@ -23834,44 +25343,44 @@ a.si:=xval;
 result:=aadd([a.bytes[0],a.bytes[1]]);
 end;
 
-function tstr8.addbyt1(xval:byte):boolean;
+function tstr8.addbyt1(const xval:byte):boolean;
 begin
 result:=aadd([xval]);
 end;
 
-function tstr8.addbol1(xval:boolean):boolean;//21aug2020
+function tstr8.addbol1(const xval:boolean):boolean;//21aug2020
 begin
 if xval then result:=aadd([1]) else result:=aadd([0]);
 end;
 
-function tstr8.addchr1(xval:char):boolean;
+function tstr8.addchr1(const xval:char):boolean;
 begin
 result:=aadd([byte(xval)]);
 end;
 
-function tstr8.addstr(xval:string):boolean;
+function tstr8.addstr(const xval:string):boolean;
 begin
 result:=sadd(xval);
 end;
 
-function tstr8.addrec(a:pointer;asize:longint):boolean;//07feb2022
+function tstr8.addrec(const a:pointer;const asize:longint64):boolean;//07feb2022
 begin
 result:=pins2(pdlbyte(a),asize,icount,0,asize-1);
 end;
 
 //get support ------------------------------------------------------------------
-function tstr8.getc8(xpos:longint):tcolor8;
+function tstr8.getc8(xpos:longint64):tcolor8;
 begin
-if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=ibytes[xpos] else result:=0;
+if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=ibytes[ int64__3264(xpos) ] else result:=0;
 end;
 
-function tstr8.getc24(xpos:longint):tcolor24;
+function tstr8.getc24(xpos:longint64):tcolor24;
 begin
 if (xpos>=0) and ((xpos+2)<icount) and (ibytes<>nil) then
    begin
-   result.b:=ibytes[xpos+0];
-   result.g:=ibytes[xpos+1];
-   result.r:=ibytes[xpos+2];
+   result.b:=ibytes[int64__3264(xpos+0)];
+   result.g:=ibytes[int64__3264(xpos+1)];
+   result.r:=ibytes[int64__3264(xpos+2)];
    end
 else
    begin
@@ -23881,14 +25390,14 @@ else
    end;
 end;
 
-function tstr8.getc32(xpos:longint):tcolor32;
+function tstr8.getc32(xpos:longint64):tcolor32;
 begin
 if (xpos>=0) and ((xpos+3)<icount) and (ibytes<>nil) then
    begin
-   result.b:=ibytes[xpos+0];
-   result.g:=ibytes[xpos+1];
-   result.r:=ibytes[xpos+2];
-   result.a:=ibytes[xpos+3];
+   result.b:=ibytes[int64__3264(xpos+0)];
+   result.g:=ibytes[int64__3264(xpos+1)];
+   result.r:=ibytes[int64__3264(xpos+2)];
+   result.a:=ibytes[int64__3264(xpos+3)];
    end
 else
    begin
@@ -23899,15 +25408,15 @@ else
    end;
 end;
 
-function tstr8.getc40(xpos:longint):tcolor40;
+function tstr8.getc40(xpos:longint64):tcolor40;
 begin
 if (xpos>=0) and ((xpos+4)<icount) and (ibytes<>nil) then
    begin
-   result.b:=ibytes[xpos+0];
-   result.g:=ibytes[xpos+1];
-   result.r:=ibytes[xpos+2];
-   result.a:=ibytes[xpos+3];
-   result.c:=ibytes[xpos+4];
+   result.b:=ibytes[int64__3264(xpos+0)];
+   result.g:=ibytes[int64__3264(xpos+1)];
+   result.r:=ibytes[int64__3264(xpos+2)];
+   result.a:=ibytes[int64__3264(xpos+3)];
+   result.c:=ibytes[int64__3264(xpos+4)];
    end
 else
    begin
@@ -23919,31 +25428,33 @@ else
    end;
 end;
 
-function tstr8.getcmp8(xpos:longint):comp;
+function tstr8.getcmp8(xpos:longint64):comp;
 var
    a:tcmp8;
 begin
 if (xpos>=0) and ((xpos+7)<icount) and (ibytes<>nil) then
    begin
-   a.bytes[0]:=ibytes[xpos+0];
-   a.bytes[1]:=ibytes[xpos+1];
-   a.bytes[2]:=ibytes[xpos+2];
-   a.bytes[3]:=ibytes[xpos+3];
-   a.bytes[4]:=ibytes[xpos+4];
-   a.bytes[5]:=ibytes[xpos+5];
-   a.bytes[6]:=ibytes[xpos+6];
-   a.bytes[7]:=ibytes[xpos+7];
+   a.bytes[0]:=ibytes[int64__3264(xpos+0)];
+   a.bytes[1]:=ibytes[int64__3264(xpos+1)];
+   a.bytes[2]:=ibytes[int64__3264(xpos+2)];
+   a.bytes[3]:=ibytes[int64__3264(xpos+3)];
+   a.bytes[4]:=ibytes[int64__3264(xpos+4)];
+   a.bytes[5]:=ibytes[int64__3264(xpos+5)];
+   a.bytes[6]:=ibytes[int64__3264(xpos+6)];
+   a.bytes[7]:=ibytes[int64__3264(xpos+7)];
    result:=a.val;
    end
 else result:=0;
 end;
 
-function tstr8.getcur8(xpos:longint):currency;
+function tstr8.getcur8(xpos:longint64):currency;
 var
    a:tcur8;
 begin
 if (xpos>=0) and ((xpos+7)<icount) and (ibytes<>nil) then
    begin
+
+   {$ifdef 64bit}
    a.bytes[0]:=ibytes[xpos+0];
    a.bytes[1]:=ibytes[xpos+1];
    a.bytes[2]:=ibytes[xpos+2];
@@ -23952,185 +25463,300 @@ if (xpos>=0) and ((xpos+7)<icount) and (ibytes<>nil) then
    a.bytes[5]:=ibytes[xpos+5];
    a.bytes[6]:=ibytes[xpos+6];
    a.bytes[7]:=ibytes[xpos+7];
+   {$else}
+   a.bytes[0]:=ibytes[int64__3264(xpos+0)];
+   a.bytes[1]:=ibytes[int64__3264(xpos+1)];
+   a.bytes[2]:=ibytes[int64__3264(xpos+2)];
+   a.bytes[3]:=ibytes[int64__3264(xpos+3)];
+   a.bytes[4]:=ibytes[int64__3264(xpos+4)];
+   a.bytes[5]:=ibytes[int64__3264(xpos+5)];
+   a.bytes[6]:=ibytes[int64__3264(xpos+6)];
+   a.bytes[7]:=ibytes[int64__3264(xpos+7)];
+   {$endif}
+
    result:=a.val;
+
    end
 else result:=0;
 end;
 
-function tstr8.getint4(xpos:longint):longint;
+function tstr8.getint4(xpos:longint64):longint;
 var
    a:tint4;
 begin
 if (xpos>=0) and ((xpos+3)<icount) and (ibytes<>nil) then
    begin
+
+   {$ifdef 64bit}
    a.bytes[0]:=ibytes[xpos+0];
    a.bytes[1]:=ibytes[xpos+1];
    a.bytes[2]:=ibytes[xpos+2];
    a.bytes[3]:=ibytes[xpos+3];
+   {$else}
+   a.bytes[0]:=ibytes[int64__3264(xpos+0)];
+   a.bytes[1]:=ibytes[int64__3264(xpos+1)];
+   a.bytes[2]:=ibytes[int64__3264(xpos+2)];
+   a.bytes[3]:=ibytes[int64__3264(xpos+3)];
+   {$endif}
+
    result:=a.val;
+
    end
 else result:=0;
 end;
 
-function tstr8.getint4i(xindex:longint):longint;
+function tstr8.getint4i(xindex:longint64):longint;
 begin
 result:=getint4(xindex*4);
 end;
 
-function tstr8.getint4R(xpos:longint):longint;//14feb2021
+function tstr8.getint4R(xpos:longint64):longint;//14feb2021
 var
    a:tint4;
 begin
+
 if (xpos>=0) and ((xpos+3)<icount) and (ibytes<>nil) then
    begin
-   a.bytes[0]:=ibytes[xpos+3];//swap round
-   a.bytes[1]:=ibytes[xpos+2];
-   a.bytes[2]:=ibytes[xpos+1];
-   a.bytes[3]:=ibytes[xpos+0];
+
+   a.bytes[0]:=ibytes[int64__3264(xpos+3)];//swap round
+   a.bytes[1]:=ibytes[int64__3264(xpos+2)];
+   a.bytes[2]:=ibytes[int64__3264(xpos+1)];
+   a.bytes[3]:=ibytes[int64__3264(xpos+0)];
+
    result:=a.val;
+
    end
 else result:=0;
+
 end;
 
-function tstr8.getint3(xpos:longint):longint;
+function tstr8.getint3(xpos:longint64):longint;
 begin
-if (xpos>=0) and ((xpos+2)<icount) and (ibytes<>nil) then result:=ibytes[xpos+0]+(ibytes[xpos+1]*256)+(ibytes[xpos+2]*256*256) else result:=0;
+
+case (xpos>=0) and ((xpos+2)<icount) and (ibytes<>nil) of
+true:result:=ibytes[int64__3264(xpos+0)] + (ibytes[int64__3264(xpos+1)]*256) + (ibytes[int64__3264(xpos+2)]*256*256);
+else result:=0;
+end;//case
+
 end;
 
-function tstr8.getsml2(xpos:longint):smallint;//28jul2021
+function tstr8.getsml2(xpos:longint64):smallint;//28jul2021
 var
    a:twrd2;
 begin
+
 if (xpos>=0) and ((xpos+1)<icount) and (ibytes<>nil) then
    begin
-   a.bytes[0]:=ibytes[xpos+0];
-   a.bytes[1]:=ibytes[xpos+1];
+
+   a.bytes[0]:=ibytes[int64__3264(xpos+0)];
+   a.bytes[1]:=ibytes[int64__3264(xpos+1)];
+
    result:=a.si;
+
    end
 else result:=0;
+
 end;
 
-function tstr8.getwrd2(xpos:longint):word;
+function tstr8.getwrd2(xpos:longint64):word;
 var
    a:twrd2;
 begin
+
 if (xpos>=0) and ((xpos+1)<icount) and (ibytes<>nil) then
    begin
+
+   {$ifdef 64bit}
    a.bytes[0]:=ibytes[xpos+0];
    a.bytes[1]:=ibytes[xpos+1];
+   {$else}
+   a.bytes[0]:=ibytes[int64__3264(xpos+0)];
+   a.bytes[1]:=ibytes[int64__3264(xpos+1)];
+   {$endif}
+
    result:=a.val;
+
    end
 else result:=0;
+
 end;
 
-function tstr8.getwrd2R(xpos:longint):word;//14feb2021
+function tstr8.getwrd2R(xpos:longint64):word;//14feb2021
 var
    a:twrd2;
 begin
+
 if (xpos>=0) and ((xpos+1)<icount) and (ibytes<>nil) then
    begin
-   a.bytes[0]:=ibytes[xpos+1];//swap round
-   a.bytes[1]:=ibytes[xpos+0];
+
+   a.bytes[0]:=ibytes[int64__3264(xpos+1)];//swap round
+   a.bytes[1]:=ibytes[int64__3264(xpos+0)];
+
    result:=a.val;
+
    end
 else result:=0;
+
 end;
 
-function tstr8.getbyt1(xpos:longint):byte;
+function tstr8.getbyt1(xpos:longint64):byte;
 begin
-if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=ibytes[xpos] else result:=0;
+
+if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=ibytes[xpos];
+   {$else}
+   result:=ibytes[ int64__3264(xpos) ];
+   {$endif}
+
+   end
+else result:=0;
+
 end;
 
-function tstr8.getbol1(xpos:longint):boolean;
+function tstr8.getbol1(xpos:longint64):boolean;
 begin
-if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=(ibytes[xpos]<>0) else result:=false;
+if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=(ibytes[int64__3264(xpos)]<>0) else result:=false;
 end;
 
-function tstr8.getchr1(xpos:longint):char;
+function tstr8.getchr1(xpos:longint64):char;
 begin
-if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then result:=char(ibytes[xpos]) else result:=#0;
+
+if (xpos>=0) and (xpos<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=char(ibytes[xpos]);
+   {$else}
+   result:=char(ibytes[int64__3264(xpos)]);
+   {$endif}
+
+   end
+else result:=#0;
+
 end;
 
-function tstr8.getstr(xpos,xlen:longint):string;//fixed - 16aug2020
+function tstr8.getstr(xpos,xlen:longint64):string;//fixed - 16aug2020
 var
-   dlen,p:longint;
+   p:longint3264;
+   dlen:longint64;
 begin
+
+//defaults
 result:='';
 
+//get
 try
+
 if (xlen>=1) and (xpos>=0) and (xpos<icount) and (ibytes<>nil) then
    begin
-   dlen:=frcmax32(xlen,icount-xpos);
+
+   dlen:=frcmax64(xlen,icount-xpos);
+
    if (dlen>=1) then
       begin
+
       low__setlen(result,dlen);
+
+      {$ifdef 64bit}
       for p:=xpos to (xpos+dlen-1) do result[p-xpos+stroffset]:=char(ibytes[p]);
+      {$else}
+      for p:=int64__3264(xpos) to int64__3264(xpos+dlen-1) do result[ int64__3264(p-xpos+stroffset) ]:=char(ibytes[p]);
+      {$endif}
+
       end;
+
    end;
+
 except;end;
 end;
 
-function tstr8.getstr1(xpos,xlen:longint):string;
+function tstr8.getstr1(xpos,xlen:longint64):string;
 begin
 result:=getstr(xpos-1,xlen);
 end;
 
-function tstr8.getnullstr(xpos,xlen:longint):string;//20mar2022
+function tstr8.getnullstr(xpos,xlen:longint64):string;//20mar2022
 var
-   dcount,dlen,p:longint;
-   v:byte;
+   p:longint3264;
+   dcount,dlen:longint64;
 begin
+
+//defaults
 result:='';
 
+//get
 try
+
 if (xlen>=1) and (xpos>=0) and (xpos<icount) and (ibytes<>nil) then
    begin
-   dlen:=frcmax32(xlen,icount-xpos);
+
+   dlen:=frcmax64(xlen,icount-xpos);
+
    if (dlen>=1) then
       begin
+
       low__setlen(result,dlen);
       dcount:=0;
-      for p:=xpos to (xpos+dlen-1) do
+
+      for p:=int64__3264(xpos) to int64__3264(xpos+dlen-1) do
       begin
+
       if (ibytes[p]=0) then
          begin
+
          if (dcount<>dlen) then low__setlen(result,dcount);
          break;
+
          end;
-      //was: result[p-xpos+stroffset]:=char(ibytes[p]);
-      v:=ibytes[p];
-      result[p-xpos+stroffset]:=char(v);
-      inc(dcount);
+
+      {$ifdef 64bit}
+      result[p-xpos+stroffset]:=char(ibytes[p]);
+      {$else}
+      result[ int64__3264(p-xpos+stroffset) ]:=char(ibytes[p]);
+      {$endif}
+
+      inc64(dcount,1);
+
       end;//p
+
       end;
+
    end;
+
 except;end;
 end;
 
-function tstr8.getnullstr1(xpos,xlen:longint):string;//20mar2022
+function tstr8.getnullstr1(xpos,xlen:longint64):string;//20mar2022
 begin
 result:=getnullstr(xpos-1,xlen);
 end;
 
 function tstr8.gettext:string;
 var
-   p:longint;
-   v:byte;
+   p:longint3264;
 begin
+
+//defaults
 result:='';
 
+//get
 try
+
 if (icount>=1) and (ibytes<>nil) then//27apr2021
    begin
    low__setlen(result,icount);
-   //was: for p:=0 to (icount-1) do result[p+stroffset]:=char(ibytes[p]);//27apr2021
-   //faster - 22apr2022
-   for p:=0 to (icount-1) do
-   begin
-   v:=ibytes[p];
-   result[p+stroffset]:=char(v);//27apr2021
-   end;//p
+
+   {$ifdef 64bit}
+   for p:=0 to (icount-1) do result[p+stroffset]:=char(ibytes[p]);
+   {$else}
+   for p:=0 to int64__3264(icount-1) do result[ int64__3264(p+stroffset) ]:=char(ibytes[p]);
+   {$endif}
+
    end;
+   
 except;end;
 end;
 
@@ -24140,7 +25766,7 @@ var
    v:byte;
 begin
 try
-xlen:=low__len(x);
+xlen:=low__len32(x);
 
 setlen(xlen);
 
@@ -24165,55 +25791,71 @@ label
    skipend;
 var
    a,aline:tstr8;
-   xmax,p:longint;
+   p:longint3264;
+   xmax:longint64;
 begin
+
 //defaults
-result:='';
+result :='';
+a      :=nil;
+aline  :=nil;
 
 try
-a:=nil;
-aline:=nil;
 //check
 if (icount<=0) or (ibytes=nil) then goto skipend;
+
 //init
-a:=str__new8;
-aline:=str__new8;
-xmax:=icount-1;
+a      :=str__new8;
+aline  :=str__new8;
+xmax   :=icount-1;
+
 //get
-for p:=0 to xmax do
+for p:=0 to int64__3264(xmax) do
 begin
+
 aline.sadd(intstr32(ibytes[p])+insstr(',',p<xmax));
+
 if (aline.count>=1010) then
    begin
    aline.sadd(rcode);
    a.add(aline);
    aline.clear;
    end;
+
 end;//p
+
 //.finalise
 if (aline.count>=1) then
    begin
    a.add(aline);
    aline.clear;
    end;
+
 //set
-result:=':array[0..'+intstr32(icount-1)+'] of byte=('+rcode+a.text+');';//cleaned 02mar2022
+result:=':array[0..'+intstr64(icount-1)+'] of byte=('+rcode+a.text+');';//cleaned 02mar2022
+
 skipend:
 except;end;
-try
+
+//free
 str__free(@a);
 str__free(@aline);
-except;end;
+
 end;
 
 //set support ------------------------------------------------------------------
-procedure tstr8.setcmp8(xpos:longint;xval:comp);
+procedure tstr8.setcmp8(xpos:longint64;xval:comp);
 var
    a:tcmp8;
+   v:longint;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+8)) or (ibytes=nil) then exit;
 a.val:=xval;
+
+{$ifdef 64bit}
+
 ibytes[xpos+0]:=a.bytes[0];
 ibytes[xpos+1]:=a.bytes[1];
 ibytes[xpos+2]:=a.bytes[2];
@@ -24222,360 +25864,560 @@ ibytes[xpos+4]:=a.bytes[4];
 ibytes[xpos+5]:=a.bytes[5];
 ibytes[xpos+6]:=a.bytes[6];
 ibytes[xpos+7]:=a.bytes[7];
-icount:=frcmin32(icount,xpos+8);//10may2020
+
+{$else}
+
+v:=int64__3264(xpos);
+
+ibytes[v+0]:=a.bytes[0];
+ibytes[v+1]:=a.bytes[1];
+ibytes[v+2]:=a.bytes[2];
+ibytes[v+3]:=a.bytes[3];
+ibytes[v+4]:=a.bytes[4];
+ibytes[v+5]:=a.bytes[5];
+ibytes[v+6]:=a.bytes[6];
+ibytes[v+7]:=a.bytes[7];
+
+{$endif}
+
+icount:=frcmin64(icount,xpos+8);//10may2020
+
 end;
 
-procedure tstr8.setcur8(xpos:longint;xval:currency);
+procedure tstr8.setcur8(xpos:longint64;xval:currency);
 var
    a:tcur8;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+8)) or (ibytes=nil) then exit;
 a.val:=xval;
-ibytes[xpos+0]:=a.bytes[0];
-ibytes[xpos+1]:=a.bytes[1];
-ibytes[xpos+2]:=a.bytes[2];
-ibytes[xpos+3]:=a.bytes[3];
-ibytes[xpos+4]:=a.bytes[4];
-ibytes[xpos+5]:=a.bytes[5];
-ibytes[xpos+6]:=a.bytes[6];
-ibytes[xpos+7]:=a.bytes[7];
-icount:=frcmin32(icount,xpos+8);//10may2020
+ibytes[int64__3264(xpos+0)]:=a.bytes[0];
+ibytes[int64__3264(xpos+1)]:=a.bytes[1];
+ibytes[int64__3264(xpos+2)]:=a.bytes[2];
+ibytes[int64__3264(xpos+3)]:=a.bytes[3];
+ibytes[int64__3264(xpos+4)]:=a.bytes[4];
+ibytes[int64__3264(xpos+5)]:=a.bytes[5];
+ibytes[int64__3264(xpos+6)]:=a.bytes[6];
+ibytes[int64__3264(xpos+7)]:=a.bytes[7];
+icount:=frcmin64(icount,xpos+8);//10may2020
+
 end;
 
-procedure tstr8.setint4(xpos:longint;xval:longint);
+procedure tstr8.setint4(xpos:longint64;xval:longint);
 var
    a:tint4;
+   v:longint32;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+4)) or (ibytes=nil) then exit;
 a.val:=xval;
+
+{$ifdef 64bit}
+
 ibytes[xpos+0]:=a.bytes[0];
 ibytes[xpos+1]:=a.bytes[1];
 ibytes[xpos+2]:=a.bytes[2];
 ibytes[xpos+3]:=a.bytes[3];
-icount:=frcmin32(icount,xpos+4);//10may2020
+
+{$else}
+
+v:=int64__3264(xpos);
+
+ibytes[v+0]:=a.bytes[0];
+ibytes[v+1]:=a.bytes[1];
+ibytes[v+2]:=a.bytes[2];
+ibytes[v+3]:=a.bytes[3];
+
+{$endif}
+
+icount:=frcmin64(icount,xpos+4);//10may2020
+
 end;
 
-procedure tstr8.setc8(xpos:longint;xval:tcolor8);
+procedure tstr8.setc8(xpos:longint64;xval:tcolor8);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+1)) or (ibytes=nil) then exit;
-ibytes[xpos+0]:=xval;
-icount:=frcmin32(icount,xpos+1);
+ibytes[int64__3264(xpos+0)]:=xval;
+icount:=frcmin64(icount,xpos+1);
+
 end;
 
-procedure tstr8.setc24(xpos:longint;xval:tcolor24);
+procedure tstr8.setc24(xpos:longint64;xval:tcolor24);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+3)) or (ibytes=nil) then exit;
-ibytes[xpos+0]:=xval.b;
-ibytes[xpos+1]:=xval.g;
-ibytes[xpos+2]:=xval.r;
-icount:=frcmin32(icount,xpos+3);
+ibytes[int64__3264(xpos+0)]:=xval.b;
+ibytes[int64__3264(xpos+1)]:=xval.g;
+ibytes[int64__3264(xpos+2)]:=xval.r;
+icount:=frcmin64(icount,xpos+3);
+
 end;
 
-procedure tstr8.setc32(xpos:longint;xval:tcolor32);
+procedure tstr8.setc32(xpos:longint64;xval:tcolor32);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+4)) or (ibytes=nil) then exit;
+
+{$ifdef 64bit}
 ibytes[xpos+0]:=xval.b;
 ibytes[xpos+1]:=xval.g;
 ibytes[xpos+2]:=xval.r;
 ibytes[xpos+3]:=xval.a;
-icount:=frcmin32(icount,xpos+4);
+{$else}
+ibytes[int64__3264(xpos+0)]:=xval.b;
+ibytes[int64__3264(xpos+1)]:=xval.g;
+ibytes[int64__3264(xpos+2)]:=xval.r;
+ibytes[int64__3264(xpos+3)]:=xval.a;
+{$endif}
+
+icount:=frcmin64(icount,xpos+4);
+
 end;
 
-procedure tstr8.setc40(xpos:longint;xval:tcolor40);
+procedure tstr8.setc40(xpos:longint64;xval:tcolor40);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+5)) or (ibytes=nil) then exit;
-ibytes[xpos+0]:=xval.b;
-ibytes[xpos+1]:=xval.g;
-ibytes[xpos+2]:=xval.r;
-ibytes[xpos+3]:=xval.a;
-ibytes[xpos+4]:=xval.c;
-icount:=frcmin32(icount,xpos+5);
+ibytes[int64__3264(xpos+0)]:=xval.b;
+ibytes[int64__3264(xpos+1)]:=xval.g;
+ibytes[int64__3264(xpos+2)]:=xval.r;
+ibytes[int64__3264(xpos+3)]:=xval.a;
+ibytes[int64__3264(xpos+4)]:=xval.c;
+icount:=frcmin64(icount,xpos+5);
+
 end;
 
-procedure tstr8.setint4i(xindex:longint;xval:longint);
+procedure tstr8.setint4i(xindex:longint64;xval:longint);
 begin
+
 setint4(xindex*4,xval);
+
 end;
 
-procedure tstr8.setint4R(xpos:longint;xval:longint);
+procedure tstr8.setint4R(xpos:longint64;xval:longint);
 var
    a:tint4;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+4)) or (ibytes=nil) then exit;
 a.val:=xval;
-ibytes[xpos+0]:=a.bytes[3];//swap round
-ibytes[xpos+1]:=a.bytes[2];
-ibytes[xpos+2]:=a.bytes[1];
-ibytes[xpos+3]:=a.bytes[0];
-icount:=frcmin32(icount,xpos+4);//10may2020
+ibytes[int64__3264(xpos+0)]:=a.bytes[3];//swap round
+ibytes[int64__3264(xpos+1)]:=a.bytes[2];
+ibytes[int64__3264(xpos+2)]:=a.bytes[1];
+ibytes[int64__3264(xpos+3)]:=a.bytes[0];
+icount:=frcmin64(icount,xpos+4);//10may2020
+
 end;
 
-procedure tstr8.setint3(xpos:longint;xval:longint);
+procedure tstr8.setint3(xpos:longint64;xval:longint);
 var
    r,g,b:byte;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+3)) or (ibytes=nil) then exit;
 low__int3toRGB(xval,r,g,b);
-ibytes[xpos+0]:=r;
-ibytes[xpos+1]:=g;
-ibytes[xpos+2]:=b;
-icount:=frcmin32(icount,xpos+3);//10may2020
+ibytes[int64__3264(xpos+0)]:=r;
+ibytes[int64__3264(xpos+1)]:=g;
+ibytes[int64__3264(xpos+2)]:=b;
+icount:=frcmin64(icount,xpos+3);//10may2020
+
 end;
 
-procedure tstr8.setsml2(xpos:longint;xval:smallint);
+procedure tstr8.setsml2(xpos:longint64;xval:smallint);
 var
    a:twrd2;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+2)) or (ibytes=nil) then exit;
 a.si:=xval;
-ibytes[xpos+0]:=a.bytes[0];
-ibytes[xpos+1]:=a.bytes[1];
-icount:=frcmin32(icount,xpos+2);//10may2020
+ibytes[int64__3264(xpos+0)]:=a.bytes[0];
+ibytes[int64__3264(xpos+1)]:=a.bytes[1];
+icount:=frcmin64(icount,xpos+2);//10may2020
+
 end;
 
-procedure tstr8.setwrd2(xpos:longint;xval:word);
+procedure tstr8.setwrd2(xpos:longint64;xval:word);
 var
    a:twrd2;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+2)) or (ibytes=nil) then exit;
 a.val:=xval;
+
+{$ifdef 64bit}
 ibytes[xpos+0]:=a.bytes[0];
 ibytes[xpos+1]:=a.bytes[1];
-icount:=frcmin32(icount,xpos+2);//10may2020
+{$else}
+ibytes[int64__3264(xpos+0)]:=a.bytes[0];
+ibytes[int64__3264(xpos+1)]:=a.bytes[1];
+{$endif}
+
+icount:=frcmin64(icount,xpos+2);//10may2020
+
 end;
 
-procedure tstr8.setwrd2R(xpos:longint;xval:word);
+procedure tstr8.setwrd2R(xpos:longint64;xval:word);
 var
    a:twrd2;
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+2)) or (ibytes=nil) then exit;
 a.val:=xval;
-ibytes[xpos+0]:=a.bytes[1];//swap round
-ibytes[xpos+1]:=a.bytes[0];
-icount:=frcmin32(icount,xpos+2);//10may2020
+ibytes[int64__3264(xpos+0)]:=a.bytes[1];//swap round
+ibytes[int64__3264(xpos+1)]:=a.bytes[0];
+icount:=frcmin64(icount,xpos+2);//10may2020
+
 end;
 
-procedure tstr8.setbyt1(xpos:longint;xval:byte);
+procedure tstr8.setbyt1(xpos:longint64;xval:byte);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+1)) or (ibytes=nil) then exit;
+
+{$ifdef 64bit}
 ibytes[xpos]:=xval;
-icount:=frcmin32(icount,xpos+1);//10may2020
+{$else}
+ibytes[int64__3264(xpos)]:=xval;
+{$endif}
+
+icount:=frcmin64(icount,xpos+1);//10may2020
+
 end;
 
-procedure tstr8.setbol1(xpos:longint;xval:boolean);
+procedure tstr8.setbol1(xpos:longint64;xval:boolean);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+1)) or (ibytes=nil) then exit;
-if xval then ibytes[xpos]:=1 else ibytes[xpos]:=0;
-icount:=frcmin32(icount,xpos+1);//10may2020
+
+case xval of
+true:ibytes[int64__3264(xpos)]:=1;
+else ibytes[int64__3264(xpos)]:=0;
+end;//case
+
+icount:=frcmin64(icount,xpos+1);//10may2020
+
 end;
 
-procedure tstr8.setchr1(xpos:longint;xval:char);
+procedure tstr8.setchr1(xpos:longint64;xval:char);
 begin
+
 if (xpos<0) then xpos:=0;
 if (not minlen(xpos+1)) or (ibytes=nil) then exit;
+
+{$ifdef 64bit}
 ibytes[xpos]:=byte(xval);
-icount:=frcmin32(icount,xpos+1);//10may2020
+{$else}
+ibytes[int64__3264(xpos)]:=byte(xval);
+{$endif}
+
+icount:=frcmin64(icount,xpos+1);//10may2020
+
 end;
 
-procedure tstr8.setstr(xpos:longint;xlen:longint;xval:string);
+procedure tstr8.setstr(xpos:longint64;xlen:longint64;xval:string);
 var
-   xminlen,p:longint;
+   p:longint3264;
+   xminlen:longint64;
    v:byte;
 begin
 try
+
 if (xpos<0) then xpos:=0;
 if (xlen<=0) or (xval='') then exit;
-xlen:=frcmax32(xlen,low__len(xval));
-xminlen:=xpos+xlen;
+
+xlen     :=frcmax64(xlen,low__len(xval));
+xminlen  :=xpos+xlen;
 if (not minlen(xminlen)) or (ibytes=nil) then exit;
+
 //was: ERROR: for p:=xpos to (xpos+xlen-1) do ibytes[p]:=ord(xval[p+stroffset]);
 //was: for p:=0 to (xlen-1) do ibytes[xpos+p]:=ord(xval[p+stroffset]);
-for p:=0 to (xlen-1) do
-begin
-v:=ord(xval[p+stroffset]);
-ibytes[xpos+p]:=v;
-end;//p
-icount:=frcmin32(icount,xminlen);//10may2020
+
+{$ifdef 64bit}
+for p:=0 to (xlen-1) do ibytes[xpos+p]:=ord(xval[p+stroffset]);
+{$else}
+for p:=0 to int64__3264(xlen-1) do ibytes[int64__3264(xpos+p)]:=ord(xval[p+stroffset]);
+{$endif}
+
+icount:=frcmin64(icount,xminlen);//10may2020
+
 except;end;
 end;
 
-procedure tstr8.setstr1(xpos:longint;xlen:longint;xval:string);
+procedure tstr8.setstr1(xpos:longint64;xlen:longint64;xval:string);
 begin
 setstr(xpos-1,xlen,xval);
 end;
 
-function tstr8.setarray(xpos:longint;const xval:array of byte):boolean;
+function tstr8.setarray(xpos:longint64;const xval:array of byte):boolean;
 var
-   xminlen,xmin,xmax,p:longint;
-   v:byte;
+   p:longint3264;
+   xminlen,xmin,xmax:longint64;
 begin
+
 //defaults
-result:=false;
+result  :=false;
 
 try
 //get
 if (xpos<0) then xpos:=0;
-xmin:=low(xval);
-xmax:=high(xval);
-xminlen:=xpos+(xmax-xmin+1);
+xmin    :=low(xval);
+xmax    :=high(xval);
+xminlen :=xpos+(xmax-xmin+1);
 if (not minlen(xminlen)) or (ibytes=nil) then exit;
-//was: for p:=xmin to xmax do ibytes[xpos+(p-xmin)]:=xval[p];
-for p:=xmin to xmax do
-begin
-v:=xval[p];
-ibytes[xpos+(p-xmin)]:=v;
-end;//p
-icount:=frcmin32(icount,xminlen);//10may2020
+
+{$ifdef 64bit}
+for p:=xmin to xmax do ibytes[xpos+(p-xmin)]:=xval[p];
+{$else}
+for p:=int64__3264(xmin) to int64__3264(xmax) do ibytes[ int64__3264( xpos+(p-xmin) ) ]:=xval[p];
+{$endif}
+
+icount:=frcmin64(icount,xminlen);//10may2020
+
 //successful
 result:=true;
 except;end;
 end;
 
-function tstr8.scanline(xfrom:longint):pointer;
+function tstr8.scanline(xfrom:longint64):pointer3264;
 begin
+
 //defaults
 result:=nil;
 
-try
+//check
 if (icount<=0) then exit;
+
 //get
 if (xfrom<0) then xfrom:=0 else if (xfrom>=icount) then xfrom:=icount-1;
-if (ibytes<>nil) then result:=tpointer(@ibytes[xfrom]);
-except;end;
+if (ibytes<>nil) then result:=tpointer3264(@ibytes[ int64__3264(xfrom) ]);
+
 end;
 
-function tstr8.getbytes(x:longint):byte;//0-based
+function tstr8.getbytes(x:longint64):byte;//0-based
 begin
-if (x>=0) and (x<icount) and (ibytes<>nil) then result:=ibytes[x] else result:=0;
+
+if (x>=0) and (x<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=ibytes[x];
+   {$else}
+   result:=ibytes[ int64__3264(x) ];
+   {$endif}
+
+   end
+else result:=0;
+
 end;
 
-procedure tstr8.setbytes(x:longint;xval:byte);
+procedure tstr8.setbytes(x:longint64;xval:byte);
 begin
-if (x>=0) and (x<icount) and (ibytes<>nil) then ibytes[x]:=xval;
+
+if (x>=0) and (x<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   ibytes[x]:=xval;
+   {$else}
+   ibytes[ int64__3264(x) ]:=xval;
+   {$endif}
+
+   end;
+
 end;
 
-function tstr8.getbytes1(x:longint):byte;//1-based
+function tstr8.getbytes1(x:longint64):byte;//1-based
 begin
-if (x>=1) and (x<=icount) and (ibytes<>nil) then result:=ibytes[x-1] else result:=0;
+
+if (x>=1) and (x<=icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=ibytes[x-1];
+   {$else}
+   result:=ibytes[ int64__3264(x-1) ];
+   {$endif}
+
+   end
+else result:=0;
+
 end;
 
-procedure tstr8.setbytes1(x:longint;xval:byte);
+procedure tstr8.setbytes1(x:longint64;xval:byte);
 begin
-if (x>=1) and (x<=icount) and (ibytes<>nil) then ibytes[x-1]:=xval;
+
+if (x>=1) and (x<=icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   ibytes[x-1]:=xval;
+   {$else}
+   ibytes[ int64__3264(x-1) ]:=xval;
+   {$endif}
+
+   end;
+
 end;
 
-function tstr8.getchars(x:longint):char;//D10 uses unicode here - 27apr2021
+function tstr8.getchars(x:longint64):char;
 begin
-if (x>=0) and (x<icount) and (ibytes<>nil) then result:=char(ibytes[x]) else result:=#0;
+
+if (x>=0) and (x<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   result:=char(ibytes[x]);
+   {$else}
+   result:=char(ibytes[ int64__3264(x) ]);
+   {$endif}
+
+   end
+else result:=#0;
+
 end;
 
-procedure tstr8.setchars(x:longint;xval:char);//D10 uses unicode here
+procedure tstr8.setchars(x:longint64;xval:char);//D10 uses unicode here
 begin
-if (x>=0) and (x<icount) and (ibytes<>nil) then ibytes[x]:=byte(xval);
+
+if (x>=0) and (x<icount) and (ibytes<>nil) then
+   begin
+
+   {$ifdef 64bit}
+   ibytes[x]:=byte(xval);
+   {$else}
+   ibytes[ int64__3264(x) ]:=byte(xval);
+   {$endif}
+
+   end;
+
 end;
 
 //replace support --------------------------------------------------------------
-procedure tstr8.setreplace(x:tstr8);
+procedure tstr8.setreplace(const x:tstr8);
 begin
 clear;
 add(x);
 end;
 
-procedure tstr8.setreplacecmp8(x:comp);
+procedure tstr8.setreplacecmp8(const x:comp);
 begin
 clear;
 setcmp8(0,x);
 end;
 
-procedure tstr8.setreplacecur8(x:currency);
+procedure tstr8.setreplacecur8(const x:currency);
 begin
 clear;
 setcur8(0,x);
 end;
 
-procedure tstr8.setreplaceint4(x:longint);
+procedure tstr8.setreplaceint4(const x:longint);
 begin
 clear;
 setint4(0,x);
 end;
 
-procedure tstr8.setreplacewrd2(x:word);
+procedure tstr8.setreplacewrd2(const x:word);
 begin
 clear;
 setwrd2(0,x);
 end;
 
-procedure tstr8.setreplacebyt1(x:byte);
+procedure tstr8.setreplacebyt1(const x:byte);
 begin
 clear;
 setbyt1(0,x);
 end;
 
-procedure tstr8.setreplacebol1(x:boolean);
+procedure tstr8.setreplacebol1(const x:boolean);
 begin
 clear;
 setbol1(0,x);
 end;
 
-procedure tstr8.setreplacechr1(x:char);
+procedure tstr8.setreplacechr1(const x:char);
 begin
 clear;
 setchr1(0,x);
 end;
 
-procedure tstr8.setreplacestr(x:string);
+procedure tstr8.setreplacestr(const x:string);
 begin
 clear;
 setstr(0,low__len(x),x);
 end;
 
+
 //## tstr9 #####################################################################
-constructor tstr9.create(xlen:longint);
+constructor tstr9.create(xlen:longint64);
 begin
+
 if classnameis('tstr9') then track__inc(satStr9,1);
-oautofree:=false;
-igetmin:=-1;
-igetmax:=-2;
-ilen:=0;
-ilen2:=0;//real length
-idatalen:=0;
-imem:=0;
-iblockcount:=0;
-iblocksize:=block__size;
-ilockcount:=0;
-ilist:=nil;
-ilist:=tintlist.create;//tdynamicpointer.create;
-ilist.ptr[0]:=nil;//make sure 1st item always exists
+
+oautofree     :=false;
+igetmin       :=-1;
+igetmax       :=-2;
+ilen          :=0;
+ilen2         :=0;//real length
+idatalen      :=0;
+imem          :=0;
+iblockcount   :=0;
+iblocksize    :=block64__size;
+ilockcount    :=0;
+
+ilist         :=nil;
+ilist         :=tintlist64.create;
+ilist.ptr[0]  :=nil;//make sure 1st item always exists
+
 inherited create;
-tag1:=0;
-tag2:=0;
-tag3:=0;
-tag4:=0;
-seekpos:=0;
+
+tag1          :=0;
+tag2          :=0;
+tag3          :=0;
+tag4          :=0;
+
+seekpos       :=0;
 setlen(xlen);
+
 end;
 
 destructor tstr9.destroy;
 begin
 try
+
+//controls
 setlen(0);
 freeobj(@ilist);
+
+//set
 inherited destroy;
 if classnameis('tstr9') then track__inc(satStr9,-1);
+
 except;end;
+end;
+
+function tstr9.getlen32:longint32;
+begin
+result:=restrict32(ilen);
+end;
+
+function tstr9.getdatalen32:longint32;
+begin
+result:=restrict32(idatalen);
 end;
 
 function tstr9.empty:boolean;
@@ -24598,125 +26440,183 @@ begin
 ilockcount:=frcmin32(ilockcount-1,0);
 end;
 
-function tstr9.writeto1(a:pointer;asize,xfrom1,xlen:longint):boolean;
+function tstr9.writeto1(const a:pointer3264;const asize,xfrom1,xlen:longint64):boolean;
 begin
 result:=writeto(a,asize,xfrom1-1,xlen);
 end;
 
-function tstr9.writeto1b(a:pointer;asize:longint;var xfrom1:longint;xlen:longint):boolean;
+function tstr9.writeto1b(const a:pointer3264;const asize:longint64;var xfrom1:longint64;xlen:longint64):boolean;
 begin
-result:=false;
 
-try
-xlen:=frcrange32(xlen,0,frcmin32(asize,0));
-result:=writeto(a,asize,xfrom1-1,xlen);
-if result then inc(xfrom1,xlen)
-except;end;
+xlen     :=frcrange64(xlen,0, frcmin64(asize,0) );
+result   :=writeto(a,asize,xfrom1-1,xlen);
+if result then inc64(xfrom1,xlen)
+
 end;
 
-function tstr9.writeto(a:pointer;asize,xfrom0,xlen:longint):boolean;//26jul2024
+function tstr9.writeto(const a:pointer3264;const asize,xfrom0:longint64;xlen:longint64):boolean;//14dec2025, 26jul2024
 var
-   sp,slen,p:longint;
+   slen,sp,p:longint3264;
    b:pdlBYTE;
    v:byte;
 begin
-//defaults
-result:=false;
 
-try
+//defaults
+result   :=false;
+
 //check
 if (a=nil) then exit;
+
 //init
-slen:=len;//our length
-fillchar(a^,asize,0);
-b:=a;
-xlen:=frcmax32(xlen,asize);
+slen     :=int64__3264(len);//our length
+xlen     :=frcmax64(xlen,asize);
+low__cls(a,asize);
+
 if (xlen<=0) then
    begin
+
    result:=true;
    exit;
+
    end;
+
 //get
-sp:=xfrom0;
-for p:=0 to (xlen-1) do
+sp       :=int64__3264(xfrom0);
+
+for p:=0 to int64__3264(xlen-1) do
 begin
+
 if (sp>=0) then
    begin
+
    //was: if (sp<slen) then b[p]:=pbytes[sp] else break;
    //faster - 22apr2022
-   if (sp<slen) then
-      begin
-      v:=pbytes[sp];
-      b[p]:=v;
-      end
-   else break;
+   if (sp<slen) then pdlbyte(a)[p]:=pbytes[sp] else break;
+
    end;
+
 inc(sp);
-end;
+
+end;//p
+
 //successful
 result:=true;
-except;end;
+
 end;
 
-function tstr9.splice(xpos,xlen:longint;var xoutmem:pdlbyte;var xoutlen:longint):boolean;
+function tstr9.splice(const xpos,xlen:longint64;var xoutmem:pdlbyte;var xoutlen:longint64):boolean;
 var
-   xmin,xmax:longint;
+   xmin,xmax:longint64;
 begin
+
 //defaults
-result:=false;
-xoutmem:=nil;
-xoutlen:=0;
+result    :=false;
+xoutmem   :=nil;
+xoutlen   :=0;
 
 //check
 if (xpos<0) or (xpos>=ilen) or (xlen<=0) then exit;
 
 //get
-if fastinfo(xpos,xoutmem,xmin,xmax) then
+if fastinfo64(xpos,xoutmem,xmin,xmax) then
    begin
+
    xoutmem:=ptr__shift(xoutmem,xpos-xmin);
    xoutlen:=xmax-xpos+1;
    if (xoutlen>xlen) then xoutlen:=xlen;
+
    //successful
    result:=(xoutmem<>nil) and (xoutlen>=1);
+
    end;
+
 end;
 
-function tstr9.fastinfo(xpos:longint;var xmem:pdlbyte;var xmin,xmax:longint):boolean;//15feb2024
+function tstr9.fastinfo32(xpos:longint32;var xmem:pdlbyte;var xmin,xmax:longint32):boolean;//15feb2024
 var
    i:longint;
 begin
+
 //defaults
-result:=false;
-xmem:=nil;
-xmin:=-1;
-xmax:=-2;
+result    :=false;
+xmem      :=nil;
+xmin      :=-1;
+xmax      :=-2;
+
 //get
 if (xpos>=0) and (xpos<ilen) then
    begin
+
    //set
-   i:=xpos div iblocksize;
-   xmem:=ilist.ptr[i];
-   xmin:=i*iblocksize;
-   xmax:=xmin+iblocksize-1;
+   i      :=xpos div iblocksize;
+   xmem   :=ilist.ptr[i];
+   xmin   :=i*iblocksize;
+   xmax   :=xmin+iblocksize-1;
+
    //.limit max for last block using datastream length - 15feb2024
-   if (xmax>=ilen) then xmax:=ilen-1;
+   if (xmax>=ilen) then xmax:=restrict32(ilen-1);
+
    //successful
    result:=(xmem<>nil);
+
    end;
+
 end;
 
-function tstr9.fastadd(var x:array of byte;xsize:longint):longint;
+function tstr9.fastinfo64(xpos:longint64;var xmem:pdlbyte;var xmin,xmax:longint64):boolean;//15feb2024
+var
+   i:longint64;
 begin
-result:=fastwrite(x,xsize,ilen);
+
+//defaults
+result    :=false;
+xmem      :=nil;
+xmin      :=-1;
+xmax      :=-2;
+
+//get
+if (xpos>=0) and (xpos<ilen) then
+   begin
+
+   {$ifdef 64bit}
+
+   i     :=xpos div iblocksize;
+   xmem  :=ilist.ptr[i];
+
+   {$else}
+
+   i     :=div64(xpos,iblocksize);
+   xmem  :=ilist.ptr[ int64__3264(i) ];
+
+   {$endif}
+
+   xmin  :=i*iblocksize;
+   xmax  :=xmin+iblocksize-1;
+
+   //.limit max for last block using datastream length - 15feb2024
+   if (xmax>=ilen) then xmax:=ilen-1;
+
+   //successful
+   result:=(xmem<>nil);
+
+   end;
+
 end;
 
-function tstr9.fastwrite(var x:array of byte;xsize,xpos:longint):longint;
+function tstr9.fastadd32(const x:array of byte;const xsize:longint32):longint32;
+begin
+result:=fastwrite32(x,xsize,ilen);
+end;
+
+function tstr9.fastwrite32(const x:array of byte;const xsize:longint32;xpos:longint64):longint32;
 label
    skipend;
 var
-   vmin,vmax,i:longint;
+   i:longint32;
+   vmin,vmax:longint64;
    vmem:pdlbyte;
 begin
+
 //defaults
 result:=0;
 
@@ -24737,24 +26637,34 @@ if not minlen(xpos+xsize) then goto skipend;
 //get
 for i:=0 to (xsize-1) do
 begin
-if (xpos>vmax) and (not fastinfo(xpos,vmem,vmin,vmax)) then goto skipend;
+
+if (xpos>vmax) and (not fastinfo64(xpos,vmem,vmin,vmax)) then goto skipend;
+
+{$ifdef 64bit}
 vmem[xpos-vmin]:=x[i];
+{$else}
+vmem[ int64__3264(xpos-vmin) ]:=x[i];
+{$endif}
+
 //.inc
-inc(xpos);
+inc64(xpos,1);
 inc(result);
+
 end;//i
 
 skipend:
 except;end;
 end;
 
-function tstr9.fastread(var x:array of byte;xsize,xpos:longint):longint;
+function tstr9.fastread32(var x:array of byte;const xsize:longint32;xpos:longint64):longint32;
 label
    skipend;
 var
-   vmin,vmax,i:longint;
+   i:longint32;
+   vmin,vmax:longint64;
    vmem:pdlbyte;
 begin
+
 //defaults
 result:=0;
 
@@ -24769,25 +26679,55 @@ vmax:=-1;
 //get
 for i:=0 to (xsize-1) do
 begin
-if (xpos>vmax) and (not fastinfo(xpos,vmem,vmin,vmax)) then goto skipend;
+
+if (xpos>vmax) and (not fastinfo64(xpos,vmem,vmin,vmax)) then goto skipend;
+
 if (xpos<ilen) then
    begin
+
+   {$ifdef 64bit}
    x[i]:=vmem[xpos-vmin];
+   {$else}
+   x[i]:=vmem[ int64__3264(xpos-vmin) ];
+   {$endif}
+
    inc(result);
+
    end
 else break;
+
 //.inc
-inc(xpos);
+inc64(xpos,1);
+
 end;//i
 
 skipend:
 except;end;
 end;
 
-function tstr9.getv(xpos:longint):byte;
+function tstr9.getv(xpos:longint64):byte;
 begin
-if (xpos<=igetmax) and (xpos>=igetmin)         then result:=igetmem[xpos-igetmin]
-else if fastinfo(xpos,igetmem,igetmin,igetmax) then result:=igetmem[xpos-igetmin]
+
+if (xpos<=igetmax) and (xpos>=igetmin) then
+   begin
+
+   {$ifdef 64bit}
+   result:=igetmem[xpos-igetmin];
+   {$else}
+   result:=igetmem[ int64__3264(xpos-igetmin) ];
+   {$endif}
+
+   end
+else if fastinfo64(xpos,igetmem,igetmin,igetmax) then
+   begin
+
+   {$ifdef 64bit}
+   result:=igetmem[xpos-igetmin];
+   {$else}
+   result:=igetmem[ int64__3264(xpos-igetmin) ];
+   {$endif}
+
+   end
 else
    begin
    result :=0;
@@ -24796,33 +26736,53 @@ else
    end;
 end;
 
-procedure tstr9.setv(xpos:longint;v:byte);
+procedure tstr9.setv(xpos:longint64;v:byte);
 begin
-if (xpos<=isetmax) and (xpos>=isetmin)         then isetmem[xpos-isetmin]:=v
-else if fastinfo(xpos,isetmem,isetmin,isetmax) then isetmem[xpos-isetmin]:=v
+
+if (xpos<=isetmax) and (xpos>=isetmin) then
+   begin
+
+   {$ifdef 64bit}
+   isetmem[xpos-isetmin]:=v;
+   {$else}
+   isetmem[ int64__3264(xpos-isetmin) ]:=v;
+   {$endif}
+
+   end
+else if fastinfo64(xpos,isetmem,isetmin,isetmax) then
+   begin
+
+   {$ifdef 64bit}
+   isetmem[xpos-isetmin]:=v;
+   {$else}
+   isetmem[ int64__3264(xpos-isetmin) ]:=v;
+   {$endif}
+
+   end
 else
    begin
    isetmin:=-1;
    isetmax:=-2;//off
    end;
+
 end;
 
-function tstr9.getv1(xpos:longint):byte;
+function tstr9.getv1(xpos:longint64):byte;
 begin
 result:=getv(xpos-1);
 end;
 
-procedure tstr9.setv1(xpos:longint;v:byte);
+procedure tstr9.setv1(xpos:longint64;v:byte);
 begin
 setv(xpos-1,v);
 end;
 
-function tstr9.getchar(xpos:longint):char;
+function tstr9.getchar(xpos:longint64):char;
 begin
 result:=char(getv(xpos));
 end;
 
-procedure tstr9.setchar(xpos:longint;v:char);
+procedure tstr9.setchar(xpos:longint64;v:char);
 begin
 setv(xpos,byte(v));
 end;
@@ -24838,116 +26798,148 @@ ilen:=0;
 result:=true;
 end;
 
-function tstr9.softclear2(xmaxlen:longint):boolean;
+function tstr9.softclear2(xmaxlen:longint64):boolean;
 begin
 if (ilen>xmaxlen) then setlen(xmaxlen);
 ilen:=0;
 result:=true;
 end;
 
-function tstr9.setlen(x:longint):boolean;
+function tstr9.setlen(x:longint64):boolean;
 var//Note: x is new length
-   a:pointer;
-   p,xnewlen:longint;
+   a:pointer3264;
+   p:longint3264;
+   xnewlen:longint64;
 begin
+
 //defaults
 result:=false;
+
 //range
-xnewlen:=frcmin32(x,0);
+xnewlen:=frcmin64(x,0);
+
 //check
 if (xnewlen<=0) then
    begin
+
    if (ilen<=0) and (ilen2<=0) then exit;
+
    end
 else if (xnewlen=ilen) then exit;
 
 try
 //reset cache vars
-igetmin:=-1;//off
-igetmax:=-2;//off
-isetmin:=-1;//off
-isetmax:=-2;//off
+igetmin  :=-1;//off
+igetmax  :=-2;//off
+isetmin  :=-1;//off
+isetmax  :=-2;//off
 
 try
+
 //clear
 if (xnewlen<=0) and ((ilen2>=1) or (ilist.count>=1)) then
    begin
-//   lastlog:=lastlog+'clear: '+k64(ilen2)+'..'+k64(xnewlen)+rcode;//xxxxxxxxxxxxxxxx
-   for p:=(ilist.count-1) downto 0 do if (ilist.ptr[p]<>nil) then
+
+   for p:=int64__3264(ilist.count-1) downto 0 do if (ilist.ptr[p]<>nil) then
       begin
-      a:=ilist.ptr[p];
-      ilist.ptr[p]:=nil;//set to nil before freeing object
-      block__freeb(a);
+
+      a             :=ilist.ptr[p];
+      ilist.ptr[p]  :=nil;//set to nil before freeing object
+
+      block64__freeb(a);
+
       end;
+
    ilist.clear;
+
    end
 //more
 else if (xnewlen>=1) and (xnewlen>ilen2) then
    begin
-//   lastlog:=lastlog+'more: '+k64(ilen2)+'..'+k64(xnewlen)+rcode;//xxxxxxxxxxxxxxxx
-   ilist.mincount((xnewlen div iblocksize)+1);
-   for p:=(ilen2 div iblocksize) to (xnewlen div iblocksize) do if (ilist.ptr[p]=nil) then ilist.ptr[p]:=block__new;//keep going even if out-of-memory
+
+   ilist.minSlotcount(  restrict32( div64(xnewlen,iblocksize) + 1 ) );
+
+   for p:=int64__3264( div64(ilen2,iblocksize) ) to int64__3264( div64(xnewlen,iblocksize) ) do if (ilist.ptr[p]=nil) then ilist.ptr[p]:=block64__new;//keep going even if out-of-memory
+
    end
 //less
 else if (ilen2>=1) and (xnewlen<ilen2) then
    begin
-//   lastlog:=lastlog+'less: '+k64(ilen2)+'..'+k64(xnewlen)+rcode;//xxxxxxxxxxxxxxxx
-   for p:=(ilen2 div iblocksize) downto ((xnewlen div iblocksize)+1) do if (ilist.ptr[p]<>nil) then
+
+   for p:=int64__3264( div64(ilen2,iblocksize) ) downto int64__3264( div64(xnewlen,iblocksize) + 1 ) do if (ilist.ptr[p]<>nil) then
       begin
-      a:=ilist.ptr[p];
-      ilist.ptr[p]:=nil;//set to nil before freeing object
-      block__freeb(a);
+
+      a             :=ilist.ptr[p];
+      ilist.ptr[p]  :=nil;//set to nil before freeing object
+
+      block64__freeb(a);
+
       end;
+
    end;
 
 except;end;
 
 //set
-ilen2:=xnewlen;
-ilen:=xnewlen;
-if (ilen2<=0) then idatalen:=0 else idatalen:=((xnewlen div iblocksize)+1)*iblocksize;//23feb2024: corrected
-imem:=idatalen + ilist.mem;
+ilen2  :=xnewlen;
+ilen   :=xnewlen;
+if (ilen2<=0) then idatalen:=0 else idatalen:=( div64(xnewlen,iblocksize) + 1 )*iblocksize;//23feb2024: corrected
+imem   :=idatalen + ilist.mem;
 
 //successful
 result:=true;
 except;end;
 end;
 
-function tstr9.mem_predict(xlen:comp):comp;
+function tstr9.mem_predict(xlen:longint64):longint64;
 begin
+
 xlen:=frcmin64(xlen,0);
-if (xlen<=0) then result:=0 else result:=mult64( add64( div64(xlen,iblocksize) ,1) ,iblocksize);
+
+if (xlen<=0)    then result:=0 else result:=mult64( add64( div64(xlen,iblocksize) ,1) ,iblocksize);
+
 if (ilist<>nil) then result:=add64(result, ilist.mem_predict(add64(div64(xlen,iblocksize),1)) );
+
 end;
 
-function tstr9.minlen(x:longint):boolean;//atleast this length, 29feb2024: updated
+function tstr9.minlen(const x:longint64):boolean;//atleast this length, 14dec2025, 29feb2024: updated
 begin
+
 //defaults
 result:=true;
+
 //get
 if (x>ilen) then
    begin
+
    //reset cache vars
    igetmin:=-1;//off
    igetmax:=-2;//off
    isetmin:=-1;//off
    isetmax:=-2;//off
+
    //enlarge
    if (x>idatalen) then result:=setlen(x) else ilen:=x;
+
    end;
+
 end;
 
-function tstr9.xshiftup(spos,slen:longint):boolean;//29feb2024: fixed min range
+function tstr9.xshiftup(spos,slen:longint64):boolean;//29feb2024: fixed min range
 label
    skipend;
 var
-   smin,dmin,smax,dmax,xlen,p:longint;
+   p:longint3264;
+   smin,dmin,smax,dmax,xlen:longint64;
    smem,dmem:pdlbyte;
-   v:byte;
 begin
+
 //defaults
 result:=false;
+
 try
+
+//init
 xlen:=ilen;
 
 //check
@@ -24967,12 +26959,18 @@ dmax:=-2;
 dmin:=-1;
 
 //get
-for p:=(xlen-1) downto (spos+slen) do
+for p:=int64__3264(xlen-1) downto int64__3264(spos+slen) do
 begin
-if (((p-slen)<smin) or ((p-slen)>smax)) and (not block__fastinfo(@self,p-slen,smem,smin,smax)) then goto skipend;
-if ((p<dmin) or (p>dmax))               and (not block__fastinfo(@self,p,     dmem,dmin,dmax)) then goto skipend;
-v:=smem[p-slen-smin];
-dmem[p-dmin]:=v;
+
+if (((p-slen)<smin) or ((p-slen)>smax)) and (not block64__fastinfo64(@self,p-slen,smem,smin,smax)) then goto skipend;
+if ((p<dmin) or (p>dmax))               and (not block64__fastinfo64(@self,p,     dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
+dmem[p-dmin]:=smem[p-slen-smin];
+{$else}
+dmem[ int64__3264(p-dmin) ]:=smem[ int64__3264(p-slen-smin) ];
+{$endif}
+
 end;//p
 
 //successful
@@ -24982,44 +26980,46 @@ except;end;
 end;
 
 //object support ---------------------------------------------------------------
-function tstr9.add(x:pobject):boolean;
+function tstr9.add(const x:pobject):boolean;
 begin
-result:=ins2(x,ilen,0,max32);
+result:=ins2(x,ilen,0,maxslot8);
 end;
 
-function tstr9.addb(x:tobject):boolean;
+function tstr9.addb(const x:tobject):boolean;
 begin
 result:=add(@x);
 end;
 
-function tstr9.add2(x:pobject;xfrom,xto:longint):boolean;
+function tstr9.add2(const x:pobject;const xfrom,xto:longint64):boolean;
 begin
 result:=ins2(x,ilen,xfrom,xto);
 end;
 
-function tstr9.add3(x:pobject;xfrom,xlen:longint):boolean;
+function tstr9.add3(const x:pobject;const xfrom,xlen:longint64):boolean;
 begin
 if (xlen>=1) then result:=ins2(x,ilen,xfrom,xfrom+xlen-1) else result:=true;
 end;
 
-function tstr9.add31(x:pobject;xfrom1,xlen:longint):boolean;
+function tstr9.add31(const x:pobject;const xfrom1,xlen:longint64):boolean;
 begin
 if (xlen>=1) then result:=ins2(x,ilen,(xfrom1-1),(xfrom1-1)+xlen-1) else result:=true;
 end;
 
-function tstr9.ins(x:pobject;xpos:longint):boolean;
+function tstr9.ins(const x:pobject;const xpos:longint64):boolean;
 begin
-result:=ins2(x,xpos,0,max32);
+result:=ins2(x,xpos,0,maxslot8);
 end;
 
-function tstr9.ins2(x:pobject;xpos,xfrom,xto:longint):boolean;//79% native speed of tstr8.ins2 which uses a single block of memory
+function tstr9.ins2(const x:pobject;xpos,xfrom,xto:longint64):boolean;//79% native speed of tstr8.ins2 which uses a single block of memory
 label
    skipend;
 var
-   smin,dmin,smax,dmax,slen,dlen,p,int1:longint;
+   p:longint3264;
+   smin,dmin,smax,dmax,slen,dlen,int1:longint64;
    smem,dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
@@ -25033,21 +27033,23 @@ if not pok(x) then
 
 //init
 slen:=ilen;
-xpos:=frcrange32(xpos,0,slen);//allow to write past end
+xpos:=frcrange64(xpos,0,slen);//allow to write past end
 
 //check
 int1:=str__len(x);
+
 if (int1=0) then//06jul2021
    begin
    result:=true;
    goto skipend;
    end;
+
 if (int1<=0) or (xfrom>xto) or (xto<0) or (xfrom>=int1) then goto skipend;
 
 //init
-xfrom:=frcrange32(xfrom,0,int1-1);
-xto:=frcrange32(xto,xfrom,int1-1);
-dlen:=ilen+(xto-xfrom+1);//always means to increase the size
+xfrom  :=frcrange64(xfrom,0,int1-1);
+xto    :=frcrange64(xto,xfrom,int1-1);
+dlen   :=ilen+(xto-xfrom+1);//always means to increase the size
 
 //check
 if not minlen(dlen) then goto skipend;
@@ -25058,58 +27060,83 @@ if (xpos<slen) and (not xshiftup(xpos,xto-xfrom+1)) then goto skipend;
 //copy + size
 if (x^ is tstr8) then
    begin
+
    //init
    dmax:=-2;
+
    //get
    smem:=(x^ as tstr8).core;
-   for p:=xfrom to xto do
+
+   for p:=int64__3264(xfrom) to int64__3264(xto) do
    begin
+
    v:=smem[p];
-   if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+   if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+   {$ifdef 64bit}
    dmem[xpos+p-xfrom-dmin]:=v;
+   {$else}
+   dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=v;
+   {$endif}
+
    end;//p
+
    end
 else if (x^ is tstr9) then
    begin
+
    //init
    smax:=-2;
    smin:=-1;
    dmax:=-2;
    dmin:=-1;
+
    //get
-   for p:=xfrom to xto do
+   for p:=int64__3264(xfrom) to int64__3264(xto) do
    begin
-   if (p>smax)              and (not block__fastinfo(x,p,smem,smin,smax))                then goto skipend;
-   if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
-   v:=smem[p-smin];
-   dmem[xpos+p-xfrom-dmin]:=v;
+
+   if (p>smax)              and (not block64__fastinfo64(x,p,smem,smin,smax))                then goto skipend;
+   if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+   {$ifdef 64bit}
+   dmem[xpos+p-xfrom-dmin]:=smem[p-smin];
+   {$else}
+   dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=smem[ int64__3264(p-smin) ];
+   {$endif}
+
    end;//p
+
    end;
 
 //successful
 result:=true;
 skipend:
 except;end;
-try;str__autofree(x);except;end;
+
+//free
+str__autofree(x);
+
 end;
 
-function tstr9.owr(x:pobject;xpos:longint):boolean;//overwrite -> enlarge if required - 27apr2021, 01oct2020
+function tstr9.owr(const x:pobject;const xpos:longint64):boolean;//overwrite -> enlarge if required - 27apr2021, 01oct2020
 begin
-result:=owr2(x,xpos,0,max32);
+result:=owr2(x,xpos,0,maxslot8);
 end;
 
-function tstr9.owr2(x:pobject;xpos,xfrom,xto:longint):boolean;//22apr2022
+function tstr9.owr2(const x:pobject;xpos,xfrom,xto:longint64):boolean;//22apr2022
 label
    skipend;
 var
-   smin,dmin,smax,dmax,dlen,p,int1:longint;
+   p:longint3264;
+   smin,dmin,smax,dmax,dlen,int1:longint64;
    smem,dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if not pok(x) then
    begin
@@ -25117,11 +27144,13 @@ if not pok(x) then
    exit;
    end;
 
+try
 //init
-xpos:=frcmin32(xpos,0);
+xpos:=frcmin64(xpos,0);
 
 //check
 int1:=str__len(x);
+
 if (int1<=0) or (xfrom>xto) or (xto<0) or (xfrom>=int1) then
    begin
    result:=true;//27apr2021
@@ -25129,9 +27158,9 @@ if (int1<=0) or (xfrom>xto) or (xto<0) or (xfrom>=int1) then
    end;
 
 //init
-xfrom:=frcrange32(xfrom,0,int1-1);
-xto:=frcrange32(xto,xfrom,int1-1);
-dlen:=xpos+(xto-xfrom+1);
+xfrom  :=frcrange64(xfrom,0,int1-1);
+xto    :=frcrange64(xto,xfrom,int1-1);
+dlen   :=xpos+(xto-xfrom+1);
 
 //check
 if not minlen(dlen) then goto skipend;
@@ -25139,88 +27168,114 @@ if not minlen(dlen) then goto skipend;
 //copy + size
 if (x^ is tstr8) then
    begin
+
    if ((x^ as tstr8).pbytes<>nil) then
       begin
+
       //init
       dmax:=-2;
+
       //get
       smem:=(x^ as tstr8).core;
-      for p:=xfrom to xto do
+
+      for p:=int64__3264(xfrom) to int64__3264(xto) do
       begin
+
       v:=smem[p];
-      if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+      if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+      {$ifdef 64bit}
       dmem[xpos+p-xfrom-dmin]:=v;
+      {$else}
+      dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=v;
+      {$endif}
+
       end;//p
+
       end;
+
    end
 else if (x^ is tstr9) then
    begin
+
    //init
    smax:=-2;
    dmax:=-2;
+
    //get
-   for p:=xfrom to xto do
+   for p:=int64__3264(xfrom) to int64__3264(xto) do
    begin
-   if (p>smax)              and (not block__fastinfo(x,p,smem,smin,smax))              then goto skipend;
-   if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
-   v:=smem[p-smin];
-   dmem[xpos+p-xfrom-dmin]:=v;
+
+   if (p>smax)              and (not block64__fastinfo64(x,p,smem,smin,smax))              then goto skipend;
+   if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+   {$ifdef 64bit}
+   dmem[xpos+p-xfrom-dmin]:=smem[p-smin];
+   {$else}
+   dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=smem[ int64__3264(p-smin) ];
+   {$endif}
+
    end;//p
+
    end;
 
 //successful
 result:=true;
 skipend:
 except;end;
-try;str__autofree(x);except;end;
+
+//free
+str__autofree(x);
+
 end;
 
 //array support ----------------------------------------------------------------
 function tstr9.aadd(const x:array of byte):boolean;
 begin
-result:=ains2(x,ilen,0,max32);
+result:=ains2(x,ilen,0,maxslot8);
 end;
 
-function tstr9.aadd1(const x:array of byte;xpos1,xlen:longint):boolean;
+function tstr9.aadd1(const x:array of byte;const xpos1,xlen:longint64):boolean;
 begin
 result:=ains2(x,ilen,xpos1-1,xpos1-1+xlen);
 end;
 
-function tstr9.aadd2(const x:array of byte;xfrom,xto:longint):boolean;
+function tstr9.aadd2(const x:array of byte;const xfrom,xto:longint64):boolean;
 begin
 result:=ains2(x,ilen,xfrom,xto);
 end;
 
-function tstr9.ains(const x:array of byte;xpos:longint):boolean;
+function tstr9.ains(const x:array of byte;const xpos:longint64):boolean;
 begin
-result:=ains2(x,xpos,0,max32);
+result:=ains2(x,xpos,0,maxslot8);
 end;
 
-function tstr9.ains2(const x:array of byte;xpos,xfrom,xto:longint):boolean;
+function tstr9.ains2(const x:array of byte;xpos,xfrom,xto:longint64):boolean;
 label
    skipend;
 var
-   dmin,dmax,slen,dlen,p:longint;
+   p:longint3264;
+   dmin,dmax,slen,dlen:longint64;
    dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
 try
-
 //check
 if (xto<xfrom) then goto skipend;
 
 //range
-xfrom:=frcrange32(xfrom,low(x),high(x));
-xto  :=frcrange32(xto  ,low(x),high(x));
+xfrom   :=frcrange64(xfrom,low(x),high(x));
+xto     :=frcrange64(xto  ,low(x),high(x));
 if (xto<xfrom) then goto skipend;
 
 //init
-xpos:=frcrange32(xpos,0,ilen);//allow to write past end
-slen:=ilen;
-dlen:=slen+(xto-xfrom+1);
+xpos    :=frcrange64(xpos,0,ilen);//allow to write past end
+slen    :=ilen;
+dlen    :=slen+(xto-xfrom+1);
 
 //check
 if not minlen(dlen) then goto skipend;
@@ -25230,11 +27285,19 @@ if (xpos<slen) and (not xshiftup(xpos,xto-xfrom+1)) then goto skipend;
 
 //copy + size
 dmax:=-2;
-for p:=xfrom to xto do
+
+for p:=int64__3264(xfrom) to int64__3264(xto) do
 begin
+
 v:=x[p];
-if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
 dmem[xpos+p-xfrom-dmin]:=v;
+{$else}
+dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=v;
+{$endif}
+
 end;//p
 
 //successful
@@ -25243,40 +27306,43 @@ skipend:
 except;end;
 end;
 
-function tstr9.padd(x:pdlbyte;xsize:longint):boolean;//15feb2024
+function tstr9.padd(const x:pdlbyte;const xsize:longint64):boolean;//15feb2024
 begin
 if (xsize<=0) then result:=true else result:=pins2(x,xsize,ilen,0,xsize-1);
 end;
 
-function tstr9.pins2(x:pdlbyte;xcount,xpos,xfrom,xto:longint):boolean;
+function tstr9.pins2(const x:pdlbyte;xcount,xpos,xfrom,xto:longint64):boolean;
 label
    skipend;
 var
-   dmin,dmax,slen,dlen,p:longint;
+   p:longint3264;
+   dmin,dmax,slen,dlen:longint64;
    dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 if (x=nil) or (xcount<=0) then
    begin
    result:=true;
    exit;
    end;
+
 if (xto<xfrom) then exit;
 
+try
 //range
-xfrom:=frcrange32(xfrom,0,xcount-1);
-xto  :=frcrange32(xto  ,0,xcount-1);
+xfrom   :=frcrange64(xfrom,0,xcount-1);
+xto     :=frcrange64(xto  ,0,xcount-1);
 if (xto<xfrom) then exit;
 
 //init
-xpos:=frcrange32(xpos,0,ilen);//allow to write past end
-slen:=ilen;
-dlen:=slen+(xto-xfrom+1);
+xpos    :=frcrange64(xpos,0,ilen);//allow to write past end
+slen    :=ilen;
+dlen    :=slen+(xto-xfrom+1);
 minlen(dlen);
 
 //shift up
@@ -25285,11 +27351,18 @@ if (xpos<slen) and (not xshiftup(xpos,xto-xfrom+1)) then goto skipend;
 //copy + size
 dmax:=-2;
 
-for p:=xfrom to xto do
+for p:=int64__3264(xfrom) to int64__3264(xto) do
 begin
+
 v:=x[p];
-if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
 dmem[xpos+p-xfrom-dmin]:=v;
+{$else}
+dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=v;
+{$endif}
+
 end;//p
 
 //successful
@@ -25301,36 +27374,37 @@ end;
 //string support ---------------------------------------------------------------
 function tstr9.sadd(const x:string):boolean;
 begin
-result:=sins2(x,ilen,0,max32);
+result:=sins2(x,ilen,0,maxslot8);
 end;
 
-function tstr9.sadd2(const x:string;xfrom,xto:longint):boolean;
+function tstr9.sadd2(const x:string;const xfrom,xto:longint64):boolean;
 begin
 result:=sins2(x,ilen,xfrom,xto);
 end;
 
-function tstr9.sadd3(const x:string;xfrom,xlen:longint):boolean;
+function tstr9.sadd3(const x:string;const xfrom,xlen:longint64):boolean;
 begin
 if (xlen>=1) then result:=sins2(x,ilen,xfrom,xfrom+xlen-1) else result:=true;
 end;
 
-function tstr9.sins(const x:string;xpos:longint):boolean;
+function tstr9.sins(const x:string;const xpos:longint64):boolean;
 begin
-result:=sins2(x,xpos,0,max32);
+result:=sins2(x,xpos,0,maxslot8);
 end;
 
-function tstr9.sins2(const x:string;xpos,xfrom,xto:longint):boolean;
+function tstr9.sins2(const x:string;xpos,xfrom,xto:longint64):boolean;
 label
    skipend;
 var//Always zero based for "xfrom" and "xto"
-   dmin,dmax,xlen,slen,dlen,p:longint;
+   p:longint3264;
+   dmin,dmax,xlen,slen,dlen:longint64;
    dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
-try
 //check
 xlen:=low__len(x);
 if (xlen<=0) then
@@ -25342,15 +27416,16 @@ if (xlen<=0) then
 //check #2
 if (xto<xfrom) then exit;
 
+try
 //range
-xfrom:=frcrange32(xfrom,0,xlen-1);
-xto  :=frcrange32(xto  ,0,xlen-1);
+xfrom   :=frcrange64(xfrom,0,xlen-1);
+xto     :=frcrange64(xto  ,0,xlen-1);
 if (xto<xfrom) then exit;
 
 //init
-xpos:=frcrange32(xpos,0,ilen);//allow to write past end
-slen:=ilen;
-dlen:=slen+(xto-xfrom+1);
+xpos    :=frcrange64(xpos,0,ilen);//allow to write past end
+slen    :=ilen;
+dlen    :=slen+(xto-xfrom+1);
 
 //check
 if not minlen(dlen) then goto skipend;
@@ -25360,11 +27435,19 @@ if (xpos<slen) and (not xshiftup(xpos,xto-xfrom+1)) then goto skipend;
 
 //copy + size
 dmax:=-2;
-for p:=xfrom to xto do
+
+for p:=int64__3264(xfrom) to int64__3264(xto) do
 begin
+
 v:=byte(x[p+stroffset]);//force 8bit conversion from unicode to 8bit binary - 02may2020
-if ((xpos+p-xfrom)>dmax) and (not block__fastinfo(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+if ((xpos+p-xfrom)>dmax) and (not block64__fastinfo64(@self,xpos+p-xfrom,dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
 dmem[xpos+p-xfrom-dmin]:=v;
+{$else}
+dmem[ int64__3264(xpos+p-xfrom-dmin) ]:=v;
+{$endif}
+
 end;//p
 
 //successful
@@ -25373,53 +27456,69 @@ skipend:
 except;end;
 end;
 
-function tstr9.same(x:pobject):boolean;
+function tstr9.same(const x:pobject):boolean;
 begin
 result:=same2(0,x);
 end;
 
-function tstr9.same2(xfrom:longint;x:pobject):boolean;
+function tstr9.same2(xfrom:longint64;const x:pobject):boolean;
 label
    skipend;
 var
-   i,p:longint;
+   p:longint3264;
+   i:longint64;
 begin
+
 //defaults
 result:=false;
 
 try
 //check
 if (x=nil) or (x^=nil) then exit;
+
 //get
 if str__lock(x) then
    begin
+
    //init
    if (xfrom<0) then xfrom:=0;
+
    //get
    if (x^ is tstr8) and (str__len(x)>=1) and ((x^ as tstr8).pbytes<>nil) then
       begin
-      //get
-      for p:=0 to (str__len(x)-1) do
+
+      for p:=0 to int64__3264(str__len(x)-1) do
       begin
+
       i:=xfrom+p;
       if (i>=ilen) or (getv(i)<>(x^ as tstr8).pbytes[p]) then goto skipend;
+
       end;//p
+
       end
    else if (x^ is tstr9) and (str__len(x)>=1) then
       begin
-      //get
-      for p:=0 to (str__len(x)-1) do
+
+      for p:=0 to int64__3264(str__len(x)-1) do
       begin
+
       i:=xfrom+p;
       if (i>=ilen) or (getv(i)<>(x^ as tstr9).bytes[p]) then goto skipend;
+
       end;//p
+
       end;
+
    //successful
    result:=true;
    end;
+
 skipend:
 except;end;
-try;str__uaf(x);except;end;
+
+//free
+str__uaf(x);
+
 end;
 
 function tstr9.asame(const x:array of byte):boolean;
@@ -25427,123 +27526,160 @@ begin
 result:=asame3(0,x,true);
 end;
 
-function tstr9.asame2(xfrom:longint;const x:array of byte):boolean;
+function tstr9.asame2(const xfrom:longint64;const x:array of byte):boolean;
 begin
 result:=asame3(xfrom,x,true);
 end;
 
-function tstr9.asame3(xfrom:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+function tstr9.asame3(const xfrom:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
 begin
 result:=asame4(xfrom,low(x),high(x),x,xcasesensitive);
 end;
 
-function tstr9.asame4(xfrom,xmin,xmax:longint;const x:array of byte;xcasesensitive:boolean):boolean;
+function tstr9.asame4(xfrom,xmin,xmax:longint64;const x:array of byte;const xcasesensitive:boolean):boolean;
 label
    skipend;
 var
-   i,p:longint;
+   p:longint3264;
+   i:longint64;
    sv,v:byte;
 begin
+
+//defaults
 result:=false;
 
-try
 //check
 if (sizeof(x)=0) or (ilen=0) then exit;
+
+try
 //range
 if (xfrom<0) then xfrom:=0;
+
 //init
-xmin:=frcrange32(xmin,low(x),high(x));
-xmax:=frcrange32(xmax,low(x),high(x));
+xmin   :=frcrange64(xmin,low(x),high(x));
+xmax   :=frcrange64(xmax,low(x),high(x));
 if (xmin>xmax) then exit;
+
 //get
-for p:=xmin to xmax do
+for p:=int64__3264(xmin) to int64__3264(xmax) do
 begin
+
 i:=xfrom+(p-xmin);
-if (i>=ilen) or (i<0) then goto skipend//22aug2020
+
+if (i>=ilen) or (i<0)                      then goto skipend//22aug2020
 else if xcasesensitive and (x[p]<>getv(i)) then goto skipend
 else
    begin
-   sv:=x[p];
-   v:=getv(i);
+
+   sv  :=x[p];
+   v   :=getv(i);
+
    if (sv>=65) and (sv<=90) then inc(sv,32);
    if (v>=65)  and (v<=90)  then inc(v,32);
    if (sv<>v) then goto skipend;
+
    end;
+
 end;//p
+
 //successful
 result:=true;
 skipend:
 except;end;
 end;
 
-function tstr9.del3(xfrom,xlen:longint):boolean;//06feb2024
+function tstr9.del3(const xfrom,xlen:longint64):boolean;//06feb2024
 begin
 result:=del(xfrom,xfrom+xlen-1);
 end;
 
-function tstr9.del(xfrom,xto:longint):boolean;//06feb2024
+function tstr9.del(xfrom,xto:longint64):boolean;//06feb2024
 label
    skipend;
 var
-   smin,dmin,smax,dmax,p,int1:longint;
+   p:longint3264;
+   smin,dmin,smax,dmax,int1:longint64;
    smem,dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=true;//pass-thru
 
 try
 //check
 if (ilen<=0) or (xfrom>xto) or (xto<0) or (xfrom>=ilen) then exit;
+
 //get
-if frcrange2(xfrom,0,ilen-1) and frcrange2(xto,xfrom,ilen-1) then
+if frcrange642(xfrom,0,ilen-1) and frcrange642(xto,xfrom,ilen-1) then
    begin
+
    //shift down
    int1:=xto+1;
+
    if (int1<ilen) then
       begin
+
       //init
       smax:=-2;
       dmax:=-2;
-      //get
-      for p:=int1 to (ilen-1) do
-      begin
-      if (p>smax) and (not block__fastinfo(@self,p,smem,smin,smax)) then goto skipend;
-      v:=smem[p-smin];
 
-      if ((xfrom+p-int1)>dmax) and (not block__fastinfo(@self,xfrom+p-int1,dmem,dmin,dmax)) then goto skipend;
+      //get
+      for p:=int64__3264(int1) to int64__3264(ilen-1) do
+      begin
+
+      if (p>smax) and (not block64__fastinfo64(@self,p,smem,smin,smax)) then goto skipend;
+
+      {$ifdef 64bit}
+      v:=smem[p-smin];
+      {$else}
+      v:=smem[ int64__3264(p-smin) ];
+      {$endif}
+
+      if ((xfrom+p-int1)>dmax) and (not block64__fastinfo64(@self,xfrom+p-int1,dmem,dmin,dmax)) then goto skipend;
+
+      {$ifdef 64bit}
       dmem[xfrom+p-int1-dmin]:=v;
+      {$else}
+      dmem[ int64__3264(xfrom+p-int1-dmin) ]:=v;
+      {$endif}
+
+
       end;//p
+
       end;
+
    //resize
    result:=setlen(ilen-(xto-xfrom+1));
+
    end;
+
 skipend:
 except;end;
 end;
 
 //add support ------------------------------------------------------------------
-function tstr9.addcmp8(xval:comp):boolean;
+function tstr9.addcmp8(const xval:comp):boolean;
 begin
 result:=aadd(tcmp8(xval).bytes);
 end;
 
-function tstr9.addcur8(xval:currency):boolean;
+function tstr9.addcur8(const xval:currency):boolean;
 begin
 result:=aadd(tcur8(xval).bytes);
 end;
 
-function tstr9.addRGBA4(r,g,b,a:byte):boolean;
+function tstr9.addRGBA4(const r,g,b,a:byte):boolean;
 begin
 result:=aadd([r,g,b,a]);
 end;
 
-function tstr9.addRGB3(r,g,b:byte):boolean;
+function tstr9.addRGB3(const r,g,b:byte):boolean;
 begin
 result:=aadd([r,g,b]);
 end;
 
-function tstr9.addint4(xval:longint):boolean;
+function tstr9.addint4(const xval:longint):boolean;
 begin
 result:=aadd(tint4(xval).bytes);
 end;
@@ -25554,7 +27690,7 @@ xval:=low__intr(xval);//swap round
 result:=aadd(tint4(xval).bytes);
 end;
 
-function tstr9.addint3(xval:longint):boolean;
+function tstr9.addint3(const xval:longint):boolean;
 var
    r,g,b:byte;
 begin
@@ -25562,7 +27698,7 @@ low__int3toRGB(xval,r,g,b);
 result:=aadd([r,g,b]);
 end;
 
-function tstr9.addwrd2(xval:word):boolean;
+function tstr9.addwrd2(const xval:word):boolean;
 begin
 result:=aadd(twrd2(xval).bytes);//16aug2020
 end;
@@ -25573,7 +27709,7 @@ xval:=low__wrdr(xval);//swap round
 result:=aadd(twrd2(xval).bytes);//16aug2020
 end;
 
-function tstr9.addsmi2(xval:smallint):boolean;//01aug2021
+function tstr9.addsmi2(const xval:smallint):boolean;//01aug2021
 var
    a:twrd2;
 begin
@@ -25581,38 +27717,38 @@ a.si:=xval;
 result:=aadd([a.bytes[0],a.bytes[1]]);
 end;
 
-function tstr9.addbyt1(xval:byte):boolean;
+function tstr9.addbyt1(const xval:byte):boolean;
 begin
 result:=aadd([xval]);
 end;
 
-function tstr9.addbol1(xval:boolean):boolean;//21aug2020
+function tstr9.addbol1(const xval:boolean):boolean;//21aug2020
 begin
 if xval then result:=aadd([1]) else result:=aadd([0]);
 end;
 
-function tstr9.addchr1(xval:char):boolean;
+function tstr9.addchr1(const xval:char):boolean;
 begin
 result:=aadd([byte(xval)]);
 end;
 
-function tstr9.addstr(xval:string):boolean;
+function tstr9.addstr(const xval:string):boolean;
 begin
-result:=false;try;result:=sadd(xval);except;end;
+result:=sadd(xval);
 end;
 
-function tstr9.addrec(a:pointer;asize:longint):boolean;//07feb2022
+function tstr9.addrec(const a:pointer;const asize:longint64):boolean;//07feb2022
 begin
 result:=pins2(pdlbyte(a),asize,ilen,0,asize-1);
 end;
 
 //get support ------------------------------------------------------------------
-function tstr9.getc8(xpos:longint):tcolor8;
+function tstr9.getc8(xpos:longint64):tcolor8;
 begin
 if (xpos>=0) and (xpos<ilen) then result:=bytes[xpos] else result:=0;
 end;
 
-function tstr9.getc24(xpos:longint):tcolor24;
+function tstr9.getc24(xpos:longint64):tcolor24;
 begin
 if (xpos>=0) and ((xpos+2)<ilen) then
    begin
@@ -25628,7 +27764,7 @@ else
    end;
 end;
 
-function tstr9.getc32(xpos:longint):tcolor32;
+function tstr9.getc32(xpos:longint64):tcolor32;
 begin
 if (xpos>=0) and ((xpos+3)<ilen) then
    begin
@@ -25646,7 +27782,7 @@ else
    end;
 end;
 
-function tstr9.getc40(xpos:longint):tcolor40;
+function tstr9.getc40(xpos:longint64):tcolor40;
 begin
 if (xpos>=0) and ((xpos+4)<ilen) then
    begin
@@ -25666,7 +27802,7 @@ else
    end;
 end;
 
-function tstr9.getcmp8(xpos:longint):comp;
+function tstr9.getcmp8(xpos:longint64):comp;
 var
    a:tcmp8;
 begin
@@ -25685,7 +27821,7 @@ if (xpos>=0) and ((xpos+7)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getcur8(xpos:longint):currency;
+function tstr9.getcur8(xpos:longint64):currency;
 var
    a:tcur8;
 begin
@@ -25704,7 +27840,7 @@ if (xpos>=0) and ((xpos+7)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getint4(xpos:longint):longint;
+function tstr9.getint4(xpos:longint64):longint;
 var
    a:tint4;
 begin
@@ -25719,12 +27855,12 @@ if (xpos>=0) and ((xpos+3)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getint4i(xindex:longint):longint;
+function tstr9.getint4i(xindex:longint64):longint;
 begin
 result:=getint4(xindex*4);
 end;
 
-function tstr9.getint4R(xpos:longint):longint;//14feb2021
+function tstr9.getint4R(xpos:longint64):longint;//14feb2021
 var
    a:tint4;
 begin
@@ -25739,12 +27875,12 @@ if (xpos>=0) and ((xpos+3)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getint3(xpos:longint):longint;
+function tstr9.getint3(xpos:longint64):longint;
 begin
 if (xpos>=0) and ((xpos+2)<ilen) then result:=bytes[xpos+0]+(bytes[xpos+1]*256)+(bytes[xpos+2]*256*256) else result:=0;
 end;
 
-function tstr9.getsml2(xpos:longint):smallint;//28jul2021
+function tstr9.getsml2(xpos:longint64):smallint;//28jul2021
 var
    a:twrd2;
 begin
@@ -25757,7 +27893,7 @@ if (xpos>=0) and ((xpos+1)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getwrd2(xpos:longint):word;
+function tstr9.getwrd2(xpos:longint64):word;
 var
    a:twrd2;
 begin
@@ -25770,7 +27906,7 @@ if (xpos>=0) and ((xpos+1)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getwrd2R(xpos:longint):word;//14feb2021
+function tstr9.getwrd2R(xpos:longint64):word;//14feb2021
 var
    a:twrd2;
 begin
@@ -25783,78 +27919,120 @@ if (xpos>=0) and ((xpos+1)<ilen) then
 else result:=0;
 end;
 
-function tstr9.getbyt1(xpos:longint):byte;
+function tstr9.getbyt1(xpos:longint64):byte;
 begin
 if (xpos>=0) and (xpos<ilen) then result:=bytes[xpos] else result:=0;
 end;
 
-function tstr9.getbol1(xpos:longint):boolean;
+function tstr9.getbol1(xpos:longint64):boolean;
 begin
 if (xpos>=0) and (xpos<ilen) then result:=(bytes[xpos]<>0) else result:=false;
 end;
 
-function tstr9.getchr1(xpos:longint):char;
+function tstr9.getchr1(xpos:longint64):char;
 begin
 if (xpos>=0) and (xpos<ilen) then result:=char(bytes[xpos]) else result:=#0;
 end;
 
-function tstr9.getstr(xpos,xlen:longint):string;//fixed - 16aug2020
+function tstr9.getstr(xpos,xlen:longint64):string;//fixed - 16aug2020
 var
-   dlen,p:longint;
+   p:longint3264;
+   dlen:longint64;
 begin
+
+//defaults
 result:='';
 
+//get
 try
+
 if (xlen>=1) and (xpos>=0) and (xpos<ilen) then
    begin
-   dlen:=frcmax32(xlen,ilen-xpos);
+
+   dlen:=frcmax64(xlen,ilen-xpos);
+
    if (dlen>=1) then
       begin
+
       low__setlen(result,dlen);
-      for p:=xpos to (xpos+dlen-1) do result[p-xpos+stroffset]:=char(bytes[p]);
+      for p:=int64__3264(xpos) to int64__3264(xpos+dlen-1) do
+      begin
+
+      {$ifdef 64bit}
+      result[p-xpos+stroffset]:=char(bytes[p]);
+      {$else}
+      result[ int64__3264(p-xpos+stroffset) ]:=char(bytes[p]);
+      {$endif}
+
+      end;//p
+
       end;
+
    end;
+
 except;end;
 end;
 
-function tstr9.getstr1(xpos,xlen:longint):string;
+function tstr9.getstr1(xpos,xlen:longint64):string;
 begin
 result:=getstr(xpos-1,xlen);
 end;
 
-function tstr9.getnullstr(xpos,xlen:longint):string;//20mar2022
+function tstr9.getnullstr(xpos,xlen:longint64):string;//20mar2022
 var
-   dcount,dlen,p:longint;
-   v:byte;
+   p:longint3264;
+   dcount,dlen:longint64;
 begin
+
+//defaults
 result:='';
 
+//get
 try
+
 if (xlen>=1) and (xpos>=0) and (xpos<ilen) then
    begin
-   dlen:=frcmax32(xlen,ilen-xpos);
+
+   dlen:=frcmax64(xlen,ilen-xpos);
+
    if (dlen>=1) then
       begin
+
       low__setlen(result,dlen);
       dcount:=0;
-      for p:=xpos to (xpos+dlen-1) do
+
+      for p:=int64__3264(xpos) to int64__3264(xpos+dlen-1) do
       begin
+
       if (bytes[p]=0) then
          begin
          if (dcount<>dlen) then low__setlen(result,dcount);
          break;
          end;
-      //was: result[p-xpos+stroffset]:=char(ibytes[p]);
-      v:=bytes[p];
-      result[p-xpos+stroffset]:=char(v);
+
+      {$ifdef 64bit}
+
+      result[p-xpos+stroffset]:=char(bytes[p]);
       inc(dcount);
+
+      {$else}
+
+      result[ int64__3264(p-xpos+stroffset) ]:=char(bytes[p]);
+      inc64(dcount,1);
+
+      {$endif}
+
+
       end;//p
+
       end;
+
    end;
+
 except;end;
 end;
 
-function tstr9.getnullstr1(xpos,xlen:longint):string;//20mar2022
+function tstr9.getnullstr1(xpos,xlen:longint64):string;//20mar2022
 begin
 result:=getnullstr(xpos-1,xlen);
 end;
@@ -25863,28 +28041,40 @@ function tstr9.gettext:string;
 label
    skipend;
 var
-   smin,smax,p:longint;
+   p:longint3264;
+   smin,smax:longint64;
    smem:pdlbyte;
-   v:byte;
 begin
+
 //defaults
 result:='';
 
 try
+
 //get
 if (ilen>=1) then
    begin
+
    //init
    smax:=-2;
    low__setlen(result,ilen);
+
    //get
-   for p:=0 to (ilen-1) do
+   for p:=0 to int64__3264(ilen-1) do
    begin
-   if (p>smax) and (not block__fastinfo(@self,p,smem,smin,smax)) then goto skipend;
-   v:=smem[p-smin];
-   result[p+stroffset]:=char(v);
+
+   if (p>smax) and (not block64__fastinfo64(@self,p,smem,smin,smax)) then goto skipend;
+
+   {$ifdef 64bit}
+   result[p+stroffset]:=char(smem[p-smin]);
+   {$else}
+   result[ int64__3264(p+stroffset) ]:=char(smem[ int64__3264(p-smin) ]);
+   {$endif}
+
    end;//p
+
    end;
+
 skipend:
 except;end;
 end;
@@ -25894,61 +28084,78 @@ label
    skipend;
 var
    a,aline:tstr8;
-   smin,smax,xmax,p:longint;
+   p:longint3264;
+   smin,smax,xmax:longint64;
    smem:pdlbyte;
    v:byte;
 begin
+
 //defaults
-result:='';
+result  :='';
+a       :=nil;
+aline   :=nil;
 
 try
-a:=nil;
-aline:=nil;
 //check
 if (ilen<=0) then goto skipend;
+
 //init
-a:=str__new8;
-aline:=str__new8;
-xmax:=ilen-1;
-smax:=-2;
+a       :=str__new8;
+aline   :=str__new8;
+xmax    :=ilen-1;
+smax    :=-2;
+
 //get
-for p:=0 to xmax do
+for p:=0 to int64__3264(xmax) do
 begin
-if (p>smax) and (not block__fastinfo(@self,p,smem,smin,smax)) then goto skipend;
+
+if (p>smax) and (not block64__fastinfo64(@self,p,smem,smin,smax)) then goto skipend;
+
+{$ifdef 64bit}
 v:=smem[p-smin];
+{$else}
+v:=smem[ int64__3264(p-smin) ];
+{$endif}
+
 aline.sadd(intstr32(v)+insstr(',',p<xmax));
+
 if (aline.count>=1010) then
    begin
    aline.sadd(rcode);
    a.add(aline);
    aline.clear;
    end;
+
 end;//p
+
 //.finalise
 if (aline.count>=1) then
    begin
    a.add(aline);
    aline.clear;
    end;
+
 //set
-result:=':array[0..'+intstr32(ilen-1)+'] of byte=('+rcode+a.text+');';//cleaned 02mar2022
+result:=':array[0..'+intstr64(ilen-1)+'] of byte=('+rcode+a.text+');';//cleaned 02mar2022
+
 skipend:
 except;end;
-try
+
+//free
 str__free(@a);
 str__free(@aline);
-except;end;
+
 end;
 
 //set support ------------------------------------------------------------------
-procedure tstr9.setc8(xpos:longint;xval:tcolor8);
+procedure tstr9.setc8(xpos:longint64;xval:tcolor8);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+1) then exit;
 bytes[xpos]:=xval;
 end;
 
-procedure tstr9.setc24(xpos:longint;xval:tcolor24);
+procedure tstr9.setc24(xpos:longint64;xval:tcolor24);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+3) then exit;
@@ -25957,7 +28164,7 @@ bytes[xpos+1]:=xval.g;
 bytes[xpos+2]:=xval.r;
 end;
 
-procedure tstr9.setc32(xpos:longint;xval:tcolor32);
+procedure tstr9.setc32(xpos:longint64;xval:tcolor32);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+4) then exit;
@@ -25967,7 +28174,7 @@ bytes[xpos+2]:=xval.r;
 bytes[xpos+3]:=xval.a;
 end;
 
-procedure tstr9.setc40(xpos:longint;xval:tcolor40);
+procedure tstr9.setc40(xpos:longint64;xval:tcolor40);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+5) then exit;
@@ -25978,7 +28185,7 @@ bytes[xpos+3]:=xval.a;
 bytes[xpos+4]:=xval.c;
 end;
 
-procedure tstr9.setcmp8(xpos:longint;xval:comp);
+procedure tstr9.setcmp8(xpos:longint64;xval:comp);
 var
    a:tcmp8;
 begin
@@ -25995,7 +28202,7 @@ bytes[xpos+6]:=a.bytes[6];
 bytes[xpos+7]:=a.bytes[7];
 end;
 
-procedure tstr9.setcur8(xpos:longint;xval:currency);
+procedure tstr9.setcur8(xpos:longint64;xval:currency);
 var
    a:tcur8;
 begin
@@ -26012,7 +28219,7 @@ bytes[xpos+6]:=a.bytes[6];
 bytes[xpos+7]:=a.bytes[7];
 end;
 
-procedure tstr9.setint4(xpos:longint;xval:longint);
+procedure tstr9.setint4(xpos:longint64;xval:longint);
 var
    a:tint4;
 begin
@@ -26025,12 +28232,12 @@ bytes[xpos+2]:=a.bytes[2];
 bytes[xpos+3]:=a.bytes[3];
 end;
 
-procedure tstr9.setint4i(xindex:longint;xval:longint);
+procedure tstr9.setint4i(xindex:longint64;xval:longint);
 begin
 setint4(xindex*4,xval);
 end;
 
-procedure tstr9.setint4R(xpos:longint;xval:longint);
+procedure tstr9.setint4R(xpos:longint64;xval:longint);
 var
    a:tint4;
 begin
@@ -26043,7 +28250,7 @@ bytes[xpos+2]:=a.bytes[1];
 bytes[xpos+3]:=a.bytes[0];
 end;
 
-procedure tstr9.setint3(xpos:longint;xval:longint);
+procedure tstr9.setint3(xpos:longint64;xval:longint);
 var
    r,g,b:byte;
 begin
@@ -26055,7 +28262,7 @@ bytes[xpos+1]:=g;
 bytes[xpos+2]:=b;
 end;
 
-procedure tstr9.setsml2(xpos:longint;xval:smallint);
+procedure tstr9.setsml2(xpos:longint64;xval:smallint);
 var
    a:twrd2;
 begin
@@ -26066,7 +28273,7 @@ bytes[xpos+0]:=a.bytes[0];
 bytes[xpos+1]:=a.bytes[1];
 end;
 
-procedure tstr9.setwrd2(xpos:longint;xval:word);
+procedure tstr9.setwrd2(xpos:longint64;xval:word);
 var
    a:twrd2;
 begin
@@ -26077,7 +28284,7 @@ bytes[xpos+0]:=a.bytes[0];
 bytes[xpos+1]:=a.bytes[1];
 end;
 
-procedure tstr9.setwrd2R(xpos:longint;xval:word);
+procedure tstr9.setwrd2R(xpos:longint64;xval:word);
 var
    a:twrd2;
 begin
@@ -26088,85 +28295,114 @@ bytes[xpos+0]:=a.bytes[1];//swap round
 bytes[xpos+1]:=a.bytes[0];
 end;
 
-procedure tstr9.setbyt1(xpos:longint;xval:byte);
+procedure tstr9.setbyt1(xpos:longint64;xval:byte);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+1) then exit;
 bytes[xpos]:=xval;
 end;
 
-procedure tstr9.setbol1(xpos:longint;xval:boolean);
+procedure tstr9.setbol1(xpos:longint64;xval:boolean);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+1) then exit;
 if xval then bytes[xpos]:=1 else bytes[xpos]:=0;
 end;
 
-procedure tstr9.setchr1(xpos:longint;xval:char);
+procedure tstr9.setchr1(xpos:longint64;xval:char);
 begin
 if (xpos<0) then xpos:=0;
 if not minlen(xpos+1) then exit;
 bytes[xpos]:=byte(xval);
 end;
 
-procedure tstr9.setstr(xpos:longint;xlen:longint;xval:string);
+procedure tstr9.setstr(xpos,xlen:longint64;xval:string);
 label
    skipend;
 var
-   dmin,dmax,xminlen,p:longint;
+   p:longint3264;
+   dmin,dmax,xminlen:longint64;
    dmem:pdlbyte;
    v:byte;
 begin
 try
+
+//check
 if (xpos<0) then xpos:=0;
 if (xlen<=0) or (xval='') then exit;
-xlen:=frcmax32(xlen,low__len(xval));
-xminlen:=xpos+xlen;
+
+xlen     :=frcmax64(xlen,low__len(xval));
+xminlen  :=xpos+xlen;
 if not minlen(xminlen) then exit;
-dmax:=-2;
+dmax     :=-2;
 //was: ERROR: for p:=xpos to (xpos+xlen-1) do ibytes[p]:=ord(xval[p+stroffset]);
 //was: for p:=0 to (xlen-1) do ibytes[xpos+p]:=ord(xval[p+stroffset]);
-for p:=0 to (xlen-1) do
+
+for p:=0 to int64__3264(xlen-1) do
 begin
+
+{$ifdef 64bit}
 v:=ord(xval[p+stroffset]);
-if ((xpos+p)>dmax) and (not block__fastinfo(@self,xpos+p,dmem,dmin,dmax)) then goto skipend;
+{$else}
+v:=ord(xval[ int64__3264(p+stroffset) ]);
+{$endif}
+
+if ((xpos+p)>dmax) and (not block64__fastinfo64(@self,xpos+p,dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
 dmem[xpos+p-dmin]:=v;
+{$else}
+dmem[ int64__3264(xpos+p-dmin) ]:=v;
+{$endif}
+
 end;//p
+
 skipend:
 except;end;
 end;
 
-procedure tstr9.setstr1(xpos:longint;xlen:longint;xval:string);
+procedure tstr9.setstr1(xpos,xlen:longint64;xval:string);
 begin
 setstr(xpos-1,xlen,xval);
 end;
 
-function tstr9.setarray(xpos:longint;const xval:array of byte):boolean;
+function tstr9.setarray(xpos:longint64;const xval:array of byte):boolean;
 label
    skipend;
 var
-   dmin,dmax,xminlen,xmin,xmax,p:longint;
+   p:longint3264;
+   dmin,dmax,xminlen,xmin,xmax:longint64;
    dmem:pdlbyte;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
 try
-//get
+//init
 if (xpos<0) then xpos:=0;
-xmin:=low(xval);
-xmax:=high(xval);
-xminlen:=xpos+(xmax-xmin+1);
+xmin     :=low(xval);
+xmax     :=high(xval);
+xminlen  :=xpos+(xmax-xmin+1);
 if not minlen(xminlen) then exit;
-dmax:=-2;
-//was: for p:=xmin to xmax do ibytes[xpos+(p-xmin)]:=xval[p];
-for p:=xmin to xmax do
+dmax     :=-2;
+
+//get
+for p:=int64__3264(xmin) to int64__3264(xmax) do
 begin
+
 v:=xval[p];
-if ((xpos+p-xmin)>dmax) and (not block__fastinfo(@self,xpos+p-xmin,dmem,dmin,dmax)) then goto skipend;
+if ((xpos+p-xmin)>dmax) and (not block64__fastinfo64(@self,xpos+p-xmin,dmem,dmin,dmax)) then goto skipend;
+
+{$ifdef 64bit}
 dmem[xpos+p-xmin-dmin]:=v;
+{$else}
+dmem[ int64__3264(xpos+p-xmin-dmin) ]:=v;
+{$endif}
+
 end;//p
+
 //successful
 result:=true;
 skipend:
@@ -26182,7 +28418,7 @@ var
    v:byte;
 begin
 try
-xlen:=low__len(x);
+xlen:=low__len32(x);
 setlen(xlen);
 if (xlen>=1) then
    begin
@@ -26192,7 +28428,7 @@ if (xlen>=1) then
    for p:=1 to xlen do
    begin
    v:=byte(x[p-1+stroffset]);
-   if ((p-1)>dmax) and (not block__fastinfo(@self,p-1,dmem,dmin,dmax)) then goto skipend;
+   if ((p-1)>dmax) and (not block64__fastinfo32(@self,p-1,dmem,dmin,dmax)) then goto skipend;
    dmem[p-1-dmin]:=v;
    end;//p
    end;
@@ -26201,271 +28437,108 @@ except;end;
 end;
 
 
-//## tintlist ##################################################################
-constructor tintlist.create;
+//## tintlist64 ################################################################
+constructor tintlist64.create;
 begin
-if classnameis('tintlist') then track__inc(satIntlist,1);
+
+if classnameis('tintlist64') then track__inc(satintlist64,1);
+
 inherited create;
-iblocksize:=block__size;
-irootlimit:=iblocksize div 4;//stores pointers to memory blocks
-iblocklimit:=iblocksize div 4;//stores list of longint's (4 bytes each) in memory blocks
-ilimit:=restrict32(mult64(irootlimit,iblocklimit));
-icount:=0;
-irootcount:=0;
-iroot:=nil;
-igetmin:=-1;
-igetmax:=-2;
-isetmin:=-1;
-isetmax:=-2;
+
+iblocksize    :=block64__size;
+irootlimit    :=iblocksize div 8;//stores pointers to memory blocks
+iblocklimit   :=iblocksize div 8;//stores list of int64 (8b each) in memory blocks
+islotlimit    :=restrict32( mult64(irootlimit,iblocklimit) );
+islotcount    :=0;
+irootcount    :=0;
+iroot         :=nil;
+igetmin       :=-1;
+igetmax       :=-2;
+isetmin       :=-1;
+isetmax       :=-2;
+
 end;
 
-destructor tintlist.destroy;
+destructor tintlist64.destroy;
 begin
 try
+
 clear;
+
 inherited destroy;
-if classnameis('tintlist') then track__inc(satIntlist,-1);
+
+if classnameis('tintlist64') then track__inc(satintlist64,-1);
+
 except;end;
 end;
 
-function tintlist.mem:longint;
-begin
-if (iroot<>nil) then result:=(irootcount+1)*iblocksize else result:=0;
-end;
-
-function tintlist.mem_predict(xcount:comp):comp;
+function tintlist64.mem_predict(xcount:longint64):longint64;
 var
    xrootcount:comp;
 begin
+
 if (xcount<=0) then xrootcount:=0 else xrootcount:=add64(div64(xcount,irootlimit),1);
-result:=mult64(add64(xrootcount,1),iblocksize);
+result:=mult64( add64(xrootcount,1) ,iblocksize );
+
 end;
 
-procedure tintlist.clear;
+function tintlist64.mem:longint64;
 begin
-setcount(0);
+
+if (iroot<>nil) then result:=mult64( (irootcount+1) ,iblocksize ) else result:=0;
+
 end;
 
-function tintlist.mincount(xcount:longint):boolean;//fixed 20feb2024
+procedure tintlist64.clear;
 begin
-if (xcount>icount) then setcount(xcount);
-result:=(xcount<=icount);
+
+setslotcount(0);
+
 end;
 
-procedure tintlist.setcount(x:longint);
+function tintlist64.minslotcount(const xslotcount:longint32):boolean;//fixed 20feb2024
+begin
+
+if (xslotcount>islotcount) then setslotcount(xslotcount);
+result:=(xslotcount<=islotcount);
+
+end;
+
+function tintlist64.minslot(const xslot:longint32):boolean;
+begin
+
+result:=minslotcount( xslot + 1 );
+
+end;
+
+procedure tintlist64.setslotcount(const x:longint32);
 label
    skipend;
 var
-   a:pointer;
-   p,xnewrootcount,xoldrootcount,xnewcount,xoldcount:longint;
-
-   function xblockcount(xcount:longint):longint;
-   begin
-   if (xcount<=0) then result:=0 else result:=(xcount div irootlimit)+1;
-   end;
+   p,xrootcount,xslotcount:longint32;
 begin
+
 //range
-xoldcount:=icount;
-xnewcount:=frcrange32(x,0,ilimit);
+xslotcount   :=frcrange32( x ,0 ,islotlimit );
+xrootcount   :=irootcount;
+
+try
 
 //check
-if (xnewcount=xoldcount) then exit;
-
-//reset cache vars
-igetmin:=-1;
-igetmax:=-2;
-isetmin:=-1;
-isetmax:=-2;
-
-//init
-xoldrootcount:=irootcount;
-xnewrootcount:=xblockcount(xnewcount);
-
-try
-//check 2
-if (xnewrootcount=xoldrootcount) then goto skipend;//already done -> just need to update the icount var
-
-//enlarge
-if (xnewrootcount>xoldrootcount) and (xnewrootcount>=1) then
-   begin
-   //root
-   if (iroot=nil) then
-      begin
-      iroot:=block__new;
-      block__cls(iroot);
-      end;
-
-   //root slots
-   for p:=frcmin32(xoldrootcount-1,0) to (xnewrootcount-1) do if (iroot[p]=nil) then
-      begin
-      a:=block__new;
-      if (a<>nil) then
-         begin
-         block__cls(a);
-         iroot[p]:=a;
-         end;
-      end;
-   end
-
-//shrink
-else if (xnewrootcount<xoldrootcount) and (xoldrootcount>=1) then
-   begin
-   //root slots
-   if (iroot<>nil) then
-      begin
-      for p:=(xoldrootcount-1) downto frcmin32(xnewrootcount-1,0) do if (iroot[p]<>nil) then block__free(iroot[p]);
-      end;
-
-   //root
-   if (xnewcount<=0) then
-      begin
-      a:=iroot;
-      iroot:=nil;//set to nil before freeing memory
-      block__freeb(a);
-      end;
-   end;
-
-skipend:
-except;end;
-try
-//set
-irootcount:=xnewrootcount;
-icount:=xnewcount;
-except;end;
-end;
-
-function tintlist.fastinfo(xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;//15feb2024
-var
-   xrootindex:longint;
-begin
-//defaults
-result:=false;
-xmem:=nil;
-xmin:=-1;
-xmax:=-2;
-
-try
-//get
-if (xpos>=0) and (xpos<icount) and (iroot<>nil) then
-   begin
-   xrootindex:=xpos div irootlimit;
-   xmem:=iroot[xrootindex];
-   if (xmem<>nil) then
-      begin
-      xmin:=xrootindex*iblocklimit;
-      xmax:=((xrootindex+1)*iblocklimit)-1;
-      //.limit max for last block using datastream length - 15feb2024
-      if (xmax>=icount) then xmax:=icount-1;
-      //successful
-      result:=(xmem<>nil);
-      end;
-   end;
-except;end;
-end;
-
-function tintlist.getvalue(x:longint):longint;
-begin
-result:=0;
-if (x>=igetmin) and (x<=igetmax)                                      then result:=pdllongint(igetmem)[x-igetmin]
-else if (x>=0) and (x<icount) and fastinfo(x,igetmem,igetmin,igetmax) then result:=pdllongint(igetmem)[x-igetmin];
-end;
-
-procedure tintlist.setvalue(x:longint;xval:longint);
-begin
-if (x>=isetmin) and (x<=isetmax) then pdllongint(isetmem)[x-isetmin]:=xval
-else if (x>=0) and (x<ilimit) then
-   begin
-   if (x>=icount) then setcount(x+1);
-   if fastinfo(x,isetmem,isetmin,isetmax) then pdllongint(isetmem)[x-isetmin]:=xval;
-   end;
-end;
-
-function tintlist.getptr(x:longint):pointer;
-begin
-if (x>=igetmin) and (x<=igetmax)                                      then result:=pdlpointer(igetmem)[x-igetmin]
-else if (x>=0) and (x<icount) and fastinfo(x,igetmem,igetmin,igetmax) then result:=pdlpointer(igetmem)[x-igetmin]
-else                                                                       result:=nil;
-end;
-
-procedure tintlist.setptr(x:longint;xval:pointer);
-begin
-if (x>=isetmin) and (x<=isetmax) then pdlpointer(isetmem)[x-isetmin]:=xval
-else if (x>=0) and (x<ilimit) then
-   begin
-   if (x>=icount) then setcount(x+1);
-   if fastinfo(x,isetmem,isetmin,isetmax) then pdlpointer(isetmem)[x-isetmin]:=xval;
-   end;
-end;
-
-
-//## tcmplist ##################################################################
-constructor tcmplist.create;
-begin
-if classnameis('tcmplist') then track__inc(satCmplist,1);
-inherited create;
-iblocksize:=block__size;
-irootlimit:=iblocksize div 4;//stores pointers to memory blocks
-iblocklimit:=iblocksize div 8;//stores list of comp's (8 bytes each) in memory blocks
-ilimit:=restrict32(mult64(irootlimit,iblocklimit));
-icount:=0;
-irootcount:=0;
-iroot:=nil;
-igetmin:=-1;
-igetmax:=-2;
-isetmin:=-1;
-isetmax:=-2;
-end;
-
-destructor tcmplist.destroy;
-begin
-try
-clear;
-inherited destroy;
-if classnameis('tcmplist') then track__inc(satCmplist,-1);
-except;end;
-end;
-
-function tcmplist.mem:longint;
-begin
-if (iroot<>nil) then result:=(irootcount+1)*iblocksize else result:=0;
-end;
-
-procedure tcmplist.clear;
-begin
-setcount(0);
-end;
-
-function tcmplist.mincount(xcount:longint):boolean;//fixed 20feb2024
-begin
-if (xcount>icount) then setcount(xcount);
-result:=(xcount<=icount);
-end;
-
-procedure tcmplist.setcount(x:longint);
-label
-   skipend;
-var
-   p,xrootcount,xcount:longint;
-begin
-//range
-xcount:=frcrange32(x,0,ilimit);
-xrootcount:=irootcount;
-
-try
-//check
-//.count
-if (xcount=icount) then exit;
+//.slotcount
+if (xslotcount=islotcount) then exit;
 
 //.rootcount
-xrootcount:=xcount div iblocklimit;//18jun2025: fixed, was irootlimit
-if (xcount>(xrootcount*iblocklimit)) then xrootcount:=frcrange32(xrootcount+1,0,irootlimit);
-if (irootcount=xrootcount) then goto skipend;
+xrootcount:=xslotcount div iblocklimit;//18jun2025: fixed, was irootlimit
+
+if (xslotcount>(xrootcount*iblocklimit)) then xrootcount:=frcrange32(xrootcount+1,0,irootlimit);
+if (irootcount=xrootcount)               then goto skipend;
 
 //.reset fastinfo vars
-igetmin:=-1;
-igetmax:=-2;
-isetmin:=-1;
-isetmax:=-2;
+igetmin      :=-1;
+igetmax      :=-2;
+isetmin      :=-1;
+isetmax      :=-2;
 
 //get
 if (xrootcount>irootcount) then
@@ -26474,15 +28547,19 @@ if (xrootcount>irootcount) then
    //root
    if (iroot=nil) then
       begin
-      iroot:=block__new;
-      low__cls(iroot,iblocksize);
+
+      iroot:=block64__new;
+      block64__cls(iroot);
+
       end;
 
    //slots
    for p:=irootcount to (xrootcount-1) do if (iroot[p]=nil) then
       begin
-      iroot[p]:=block__new;;
-      block__cls(iroot[p]);
+
+      iroot[p]:=block64__new;
+      block64__cls(iroot[p]);
+
       end;
 
    end
@@ -26493,106 +28570,411 @@ else if (xrootcount<irootcount) then
    if (iroot=nil) then goto skipend;
 
    //slots
-   for p:=(irootcount-1) downto xrootcount do if (iroot[p]<>nil) then block__free(iroot[p]);
+   for p:=(irootcount-1) downto xrootcount do if (iroot[p]<>nil) then block64__free(iroot[p]);
 
    //root
-   if (xcount<=0) then
+   if (xslotcount<=0) then
       begin
-      block__freeb(iroot);
+
+      block64__freeb(iroot);
       iroot:=nil;
+
       end;
 
    end;
 
 skipend:
 except;end;
-try
+
 //set
-irootcount:=xrootcount;
-icount:=xcount;
-except;end;
+irootcount  :=xrootcount;
+islotcount  :=xslotcount;
+
 end;
 
-function tcmplist.fastinfo(xpos:longint;var xmem:pointer;var xmin,xmax:longint):boolean;//18jun2025, 15feb2024
+function tintlist64.fastinfo64(const xslot:longint64;var xmem:pointer3264;var xmin,xmax:longint64):boolean;
+begin
+
+if (xslot<0) or (xslot>=islotcount) then
+   begin
+
+   result          :=false;
+   xmem            :=nil;
+   xmin            :=-1;
+   xmax            :=-2;
+
+   end
+else result:=fastinfo32( tint64(xslot).ints[0], xmem, tint64(xmin).ints[0], tint64(xmax).ints[0] );
+
+end;
+
+function tintlist64.fastinfo32(const xslot:longint32;var xmem:pointer3264;var xmin,xmax:longint32):boolean;//14dec2025, 18jun2025, 15feb2024
 var
    xrootindex:longint;
 begin
+
 //defaults
-result:=false;
-xmem:=nil;
-xmin:=-1;
-xmax:=-2;
+result          :=false;
+xmem            :=nil;
+xmin            :=-1;
+xmax            :=-2;
 
 //get
-if (xpos>=0) and (xpos<icount) and (iroot<>nil) then
+if (xslot>=0) and (xslot<islotcount) and (iroot<>nil) then
    begin
-   xrootindex:=xpos div iblocklimit;//18jun2025: fixed, was irootlimit
-   xmem:=iroot[xrootindex];
+
+   xrootindex   :=xslot div iblocklimit;//18jun2025: fixed, was irootlimit
+   xmem         :=iroot[xrootindex];
 
    if (xmem<>nil) then
       begin
-      xmin:=xrootindex*iblocklimit;
-      xmax:=xmin + (iblocklimit-1);
+
+      xmin      :=xrootindex*iblocklimit;
+      xmax      :=xmin + (iblocklimit-1);
 
       //.limit max for last block using datastream length - 15feb2024
-      if (xmax>=icount) then xmax:=icount-1;
+      if (xmax>=islotcount) then xmax:=islotcount-1;
 
       //successful
       result:=true;
+
       end;
+
    end;
 
 end;
 
-function tcmplist.getvalue(x:longint):comp;
+function tintlist64.getint64(const xslot:longint32):longint64;
 begin
-if (x>=igetmin) and (x<=igetmax)                                                       then result:=pdlcomp(igetmem)[x-igetmin]
-else if (x>=0) and (x<icount) and (iroot<>nil) and fastinfo(x,igetmem,igetmin,igetmax) then result:=pdlcomp(igetmem)[x-igetmin]
-else                                                                                        result:=0;
+
+if      (xslot>=igetmin) and (xslot<=igetmax)                                                            then result:=pdlint64(igetmem)[xslot-igetmin]
+else if (xslot>=0) and (xslot<islotcount) and (iroot<>nil) and fastinfo32(xslot,igetmem,igetmin,igetmax) then result:=pdlint64(igetmem)[xslot-igetmin]
+else                                                                                                          result:=0;
+
 end;
 
-procedure tcmplist.setvalue(x:longint;xval:comp);
+procedure tintlist64.setint64(const xslot:longint32;xval:longint64);
 begin
-if (x>=isetmin) and (x<=isetmax) then pdlcomp(isetmem)[x-isetmin]:=xval
-else if (x>=0) and (x<ilimit) then
+
+if      (xslot>=isetmin) and (xslot<=isetmax)       then pdlint64(isetmem)[xslot-isetmin]:=xval
+else if (xslot>=0) and (xslot<islotlimit)           then
    begin
-   if (x>=icount) then setcount(x+1);
-   if fastinfo(x,isetmem,isetmin,isetmax) then pdlcomp(isetmem)[x-isetmin]:=xval;
+
+   if (xslot>=islotcount)                           then setslotcount(xslot+1);
+   if fastinfo32(xslot,isetmem,isetmin,isetmax)     then pdlint64(isetmem)[xslot-isetmin]:=xval;
+
    end;
+
 end;
 
-function tcmplist.getdbl(x:longint):double;
+function tintlist64.getint32(const xslot:longint32):longint32;
 begin
-if (x>=igetmin) and (x<=igetmax)                                                       then result:=pdldouble(igetmem)[x-igetmin]
-else if (x>=0) and (x<icount) and (iroot<>nil) and fastinfo(x,igetmem,igetmin,igetmax) then result:=pdldouble(igetmem)[x-igetmin]
-else                                                                                        result:=0;
+
+if      (xslot>=igetmin) and (xslot<=igetmax)                                                            then result:=tint64( pdlint64(igetmem)[xslot-igetmin] ).ints[0]
+else if (xslot>=0) and (xslot<islotcount) and (iroot<>nil) and fastinfo32(xslot,igetmem,igetmin,igetmax) then result:=tint64( pdlint64(igetmem)[xslot-igetmin] ).ints[0]
+else                                                                                                          result:=0;
+
 end;
 
-procedure tcmplist.setdbl(x:longint;xval:double);
+procedure tintlist64.setint32(const xslot:longint32;xval:longint32);
 begin
-if (x>=isetmin) and (x<=isetmax) then pdldouble(isetmem)[x-isetmin]:=xval
-else if (x>=0) and (x<ilimit) then
+
+if      (xslot>=isetmin) and (xslot<=isetmax)       then tint64( pdlint64(isetmem)[xslot-isetmin] ).ints[0]:=xval
+else if (xslot>=0) and (xslot<islotlimit)           then
    begin
-   if (x>=icount) then setcount(x+1);
-   if fastinfo(x,isetmem,isetmin,isetmax) then pdldouble(isetmem)[x-isetmin]:=xval;
+
+   if (xslot>=islotcount)                           then setslotcount(xslot+1);
+   if fastinfo32(xslot,isetmem,isetmin,isetmax)     then tint64( pdlint64(isetmem)[xslot-isetmin] ).ints[0]:=xval;
+
    end;
+
 end;
 
-function tcmplist.getdate(x:longint):tdatetime;
+function tintlist64.getptr3264(const xslot:longint):pointer3264;
 begin
-if (x>=igetmin) and (x<=igetmax)                                                       then result:=pdldatetime(igetmem)[x-igetmin]
-else if (x>=0) and (x<icount) and (iroot<>nil) and fastinfo(x,igetmem,igetmin,igetmax) then result:=pdldatetime(igetmem)[x-igetmin]
-else                                                                                        result:=0;
+
+{$ifdef 64bit}
+result:=pointer( getint64(xslot) );
+{$else}
+result:=pointer( getint32(xslot) );
+{$endif}
+
 end;
 
-procedure tcmplist.setdate(x:longint;xval:tdatetime);
+procedure tintlist64.setptr3264(const xslot:longint;xval:pointer3264);
 begin
-if (x>=isetmin) and (x<=isetmax) then pdldatetime(isetmem)[x-isetmin]:=xval
-else if (x>=0) and (x<ilimit) then
+
+{$ifdef 64bit}
+setint64( xslot , longint64( xval ) );
+{$else}
+setint32( xslot , longint32( xval ) );
+{$endif}
+
+end;
+
+function tintlist64.getdbl(const xslot:longint):double;
+begin
+
+result:=tint64( getint64(xslot) ).dbl;
+
+end;
+
+procedure tintlist64.setdbl(const xslot:longint;xval:double);
+var
+   v:longint64;
+begin
+
+tint64( v ).dbl:=xval;
+setint64( xslot, v );
+
+end;
+
+function tintlist64.getdate(const xslot:longint):tdatetime;
+begin
+
+result:=tint64( getint64(xslot) ).datetime;
+
+end;
+
+procedure tintlist64.setdate(const xslot:longint;xval:tdatetime);
+var
+   v:longint64;
+begin
+
+tint64( v ).datetime:=xval;
+setint64( xslot, v );
+
+end;
+
+
+//## tintlist32 ################################################################
+constructor tintlist32.create;
+begin
+
+if classnameis('tintlist32') then track__inc(satintlist32,1);
+
+inherited create;
+
+iblocksize    :=block64__size;
+irootlimit    :=iblocksize div 8;//stores pointers to memory blocks -> uses 8b = 64bit slots
+iblocklimit   :=iblocksize div 4;//stores list of int32 (4b each) in memory blocks
+islotlimit    :=restrict32( mult64(irootlimit,iblocklimit) );
+islotcount    :=0;
+irootcount    :=0;
+iroot         :=nil;
+igetmin       :=-1;
+igetmax       :=-2;
+isetmin       :=-1;
+isetmax       :=-2;
+
+end;
+
+destructor tintlist32.destroy;
+begin
+try
+
+clear;
+
+inherited destroy;
+
+if classnameis('tintlist32') then track__inc(satintlist32,-1);
+
+except;end;
+end;
+
+function tintlist32.mem_predict(xcount:longint64):longint64;
+var
+   xrootcount:comp;
+begin
+
+if (xcount<=0) then xrootcount:=0 else xrootcount:=add64( div64(xcount,irootlimit) ,1 );
+result:=mult64( add64(xrootcount,1) ,iblocksize );
+
+end;
+
+function tintlist32.mem:longint64;
+begin
+
+if (iroot<>nil) then result:=mult64( (irootcount+1) ,iblocksize ) else result:=0;
+
+end;
+
+procedure tintlist32.clear;
+begin
+
+setslotcount(0);
+
+end;
+
+function tintlist32.minslotcount(const xslotcount:longint32):boolean;
+begin
+
+if (xslotcount>islotcount) then setslotcount(xslotcount);
+result:=(xslotcount<=islotcount);
+
+end;
+
+function tintlist32.minslot(const xslot:longint32):boolean;
+begin
+
+result:=minslotcount( xslot + 1 );
+
+end;
+
+procedure tintlist32.setslotcount(const x:longint32);
+label
+   skipend;
+var
+   p,xrootcount,xslotcount:longint32;
+begin
+
+//range
+xslotcount   :=frcrange32( x ,0 ,islotlimit );
+xrootcount   :=irootcount;
+
+try
+
+//check
+//.slotcount
+if (xslotcount=islotcount) then exit;
+
+//.rootcount
+xrootcount:=xslotcount div iblocklimit;//18jun2025: fixed, was irootlimit
+
+if (xslotcount>(xrootcount*iblocklimit)) then xrootcount:=frcrange32(xrootcount+1,0,irootlimit);
+if (irootcount=xrootcount)               then goto skipend;
+
+//.reset fastinfo vars
+igetmin      :=-1;
+igetmax      :=-2;
+isetmin      :=-1;
+isetmax      :=-2;
+
+//get
+if (xrootcount>irootcount) then
    begin
-   if (x>=icount) then setcount(x+1);
-   if fastinfo(x,isetmem,isetmin,isetmax) then pdldatetime(isetmem)[x-isetmin]:=xval;
+
+   //root
+   if (iroot=nil) then
+      begin
+
+      iroot:=block64__new;
+      block64__cls(iroot);
+
+      end;
+
+   //slots
+   for p:=irootcount to (xrootcount-1) do if (iroot[p]=nil) then
+      begin
+
+      iroot[p]:=block64__new;
+      block64__cls(iroot[p]);
+
+      end;
+
+   end
+else if (xrootcount<irootcount) then
+   begin
+
+   //root
+   if (iroot=nil) then goto skipend;
+
+   //slots
+   for p:=(irootcount-1) downto xrootcount do if (iroot[p]<>nil) then block64__free(iroot[p]);
+
+   //root
+   if (xslotcount<=0) then
+      begin
+
+      block64__freeb(iroot);
+      iroot:=nil;
+
+      end;
+
    end;
+
+skipend:
+except;end;
+
+//set
+irootcount  :=xrootcount;
+islotcount  :=xslotcount;
+
+end;
+
+function tintlist32.fastinfo64(const xslot:longint64;var xmem:pointer3264;var xmin,xmax:longint64):boolean;
+begin
+
+if (xslot<0) or (xslot>=islotcount) then
+   begin
+
+   result          :=false;
+   xmem            :=nil;
+   xmin            :=-1;
+   xmax            :=-2;
+
+   end
+else result:=fastinfo32( tint64(xslot).ints[0], xmem, tint64(xmin).ints[0], tint64(xmax).ints[0] );
+
+end;
+
+function tintlist32.fastinfo32(const xslot:longint32;var xmem:pointer3264;var xmin,xmax:longint32):boolean;//14dec2025, 18jun2025, 15feb2024
+var
+   xrootindex:longint;
+begin
+
+//defaults
+result          :=false;
+xmem            :=nil;
+xmin            :=-1;
+xmax            :=-2;
+
+//get
+if (xslot>=0) and (xslot<islotcount) and (iroot<>nil) then
+   begin
+
+   xrootindex   :=xslot div iblocklimit;//18jun2025: fixed, was irootlimit
+   xmem         :=iroot[xrootindex];
+
+   if (xmem<>nil) then
+      begin
+
+      xmin      :=xrootindex*iblocklimit;
+      xmax      :=xmin + (iblocklimit-1);
+
+      //.limit max for last block using datastream length - 15feb2024
+      if (xmax>=islotcount) then xmax:=islotcount-1;
+
+      //successful
+      result:=true;
+
+      end;
+
+   end;
+
+end;
+
+function tintlist32.getint32(const xslot:longint32):longint32;
+begin
+
+if      (xslot>=igetmin) and (xslot<=igetmax)                                                            then result:=pdlint32(igetmem)[xslot-igetmin]
+else if (xslot>=0) and (xslot<islotcount) and (iroot<>nil) and fastinfo32(xslot,igetmem,igetmin,igetmax) then result:=pdlint32(igetmem)[xslot-igetmin]
+else                                                                                                          result:=0;
+
+end;
+
+procedure tintlist32.setint32(const xslot:longint32;xval:longint32);
+begin
+
+if      (xslot>=isetmin) and (xslot<=isetmax)       then pdlint32(isetmem)[xslot-isetmin]:=xval
+else if (xslot>=0) and (xslot<islotlimit)           then
+   begin
+
+   if (xslot>=islotcount)                           then setslotcount(xslot+1);
+   if fastinfo32(xslot,isetmem,isetmin,isetmax)     then pdlint32(isetmem)[xslot-isetmin]:=xval;
+
+   end;
+
 end;
 
 
@@ -26623,7 +29005,7 @@ try
 //set
 if str__ok(@idata) then
    begin
-   result:=str__len(@idata)-iposition;
+   result:=str__len32(@idata)-iposition;
    if (result>xlen) then result:=xlen;
 
    if (result>=1) then
@@ -26677,11 +29059,11 @@ if not str__ok(@idata) then
 case Origin of
 soFromBeginning :iposition:=offset;
 soFromCurrent   :iposition:=iposition+offset;
-soFromEnd       :iposition:=str__len(@idata)-offset;
+soFromEnd       :iposition:=str__len32(@idata)-offset;
 end;
 
 //range
-iposition:=frcrange32(iposition,0,str__len(@idata));
+iposition:=frcrange32(iposition,0,str__len32(@idata));
 
 //return result
 result:=iposition;
@@ -26700,7 +29082,7 @@ try
 if not str__ok(@idata) then exit;
 
 //get
-len:=str__len(@idata)-iposition;
+len:=str__len32(@idata)-iposition;
 if (len>count) then len:=count;
 result:=str__str1(@idata,iposition+1,len);
 inc(iposition,len);
@@ -26792,7 +29174,7 @@ end;
 
 function tvars8.len:longint;
 begin
-result:=icore.len;
+result:=icore.len32;
 end;
 
 procedure tvars8.clear;
@@ -26846,7 +29228,7 @@ end;
 
 function tvars8.geti(xname:string):longint;
 begin
-result:=strint(value[xname]);
+result:=strint32(value[xname]);
 end;
 
 procedure tvars8.seti(xname:string;xval:longint);
@@ -26891,7 +29273,10 @@ if (a.len>=8) then
    result:=low__safedate(low__encodedate2(y,m,d)+low__encodetime2(hh,mm,ss,ms));
    end;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 procedure tvars8.setdt64(xname:string;xval:tdatetime);//31jan2022
@@ -26913,7 +29298,10 @@ a.byt1[2]:=frcrange32(m,1,12);//2
 a.wrd2[0]:=y;//0..1
 xsets(xname,a.text);
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 function tvars8.getc(xname:string):currency;
@@ -27033,7 +29421,7 @@ blen:=0;
 //check
 if zznil(icore,2266) or (icore.pbytes=nil) then exit;//27apr2021
 //init
-xlen:=icore.len;
+xlen:=icore.len32;
 lb:=icore.pbytes;
 nref.val:=low__ref256u(xname);
 //find
@@ -27095,7 +29483,7 @@ blen:=0;
 //check
 if zznil(icore,2269) or (icore.pbytes=nil) then exit;//27apr2021
 //init
-xlen:=icore.len;
+xlen:=icore.len32;
 lb:=icore.pbytes;
 //find
 if ((xfrom+15)<xlen) then
@@ -27140,7 +29528,7 @@ if (xpos<0) then xpos:=0;
 //check
 if zznil(icore,2270) or (icore.pbytes=nil) then exit;//27apr2021
 //init
-xlen:=icore.len;
+xlen:=icore.len32;
 lb:=icore.pbytes;
 //get
 if ((xpos+15)<xlen) then
@@ -27226,9 +29614,9 @@ if (xname='') or zznil(icore,2271) then goto skipend;
 //delete existing
 if xfind(xname,xpos,nlen,dlen,blen) then bdel1(icore,xpos+1,blen);
 //init
-nlen:=low__len(xname);
-dlen:=low__len(xvalue);
-xpos:=_blen(icore);
+nlen:=low__len32(xname);
+dlen:=low__len32(xvalue);
+xpos:=_blen32(icore);
 blen:=16+nlen+dlen;
 xlen:=xpos+blen;
 nref.val:=low__ref256u(xname);
@@ -27287,9 +29675,9 @@ if (xname='') or zznil(icore,2272) or (icore=xvalue) then goto skipend;
 //delete existing
 if xfind(xname,xpos,nlen,dlen,blen) then bdel1(icore,xpos+1,blen);
 //init
-nlen:=low__len(xname);
-dlen:=_blen(xvalue);
-xpos:=_blen(icore);
+nlen:=low__len32(xname);
+dlen:=_blen32(xvalue);
+xpos:=_blen32(icore);
 blen:=16+nlen+dlen;
 xlen:=xpos+blen;
 nref.val:=low__ref256u(xname);
@@ -27404,8 +29792,8 @@ xpos:=0;
 redo:
 if low__nextline0(xdata,xline,xpos) then
    begin
-   xlen:=xline.len;
-   pmax:=xline.len-1;
+   xlen:=xline.len32;
+   pmax:=xline.len32-1;
    if (pmax>=0) and (xline.pbytes<>nil) then//27apr2021
       begin
       //init
@@ -27545,13 +29933,13 @@ str__lock(@xval);
 aname:=str__new8;
 aval:=str__new8;
 xpos:=0;
-xlen:=xval.len;
+xlen:=xval.len32;
 //hdr
 if (hdr<>'') then
    begin
-   aval.add3(xval,0,low__len(hdr));
+   aval.add3(xval,0,low__len32(hdr));
    if not strmatch(hdr,aval.text) then goto skipend;
-   inc(xpos,low__len(hdr));
+   inc(xpos,low__len32(hdr));
    end;
 //name+value sets
 redo:
@@ -27604,43 +29992,53 @@ function tmask8.resize(w,h:longint):boolean;
 var
    p,dy,xcount,xrowsize:longint;
 begin
+
 //defaults
-result:=false;
+result    :=false;
 
 try
+
 //init
-w:=frcmin32(w,1);
-h:=frcmin32(h,1);
-xrowsize:=(w div iblocksize)*iblocksize;//round up to nearest block of 12b
+w         :=frcmin32(w,1);
+h         :=frcmin32(h,1);
+xrowsize  :=(w div iblocksize)*iblocksize;//round up to nearest block of 12b
+
 if (xrowsize<>w) then inc(xrowsize,iblocksize);
-xcount:=(h*xrowsize);
+
+xcount    :=(h*xrowsize);
+
 //get
 if (xcount<>icore.len) and icore.setlen(xcount) then//27apr2021
    begin
-   irowsize:=xrowsize;
-   iwidth:=w;
-   iheight:=h;
-   ibytes:=icore.core;
-   icount:=xcount;
+
+   irowsize  :=xrowsize;
+   iwidth    :=w;
+   iheight   :=h;
+   ibytes    :=icore.core;
+   icount    :=xcount;
+
    //rows
-   p:=0;
-//   app__fasttimer;
+   p         :=0;
+
    irows.setlen(h*sizeof(pointer));
-//   app__fasttimer;
-   irows96:=irows.core;
-   irows8:=irows.core;
+
+   irows96 :=irows.core;
+   irows8  :=irows.core;
+
    for dy:=0 to (h-1) do
    begin
+
    irows96[dy]:=icore.scanline(p);
    inc(p,irowsize);
 
-   //fasttimer - ycheck
-//   inc(sysfasttimer_ycount); if (sysfasttimer_ycount>=sysfasttimer_ytrigger) then fasttimer_ycheck;
    end;//dy
+
    //successful
-   result:=true;
+   result :=true;
+
    end
 else result:=true;
+
 except;end;
 end;
 
@@ -28047,7 +30445,10 @@ b:=str__new8;
 b.text:=text;
 result:=io__tofile(x,@b,e);
 except;end;
-try;str__free(@b);except;end;
+
+//free
+str__free(@b);
+
 end;
 
 function tfastvars.fromfile(x:string;var e:string):boolean;
@@ -28066,7 +30467,10 @@ if io__fromfile(x,@b,e) then
    result:=true;
    end;
 except;end;
-try;str__free(@b);except;end;
+
+//free
+str__free(@b);
+
 end;
 
 procedure tfastvars.setdata(xdata:tstr8);//20aug2024: upgraded to handle more data variations, e.g. "name: value" or "name:value" or "name   " -> originally only the first instance was accepted, now all 3 are
@@ -28095,8 +30499,8 @@ xpos:=0;
 redo:
 if low__nextline0(xdata,xline,xpos) then
    begin
-   xlen:=xline.len;
-   pmax:=xline.len-1;
+   xlen:=xline.len32;
+   pmax:=xline.len32-1;
    if (pmax>=0) and (xline.pbytes<>nil) then//27apr2021
       begin
       //init
@@ -28240,7 +30644,7 @@ var
 begin
 try
 //init
-xlen:=low__len(x);
+xlen:=low__len32(x);
 xname:='';
 xvalue:='';
 t:=1;
@@ -28403,7 +30807,7 @@ xlen:=0;
 try
 if str__lock(x) and find(xname,xindex) then
    begin
-   xlen:=low__len(vs[xindex]);
+   xlen:=low__len32(vs[xindex]);
    if not xappend then str__clear(x);
    result:=str__sadd(x,vs[xindex]);
    end;
@@ -28596,12 +31000,12 @@ v:=gets(xname)+'-';//trailing dash
 vcount:=0;
 lp:=1;
 
-for p:=1 to low__len(v) do
+for p:=1 to low__len32(v) do
 begin
 if (v[p-1+stroffset]='-') then
    begin
    str1:=strcopy1(v,lp,p-lp);
-   int1:=strint(str1);
+   int1:=strint32(str1);
 
    case vcount of
    0:y :=frcrange32(int1,1900,max32);
@@ -28808,7 +31212,10 @@ if low__encrypt2(s,d,xpass,xpower,xencrypt,e) then
    end
 else s.clear;//13jun2022
 except;end;
-try;str__free(@d);except;end;
+
+//free
+str__free(@d);
+
 end;
 
 function low__encrypt2(s,d:tstr8;xpass:string;xpower:longint;xencrypt:boolean;var e:string):boolean;
@@ -28879,7 +31286,7 @@ end;
 
 constructor ttbt.create;
 var
-   p:integer;
+   p:longint32;
 begin
 //self
 if classnameis('ttbt') then track__inc(satTBT,1);
@@ -28911,7 +31318,7 @@ begin
 if low__setstr(ipassword,x) then ikeymodified:=true;
 end;
 
-procedure ttbt.setpower(x:integer);
+procedure ttbt.setpower(x:longint32);
 begin
 if low__setint(ipower,frcrange32(x,2,1000)) then ikeymodified:=true;
 end;
@@ -29071,9 +31478,9 @@ str__uaf(@d);
 except;end;
 end;
 
-function ttbt.keyid(x:tstr8;var id:integer):boolean;
+function ttbt.keyid(x:tstr8;var id:longint32):boolean;
 var
-   xlen,tmp,p:integer;
+   xlen,tmp,p:longint32;
    v:byte;
 begin
 //defaults
@@ -29122,7 +31529,7 @@ const
    klimit=1000;
 var
    i4:tint4;
-   cc,sLEN,cs,rc,p:integer;
+   cc,sLEN,cs,rc,p:longint32;
    tmp,h,j,k,kr:tstr8;
    ref64,ref64b:comp;
 begin
@@ -29261,7 +31668,7 @@ label
    skipend;
 var
    i4:tint4;
-   pw2,cc,sLEN,dLEN,cs,rc,p:integer;
+   pw2,cc,sLEN,dLEN,cs,rc,p:longint32;
    dHDR,tmp,h,j,k,kr:tstr8;
    pw:twrd2;
    int1:longint;
@@ -29336,8 +31743,8 @@ else
    if not frs(kr,tmp,tbtEncode) then goto skipend;
    //.store -> faster than using "push" - 16nov2016
    //was: dref:=pdlbyte1(pchar(tmp));
-   //was: for int1:=low__len(tmp) downto 1 do sref[dlen+int1]:=dref[int1];
-   //was: inc(dlen,low__len(tmp));
+   //was: for int1:=low__len32(tmp) downto 1 do sref[dlen+int1]:=dref[int1];
+   //was: inc(dlen,low__len32(tmp));
    for int1:=tmp.len downto 1 do s.pbytes[dlen+int1-1]:=tmp.pbytes[int1-1];
    inc(dlen,tmp.len);
    //.breath - 02mar2015
@@ -29525,8 +31932,8 @@ else
    if not frs(kr,tmp,tbtDecode) then goto skipend;
    //.store -> faster than using "push" - 16nov2016
    //was: dref:=pdlbyte1(pchar(tmp));
-   //was: for int1:=low__len(tmp) downto 1 do sref[dlen+int1]:=dref[int1];
-   //was: inc(dlen,low__len(tmp));
+   //was: for int1:=low__len32(tmp) downto 1 do sref[dlen+int1]:=dref[int1];
+   //was: inc(dlen,low__len32(tmp));
    for int1:=tmp.len downto 1 do s.pbytes[dlen+int1-1]:=tmp.pbytes[int1-1];
    inc(dlen,tmp.len);
    //.cs
@@ -29600,7 +32007,7 @@ result:=false;
 e:=gecTaskfailed;
 str__af(@s);
 end;
-{$endif}
+{$endif}//----------------------------------------------------------------------
 
 
 //encoder procs -------------------------------------------------------------
@@ -29623,8 +32030,8 @@ if (x.len<=0) then
    goto skipend;
    end;
 //init
-lt:=x.len;
-el:=ekey.len;
+lt:=x.len32;
+el:=ekey.len32;
 e:=0;
 elist:=ekey.pbytes;
 xlist:=x.pbytes;
@@ -29709,7 +32116,7 @@ xlist:=result.pbytes;
 //get
 if (result.len>=1) then
    begin
-   for p:=1 to result.len do xlist[p-1]:=xmap[random(50)];
+   for p:=1 to result.len32 do xlist[p-1]:=xmap[random(50)];
    end;
 except;end;
 end;
@@ -29760,7 +32167,7 @@ true:begin//encrypt
     //generate random key
     k:=low__ecapk;
     str__lock(@k);//hold onto this value
-    klen:=k.len;
+    klen:=k.len32;
     //encrypt
     if not low__stdencrypt(x,k,ee) then goto skipend;
     //header - kLlength(1),Key(10-50),eData(0..X)}
@@ -29817,11 +32224,11 @@ xref:=nil;
 if zznil(xdata,2011) or zznil(x,2012) then goto skipend;
 //init
 sindex:=low(xstyle);
-xlen:=x.len;
+xlen:=x.len32;
 //.xdata -> encryption key
 //was: if (xdata='') then xdata:=strcopy1(#9#251#34#22#10#29#175#174#103#28#62#91#61#01#78,3,99);
 if (xdata.len=0) then xdata.aadd1([9,251,34,22,10,29,175,174,103,28,62,91,61,1,78],3,99);
-xdatalen:=xdata.len;
+xdatalen:=xdata.len32;
 //.xref
 xref:=str__new8;
 //loop
@@ -29849,7 +32256,7 @@ end;
 else xref:=#8#2#5#7#1#5#2#9#5#18#44#29#13#14#37#22#1#4#2#6#7#2#11;
 {}//end
 
-xreflen:=xref.len;
+xreflen:=xref.len32;
 //.decrypt
 if (s>=200) then
    begin
@@ -30020,7 +32427,7 @@ v2:=nil;
 //check
 if (not str__lock(@x)) or (x.len<=0) then goto skipend;
 //get
-xlen:=x.len;
+xlen:=x.len32;
 v32:=low__crc32seedable(x,8234723);
 //.v1 - 09nov2019
 v1:=str__new8;
@@ -30123,8 +32530,8 @@ if (x.len<8) then
 dlen:=x.int4[0];
 v32:=x.int4[x.len-1-3];
 bdel1(x,1,4);
-bdel1(x,x.len-3,4);
-xlen:=x.len;
+bdel1(x,x.len32-3,4);
+xlen:=x.len32;
 //.error check #2
 if (dlen<=0) then
    begin
@@ -30236,7 +32643,10 @@ a.text:=x;
 low__cemix(a);
 if xasarray then result:=a.textarray else result:=a.text;
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 function low__cemix(x:tstr8):boolean;//critical-encoder dual layer
@@ -30618,7 +33028,10 @@ else if (bp=0) then showtext('Bad number B')
 else if not io__tofile(xfilename,@x,e) then showtext('Save failed: '+e);
 skipend:
 except;end;
-try;str__free(@x);except;end;//28jan2021
+
+//free
+str__free(@x);//28jan2021
+
 end;
 
 function amakecheck(const x:array of byte):longint;
@@ -30828,7 +33241,7 @@ begin
 result:=true;
 str__uaf(@x);
 end;
-{$endif}
+{$endif}//----------------------------------------------------------------------
 
 
 //-- multi-undo procs ----------------------------------------------------------
@@ -30848,7 +33261,7 @@ xlimit:=frcrange32(xlimit,2,255);//Note: 2..255 => 0..254 with 255 reserved as a
 x.setlen(xlimit+2);
 x.pbytes[0]:=255;
 x.pbytes[1]:=255;
-for p:=2 to (x.len-1) do x.pbytes[p]:=p-2;//0..254
+for p:=2 to (x.len32-1) do x.pbytes[p]:=p-2;//0..254
 //successful
 result:=true;
 except;end;
@@ -30951,7 +33364,7 @@ f.clear;
 if (x.len<3) then goto skipend;
 //get
 bc:=0;
-for p:=0 to (x.len-1) do
+for p:=0 to (x.len32-1) do
 begin
 v:=x.pbytes[p];
 if (v=255) then inc(bc)
@@ -31015,7 +33428,7 @@ if not mundo__split(x,u,r,f) then goto skipdone;
 //roll
 if (r.len>=1) then
    begin
-   result:=r.pbytes[r.len-1];
+   result:=r.pbytes[r.len32-1];
    r.del3(r.len-1,1);
    r.ains([result],0);//at top of redo list
    mundo__make(x,u,r,f);
@@ -31082,7 +33495,7 @@ function mundo__redocount(x:tstr8):longint;
 var
    u,r,f:tstr8;
 begin
-if mundo__startsplit(x,u,r,f) then result:=r.len else result:=0;
+if mundo__startsplit(x,u,r,f) then result:=r.len32 else result:=0;
 mundo__finish(x,u,r,f);
 end;
 
@@ -31098,7 +33511,7 @@ try
 //get
 if mundo__startsplit(x,u,r,f) and (r.len>=1) and (xindex>=0) then
    begin
-   xslot:=f.pbytes[frcrange32(xindex,0,r.len-1)];
+   xslot:=f.pbytes[frcrange32(xindex,0,r.len32-1)];
    result:=true;
    end;
 except;end;
@@ -31127,7 +33540,7 @@ function mundo__undocount(x:tstr8):longint;
 var
    u,r,f:tstr8;
 begin
-if mundo__startsplit(x,u,r,f) then result:=u.len else result:=0;
+if mundo__startsplit(x,u,r,f) then result:=u.len32 else result:=0;
 mundo__finish(x,u,r,f);
 end;
 
@@ -31143,7 +33556,7 @@ try
 //get
 if mundo__startsplit(x,u,r,f) and (u.len>=1) and (xindex>=0) then
    begin
-   xslot:=f.pbytes[frcrange32(xindex,0,u.len-1)];
+   xslot:=f.pbytes[frcrange32(xindex,0,u.len32-1)];
    result:=true;
    end;
 except;end;
@@ -31159,7 +33572,7 @@ result:=false;
 try
 if (x<>nil) and (x.len>=3) then
    begin
-   for p:=0 to (x.len-1) do if (x.pbytes[p]=255) then break else result:=true;
+   for p:=0 to (x.len32-1) do if (x.pbytes[p]=255) then break else result:=true;
    end;
 except;end;
 end;
@@ -31180,7 +33593,7 @@ if not str__lock(@x) then exit;
 //get
 if mundo__start(u,r,f) and mundo__split(x,u,r,f) and (u.len>=1) then
    begin
-   xslot:=u.pbytes[u.len-1];
+   xslot:=u.pbytes[u.len32-1];
    u.del3(u.len-1,1);
    r.ains([xslot],0);
    mundo__make(x,u,r,f);
@@ -31200,7 +33613,7 @@ result:=false;
 try
 if (x<>nil) and (x.len>=3) then
    begin
-   xlen:=x.len;
+   xlen:=x.len32;
    for p:=0 to (xlen-1) do
    begin
    if (x.pbytes[p]=255) then
@@ -31252,11 +33665,11 @@ mundo__start(u,r,f);
 if mundo__split(x,u,r,f) then
    begin
    result:='u( ';
-   if (u.len>=1) then for p:=0 to (u.len-1) do result:=result+intstr32(u.pbytes[p])+' ';
+   if (u.len>=1) then for p:=0 to (u.len32-1) do result:=result+intstr32(u.pbytes[p])+' ';
    result:=result+') r( ';
-   if (r.len>=1) then for p:=0 to (r.len-1) do result:=result+intstr32(r.pbytes[p])+' ';
+   if (r.len>=1) then for p:=0 to (r.len32-1) do result:=result+intstr32(r.pbytes[p])+' ';
    result:=result+') f( ';
-   if (f.len>=1) then for p:=0 to (f.len-1) do result:=result+intstr32(f.pbytes[p])+' ';
+   if (f.len>=1) then for p:=0 to (f.len32-1) do result:=result+intstr32(f.pbytes[p])+' ';
    result:=result+')';
    end;
 except;end;

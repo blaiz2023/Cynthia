@@ -7,6 +7,7 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gosswin2, gossroot, gossio, gosswin;
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
@@ -14,7 +15,7 @@ uses gosswin2, gossroot, gossio, gosswin;
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -47,6 +48,7 @@ uses gosswin2, gossroot, gossio, gosswin;
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
@@ -218,7 +220,7 @@ type
 
 var
    //.started
-   system_started      :boolean=false;
+   system_started_net  :boolean=false;
    //.network
    system_net_session  :boolean=false;
    system_net_sesinfo  :TWSAData;
@@ -396,7 +398,7 @@ var
 begin
 try
 //check
-if system_started then exit else system_started:=true;
+if system_started_net then exit else system_started_net:=true;
 
 //network support
 for p:=0 to (system_net_limit-1) do net__initrec(@system_net_slot[p]);
@@ -410,7 +412,7 @@ procedure gossnet__stop;
 begin
 try
 //check
-if not system_started then exit else system_started:=false;
+if not system_started_net then exit else system_started_net:=false;
 
 net__closesession;
 
@@ -480,11 +482,11 @@ if not str__lock(@s) then exit;
 try
 //init
 xdomain :=strcopy1(xdomain,1,255)+'.';
-xlen    :=low__len(xdomain);
+xlen    :=low__len32(xdomain);
 qtype   :=frcrange32(qtype,0,max16);
 
 //init
-i:=s.len;
+i:=restrict32(s.len);
 s.addwrd2R(0);//tcp data length - modified last
 
 //header
@@ -504,7 +506,7 @@ lp:=1;
 for p:=1 to xlen do if (xdomain[p-1+stroffset]='.') then
    begin
    v   :=strcopy1(xdomain,lp,p-lp);
-   vlen:=low__len(v);
+   vlen:=low__len32(v);
    lp  :=p+1;
 
    if (vlen>=1) then
@@ -526,7 +528,7 @@ s.addwrd2R(qtype);
 s.addwrd2R(1);
 
 //.tcp data length
-s.wrd2R[i]:=frcmin32(s.len-i-2,0);
+s.wrd2R[i]:=frcmin32(restrict32(s.len)-i-2,0);
 
 //set
 result:=true;
@@ -611,7 +613,7 @@ if not str__lock(@s) then exit;
 try
 //init
 xpos:=0;
-slen:=s.len;
+slen:=restrict32(s.len);
 if (slen<2) or (slen<(2+s.wrd2R[0])) then goto skipend;
 a   :=str__new8;
 
@@ -838,7 +840,7 @@ xcount :=0;
 lp     :=1;
 
 //get
-for p:=1 to low__len(x) do if (x[p-1+stroffset]='.') then
+for p:=1 to low__len32(x) do if (x[p-1+stroffset]='.') then
    begin
    //set
    if (xcount>=0) and (xcount<=3) then a.bytes[xcount]:=frcrange32( strint32( strcopy1(x,lp,p-lp) ),0,255);
@@ -879,7 +881,7 @@ var
 begin
 //defaults
 result :='';
-xlen   :=low__len(x);
+xlen   :=low__len32(x);
 xpos   :=1;
 a      :=nil;
 
@@ -1551,14 +1553,17 @@ var
    v,xp,xlen,p:longint;
 begin
 try
+
 //init
-xlen:=low__len(x);
+xlen:=low__len32(x);
 if (xlen=0) then exit;
+
 //get
 xp:=0;
 p:=1;
 repeat
 v:=byte(x[p-1+stroffset]);
+
 //decide
 if (v=sspercentage) then
    begin
@@ -1568,11 +1573,14 @@ if (v=sspercentage) then
    end
 else if (v=ssplus) then x[p-1+stroffset+xp]:=#32
 else x[p-1+stroffset+xp]:=x[p-1+stroffset];
+
 //inc
 inc(p);
 until (p>xlen);
+
 //.size
 x:=strcopy1(x,1,xlen+xp);
+
 except;end;
 end;
 
@@ -1585,15 +1593,20 @@ function net__encodeforhtml2(s,d:tstr8;xuseincludelist,xuseskiplist:boolean;cons
 label
    decide,skipone,skipend;
 var
+   lsp,p:longint3264;
    v:byte;
-   lsp,slen,p,p2:longint;
+   slen:longint64;
+   p2:longint32;
    bol1,xincludelistok,xskiplistok:boolean;
 begin
+
+//defaults
 result:=false;
 
 try
 //defaults
 if not low__true2(str__lock(@s),str__lock(@d)) then goto skipend;
+
 //init
 d.clear;
 slen:=s.len;
@@ -1603,42 +1616,56 @@ lsp:=0;
 if (slen<=0) then exit;
 
 //get
-xincludelistok:=xuseincludelist and (sizeof(xincludelist)>=1);
-xskiplistok:=xuseskiplist and (sizeof(xskiplist)>=1);
-p:=0;
+xincludelistok  :=xuseincludelist and (sizeof(xincludelist)>=1);
+xskiplistok     :=xuseskiplist and (sizeof(xskiplist)>=1);
+p               :=0;
+
 repeat
+
 //get
 v:=s.pbytes[p];
-
 
 //.includelist - overrides the skiplist - 15apr2024
 if xincludelistok then
    begin
    bol1:=false;
+
    for p2:=low(xincludelist) to high(xincludelist) do if (v=xincludelist[p2]) then
       begin
+
       bol1:=true;
       break;
+
       end;
+
    case bol1 of
    true:goto decide;
    else begin
+
       if (v=32) then lsp:=0;
+
       d.sadd(char(v));
       goto skipone;
+
       end;
+
    end;//case
    end;
 
 //.skiplist - 08apr2024
 if xskiplistok then
    begin
+
    for p2:=low(xskiplist) to high(xskiplist) do if (v=xskiplist[p2]) then
       begin
+
       if (v=32) then lsp:=0;
+
       d.sadd(char(v));
       goto skipone;
+
       end;//p2
+
    end;
 
 //scan  <=60, >=62, "=34, '=39 &=38, space=32, rcode=10/13, tab=9
@@ -1646,8 +1673,10 @@ decide:
 case v of
 9:d.sadd('&#9;');//**
 32:begin
+
    if (lsp=(p-1)) then d.sadd('&nbsp;') else d.sadd(#32);
    lsp:=p;
+
    end;
 34:d.sadd('&quot;');
 38:d.sadd('&amp;');
@@ -1782,19 +1811,23 @@ case v of
 255:d.sadd('&yuml;');
 else d.sadd(char(s.pbytes[p]));
 end;//case
+
 //.inc
 skipone:
+
 inc(p);
 until (p>=slen);
+
 //successful
 result:=true;
 
 skipend:
 except;end;
-try
+
+//free
 str__uaf(@s);
 str__uaf(@d);
-except;end;
+
 end;
 
 function net__encodeforhtmlstr(x:string):string;
@@ -1829,31 +1862,41 @@ function net__encodeurl(s,d:tstr8;xleaveslash:boolean):boolean;//01apr2024: adde
 label
    skipend;
 var
-   slen,p:longint;
+   slen:longint64;
+   p:longint32;
    v:byte;
 begin
+
 //defaults
 result:=false;
 
 try
 //check
 if not low__true2(str__lock(@s),str__lock(@d)) then goto skipend;
+
 //init
 d.clear;
 slen:=s.len;
+
 //check
 if (slen<=0) then exit;
 
 //get
 p:=0;
+
 repeat
+
 v:=s.pbytes[p];
+
 if (v<=32) or (v>=127) or (v=35) or (v=sspert) or (v=43) then
    begin
+
    //hash and "+" must be encoded (special cases) - fixed 15jan2024
    if (v<>ssSlash) or xleaveslash then d.sadd('%'+low__hex(v)) else d.addbyt1(v);
+
    end
 else d.addbyt1(v);
+
 //inc
 inc(p);
 until (p>=slen);
@@ -1862,10 +1905,11 @@ until (p>=slen);
 result:=true;
 skipend:
 except;end;
-try
+
+//free
 str__uaf(@s);
 str__uaf(@d);
-except;end;
+
 end;
 
 function net__encodeurlstr(x:string;xleaveslash:boolean):string;
@@ -1905,11 +1949,12 @@ begin//multipart/form-data
 result:=false;
 
 try
+//init
 boundary:='';
-mlen:=low__len(m);
+mlen:=low__len32(m);
 
 //check
-clen:=low__len(xcontenttype);
+clen:=low__len32(xcontenttype);
 if (clen<=0) then goto skipend;
 
 //get
@@ -1926,11 +1971,11 @@ if strmatch(strcopy1(xcontenttype,1,mlen),m) then
 //.strip "boundary="
 if (boundary<>'') then
    begin
-   for p:=1 to low__len(boundary) do
+   for p:=1 to low__len32(boundary) do
    begin
    if (boundary[p-1+stroffset]='=') then
       begin
-      boundary:=strcopy1(boundary,p+1,low__len(boundary));
+      boundary:=strcopy1(boundary,p+1,low__len32(boundary));
       break;
       end;
    end;//p
@@ -2042,7 +2087,7 @@ xslot:=-1;//failed -> all procs understand this value
 if (ipsec__count<=0) then exit;
 
 //init
-alen:=frcmax32(low__len(xaddr), 1+high(system_ipsec_slot[0].addr) );//ignore any trailing parts of the address -> should not exceed 39 bytes for a FULL IPv6 address with [...] square brackets included
+alen:=frcmax32(low__len32(xaddr), 1+high(system_ipsec_slot[0].addr) );//ignore any trailing parts of the address -> should not exceed 39 bytes for a FULL IPv6 address with [...] square brackets included
 //.address must be 1+ chars in length
 if (alen<=0) then exit;
 aref:=0;//don't fill it till we need it
@@ -2199,7 +2244,7 @@ if not result then
    //.get new slot -> always returns a valid value, even if it has to wipe an existing record (note: in this case the record's lockcount is retained for maximum stability)
    xslot:=ipsec__newslot;
    //.fill in the name information
-   system_ipsec_slot[xslot].alen:=frcmax32(low__len(xaddr), 1+high(system_ipsec_slot[0].addr) );//ignore any trailing parts of the address -> should not exceed 39 bytes for a FULL IPv6 address with [...] square brackets included
+   system_ipsec_slot[xslot].alen:=frcmax32(low__len32(xaddr), 1+high(system_ipsec_slot[0].addr) );//ignore any trailing parts of the address -> should not exceed 39 bytes for a FULL IPv6 address with [...] square brackets included
    system_ipsec_slot[xslot].aref:=low__ref32u(xaddr);//never zero
    system_ipsec_slot[xslot].aref2:=low__ref32u(strcopy1(xaddr,10,system_ipsec_slot[xslot].alen));//maybe zero
    //.fill in the name

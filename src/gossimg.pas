@@ -7,6 +7,7 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gosswin2, gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpeg},gossjpg{$endif};
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
@@ -14,7 +15,7 @@ uses gosswin2, gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpe
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -30,9 +31,9 @@ uses gosswin2, gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpe
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. image/graphics (gossimg.pas)
-//## Version.................. 4.00.16003 (+357)
+//## Version.................. 4.00.16013 (+357)
 //## Items.................... 27
-//## Last Updated ............ 09nov2025, 08nov2025, 24oct2025, 05oct2025, 03oct2025, 26sep2025, 18sep2025, 13sep2025, 04sep2025, 27aug2025, 08aug2025, 25jul2025, 16jul2025, 19jun2025, 12jun2025, 09jun2025, 29may2025, 26apr2025, 23mar2025, 22feb2025, 05feb2025, 31jan2025, 02jan2025, 27dec2024, 27nov2024, 15nov2024, 18aug2024, 26jul2024, 17apr2024
+//## Last Updated ............ 01dec2025, 09nov2025, 08nov2025, 24oct2025, 05oct2025, 03oct2025, 26sep2025, 18sep2025, 13sep2025, 04sep2025, 27aug2025, 08aug2025, 25jul2025, 16jul2025, 19jun2025, 12jun2025, 09jun2025, 29may2025, 26apr2025, 23mar2025, 22feb2025, 05feb2025, 31jan2025, 02jan2025, 27dec2024, 27nov2024, 15nov2024, 18aug2024, 26jul2024, 17apr2024
 //## Lines of Code............ 31,300+
 //##
 //## main.pas ................ app code
@@ -47,6 +48,7 @@ uses gosswin2, gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpe
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
@@ -54,7 +56,7 @@ uses gosswin2, gossroot, gossio, gosswin {$ifdef gui},gossdat{$endif}{$ifdef jpe
 //## | Name                   | Hierarchy         | Version    | Date        | Update history / brief description of function
 //## |------------------------|-------------------|------------|-------------|--------------------------------------------------------
 //## | tbasicimage            | tobject           | 1.00.187   | 07dec2023   | Lightweight + fast system independent image, not resizable, supports 8/24/32 bit pixel depth - 09may2022, 27jul2021, 25jan2021, ??jan2020: created
-//## | twinbmp                | tobject           | 1.00.160   | 04sep2025   | Replacement for tbitmap - 27aug2025: GDI handling upgrades, 27aug2025, 01may2025, 26apr2025
+//## | twinbmp                | tobject           | 1.00.170   | 01dec2025   | Replacement for tbitmap - 27aug2025: GDI handling upgrades, 04sep2025, 27aug2025, 01may2025, 26apr2025
 //## | trawimage              | tobject           | 1.00.070   | 26apr2025   | Independent resizeable image -> persistent pixel rows and supports 8/24/32 bit color depth - 27dec2024, 25jul2024: created
 //## | c8__/c24__/c32__/int__ | family of procs   | 1.00.275   | 03oct2025   | Graphic color conversion procs - 16sep2025, 13sep2025, 16jul2025, 06may2025, 18feb2025
 //## | mis*/mis__*            | family of procs   | 1.00.10504 | 08nov2025   | Graphic procs for working with multiple different image objects - 18sep2025, 06jun2025, 09may2025, 27dec2024, 27nov2024
@@ -276,6 +278,7 @@ type
 {tbasicimage}
    tbasicimage=class(tobject)
    private
+
     idata,irows:tstr8;
     ibits,iwidth,iheight:longint;
     iprows8 :pcolorrows8;
@@ -283,10 +286,13 @@ type
     iprows24:pcolorrows24;
     iprows32:pcolorrows32;
     istable:boolean;
+
     procedure setareadata(sa:twinrect;sdata:tstr8);
     function getareadata(sa:twinrect):tstr8;
     function getareadata2(sa:twinrect):tstr8;
+
    public
+
     //animation support
     ai:tanimationinformation;
     dtransparent:boolean;
@@ -294,10 +300,12 @@ type
     oaddress:string;//used for "AAS" to load from a specific folder - 30NOV2010
     ocleanmask32bpp:boolean;//default=false, true=reads only the upper levels of the 8bit mask of a 32bit icon/cursor to eliminate poor mask quality - ccs.fromicon32() etc - 26JAN2012
     rhavemovie:boolean;//default=false, true=object has a movie as it's animation
+
     //create
     constructor create; virtual;
     destructor destroy; override;
     function copyfrom(s:tbasicimage):boolean;//09may2022, 09feb2022
+
     //information
     property stable:boolean read istable;
     property bits:longint read ibits;
@@ -308,15 +316,19 @@ type
     property prows24:pcolorrows24 read iprows24;
     property prows32:pcolorrows32 read iprows32;
     property rows:tstr8 read irows;
+
     //workers
     function sizeto(dw,dh:longint):boolean;
     function setparams(dbits,dw,dh:longint):boolean;
     function findscanline(slayer,sy:longint):pointer;
+
     //io
     function todata:tstr8;//19feb2022
     function fromdata(s:tstr8):boolean;//19feb2022
+
     //core
     property data:tstr8 read idata;
+
     //.raw data handlers
     function setraw(dbits,dw,dh:longint;ddata:tstr8):boolean;
     function getarea(ddata:tstr8;da:twinrect):boolean;//07dec2023
@@ -324,6 +336,7 @@ type
     function setarea(ddata:tstr8;da:twinrect):boolean;//07dec2023
     property areadata[sa:twinrect]:tstr8 read getareadata write setareadata;
     property areadata_fast[sa:twinrect]:tstr8 read getareadata2 write setareadata;
+
    end;
 
 {trawimage}
@@ -422,7 +435,7 @@ type
 
     //setparams
     function setparams(dbits,dw,dh:longint):boolean;
-    function setparams2(dbits,dw,dh:longint;dforce:boolean):boolean;
+    function setparams2(dbits,dw,dh:longint;dforce:boolean):boolean;//01dec2025
 
     //scanline
     property rows         :tstr8         read irows;
@@ -478,7 +491,7 @@ type
    // A Hash Key is 20 bits wide.
     // - The lower 8 bits are the postfix character (the new pixel).
     // - The upper 12 bits are the prefix code (the GIF token).
-    // A KeyInt must be able to represent the integer values -1..(2^20)-1
+    // A KeyInt must be able to represent the longint32 values -1..(2^20)-1
     //KeyInt = longInt;	// 32 bits
     //CodeInt = SmallInt;	// 16 bits
     thasharray=array[0..hashsize-1] of longint;
@@ -496,7 +509,7 @@ type
 
 var
    //.started
-   system_started      :boolean=false;
+   system_started_img    :boolean=false;
 
    //.ref arrays
    ref65025_div_255      :array[0..65025] of byte;//06apr2017
@@ -567,8 +580,8 @@ procedure low__checkbyte;
 
 //graphics procs ---------------------------------------------------------------
 procedure low__scaledown(maxw,maxh,sw,sh:longint;var dw,dh:longint);//20feb2025: tweaked, 29jul2016
-procedure low__scale(maxw,maxh,sw,sh:integer;var dw,dh:integer);//20feb2025: tweaked
-procedure low__scalecrop(maxw,maxh,sw,sh:integer;var dw,dh:integer);//20feb2025: fixed
+procedure low__scale(maxw,maxh,sw,sh:longint32;var dw,dh:longint32);//20feb2025: tweaked
+procedure low__scalecrop(maxw,maxh,sw,sh:longint32;var dw,dh:longint32);//20feb2025: fixed
 
 function low__cornerMaxwidth:longint;//used by some patch systems to work around corner restrictions such as "statusbar.cellpert.round/square" - 07ul2021
 function low__cornersolid(xdynamicCorners:boolean;var a:twinrect;amin,ay,xmin,xmax,xroundstyle:longint;xround:boolean;var lx,rx:longint):boolean;//29mar2021
@@ -802,7 +815,7 @@ function misblur82432(s:tobject):boolean;//03sep2021
 function misblur82432b(s:tobject;xwraprange:boolean;xpower255,xtranscol:longint):boolean;//11sep2021, 03sep2021
 function misblur82432c(s:tobject;scliparea:twinrect;xwraprange:boolean;xpower255,xtranscol:longint):boolean;//17may2022 - cell-based clipping, 27apr2022, 11sep2021, 03sep2021
 function misblur82432d(s:tobject;scliparea:twinrect;xwraprange:boolean;xpower255,xtranscol,xstage:longint):boolean;//30dec2022 - stage support (-1 to 2), 17may2022 - cell-based clipping, 27apr2022, 11sep2021, 03sep2021
-function misIconArt82432(s,s2:tobject;xzoom,xbackcolor,xtranscolor:longint;xpadding:boolean):boolean;//17sep2022 - fixed integer overflow error, 27apr2022
+function misIconArt82432(s,s2:tobject;xzoom,xbackcolor,xtranscolor:longint;xpadding:boolean):boolean;//17sep2022 - fixed longint32 overflow error, 27apr2022
 function miscrop82432(s:tobject):boolean;
 function miscrop82432b(s:tobject;t32:tcolor32;var l,t,r,b:longint;xcalonly,xusealpha,xretainT32:boolean):boolean;//21jun20221
 //.frame "universal" drawer
@@ -838,15 +851,15 @@ type
    end;
    panirec=^tanirec;
    tanirec=packed record
-     cbSizeOf:dword;// Num bytes in AniHeader (36 bytes)
-     cFrames:dword;// Number of unique Icons in this cursor
-     cSteps:dword;// Number of Blits before the animation cycles
-     cx:dword;// reserved, must be zero.
-     cy:dword;// reserved, must be zero.
-     cBitCount:dword;// reserved, must be zero.
-     cPlanes:dword;// reserved, must be zero.
-     JifRate:dword;//Note: 1xJiffy=1/60s=16.666ms - Default Jiffies (1/60th of a second) if rate chunk not present.
-     flags:dword;// Animation Flag (see AF_ constants) - #define AF_ICON =3D 0x0001L // Windows format icon/cursor animation
+     cbSizeOf:dword32;// Num bytes in AniHeader (36 bytes)
+     cFrames:dword32;// Number of unique Icons in this cursor
+     cSteps:dword32;// Number of Blits before the animation cycles
+     cx:dword32;// reserved, must be zero.
+     cy:dword32;// reserved, must be zero.
+     cBitCount:dword32;// reserved, must be zero.
+     cPlanes:dword32;// reserved, must be zero.
+     JifRate:dword32;//Note: 1xJiffy=1/60s=16.666ms - Default Jiffies (1/60th of a second) if rate chunk not present.
+     flags:dword32;// Animation Flag (see AF_ constants) - #define AF_ICON =3D 0x0001L // Windows format icon/cursor animation
    end;
 
 function low__findbpp82432(i:tobject;iarea:twinrect;imask32:boolean):longint;//limited color count 07feb2022, 19jan2021, 21-SEP-2004
@@ -1264,7 +1277,7 @@ function inta__int(x:longint;a:byte):longint;
 function c8__int(x:tcolor8):longint;
 function c24__int(x:tcolor24):longint;//16sep2025
 function c24a0__int(x:tcolor24):longint;//16sep2025
-function c32__int(x:tcolor32):longint;//16sep2025
+function c32__int(const x:tcolor32):longint;//16sep2025
 function c8a__int(x:tcolor8;a:byte):longint;
 function c24a__int(x:tcolor24;a:byte):longint;
 function rgba0__int(r,g,b:byte):longint;
@@ -1386,7 +1399,7 @@ function wincanvas__textwidth(x:hdc;const xval:string):longint;
 function wincanvas__textheight(x:hdc;const xval:string):longint;
 function wincanvas__textextent(x:hdc;const xval:string):tpoint;
 function wincanvas__textout(x:hdc;xtransparent:boolean;dx,dy:longint;const xval:string):boolean;
-function wincanvas__textrect(x:hdc;xtransparent:boolean;xarea:twinrect;dx,dy:longint;const xval:string):boolean;
+function wincanvas__textrect(const x:hdc;const xtransparent:boolean;const xarea:twinrect;const dx,dy:longint;const xval:string):boolean;//20dec2025
 
 
 implementation
@@ -1402,7 +1415,7 @@ var
 begin
 try
 //check
-if system_started then exit else system_started:=true;
+if system_started_img then exit else system_started_img:=true;
 
 
 //ref arrays -------------------------------------------------------------------
@@ -1483,7 +1496,7 @@ var
 begin
 try
 //check
-if not system_started then exit else system_started:=false;
+if not system_started_img then exit else system_started_img:=false;
 
 
 //temp support -----------------------------------------------------------------
@@ -1558,8 +1571,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gossimg.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.16003'
-else if (xname='date')       then result:='09nov2025'
+if      (xname='ver')        then result:='4.00.16013'
+else if (xname='date')       then result:='01dec2025'
 else if (xname='name')       then result:='Graphics'
 else
    begin
@@ -1861,11 +1874,11 @@ if rhavemovie             then v8.b['hmv']:=rhavemovie;
 //.info
 tmp:=v8.data;
 result.addint4(0);
-result.addint4(tmp.len);
+result.addint4(tmp.len32);
 result.add(tmp);
 //.pixels
 result.addint4(1);
-result.addint4(12+idata.len);
+result.addint4(12+idata.len32);
 result.addint4(bits);
 result.addint4(width);
 result.addint4(height);
@@ -1951,7 +1964,7 @@ xdata:=nil;
 //check
 if not str__lock(@s) then exit;
 //init
-xlen:=s.len;
+xlen:=s.len32;
 xpos:=0;
 v8:=vnew;
 xdata:=str__new8;
@@ -2073,7 +2086,7 @@ if not str__lock(@ddata) then exit;
 //get
 if (ddata<>nil) and (idata<>nil) then
    begin
-   xlen:=frcmax32(idata.len,ddata.len);
+   xlen:=frcmax32(idata.len32,ddata.len32);
    if (xlen>=1) then
       begin
       //was: for p:=0 to (xlen-1) do idata.pbytes[p]:=ddata.pbytes[p];
@@ -2125,7 +2138,7 @@ ddata.clear;
 if not validarea(da) then goto skipend;
 //get
 a:=misimg(bits,da.right-da.left+1,da.bottom-da.top+1);//image of same bit depth as ourselves
-result:=miscopyarea32(0,0,misw(a),mish(a),da,a,self) and ddata.addb(a.data);//copy area to this image and then return it's raw datastream - 07dec2023
+result:=miscopyarea32(0,0,misw(a),mish(a),da,a,self) and ddata.add(a.data);//copy area to this image and then return it's raw datastream - 07dec2023
 skipend:
 except;end;
 try
@@ -2282,7 +2295,7 @@ function trawimage.rowinfo(sy:longint):string;
 begin
 result:='none';
 //for p:=0 to 99 do icore.items[p]:=str__new8;//xxxxxxxxxx
-//if (sy>=0) and (sy<icore.count) and (icore.value[sy]<>nil) then result:=k64(icore.count)+'<<'+k64(str__len(cache__ptr(icore.value[sy])))+'<< len: '+k64(icore.value[sy].len)+', datalen: '+k64(icore.value[sy].datalen)+', ptr: '+k64(cardinal(icore.value[sy]));
+//if (sy>=0) and (sy<icore.count) and (icore.value[sy]<>nil) then result:=k64(icore.count)+'<<'+k64(str__len32(cache__ptr(icore.value[sy])))+'<< len: '+k64(icore.value[sy].len)+', datalen: '+k64(icore.value[sy].datalen)+', ptr: '+k64(cardinal(icore.value[sy]));
 if (sy>=0) and (sy<icore.count) and (icore.value[sy]<>nil) then result:='sy: '+k64(sy)+'>>'+k64(longint(icore))+'<<..'+k64(icore.count)+'<< len: '+k64(icore.value[sy].len)+', datalen: '+k64(icore.value[sy].datalen)+', ptr: '+k64(cardinal(icore.value[sy]));
 end;
 
@@ -2478,7 +2491,7 @@ xbackcolor:=int24__rgba0(xbackcolor);
 
 //brush
 low__cls(@b,sizeof(b));
-b.lbstyle:=0;//solid
+b.lbstyle:=0;//0;//solid
 b.lbcolor:=xbackcolor;
 b.lbhatch:=0;
 
@@ -2506,8 +2519,9 @@ f.lfUnderline     :=0;
 f.lfStrikeOut     :=0;
 f.lfCharSet       :=1;//DEFAULT_CHARSET=1, ANSI_CHARSET=0
 
-for p:=1 to frcmax32(low__len(xfontname),1+high(f.lfFaceName)) do f.lfFaceName[p-1]:=char(xfontname[p-1+stroffset]);
+for p:=1 to frcmax32(low__len32(xfontname),1+high(f.lfFaceName)) do f.lfFaceName[p-1]:=char(xfontname[p-1+stroffset]);
 
+//f.lfQuality       :=low__aorb(4,NONANTIALIASED_QUALITY,xsharp);
 f.lfQuality       :=low__aorb(4,NONANTIALIASED_QUALITY,xsharp);
 f.lfOutPrecision  :=0;//OUT_DEFAULT_PRECIS=0
 f.lfClipPrecision :=0;//CLIP_DEFAULT_PRECIS=0
@@ -2571,7 +2585,7 @@ if xnew then
 
 end;
 
-function twinbmp.setparams2(dbits,dw,dh:longint;dforce:boolean):boolean;
+function twinbmp.setparams2(dbits,dw,dh:longint;dforce:boolean):boolean;//01dec2025
 var//Note: GDI only goes as far as 24bit, so alpha value for 32bit pixels are not used/persistent
    dy:longint;
 begin
@@ -2585,6 +2599,13 @@ try
 dw:=frcmin32(dw,1);
 dh:=frcmin32(dh,1);
 if (dbits<>8) and (dbits<>16) and (dbits<>24) and (dbits<>32) then dbits:=32;
+
+//check - 01dec2025 -> inline with other image handlers
+if (dbits=ibits) and (dw=iwidth) and (dh=iheight) then
+   begin
+   result:=true;
+   exit;
+   end;
 
 //get
 if (dw<>iwidth) or (dh<>iheight) or (dbits<>ibits) or dforce then
@@ -3049,7 +3070,7 @@ var
    if vcompress and (v.len>=1) and (not low__compress(@v)) then exit;
 
    //get
-   str__addint4(d, i32(v.len) );
+   str__addint4(d, i32(v.len32) );
    str__aadd(d,n);
 
    if (v.len>=1) then str__add(d,@v);
@@ -3200,7 +3221,7 @@ var
       begin
       lv:=0;
 
-      for p:=xfrom0 to frcmax32(xfrom0+drowsize-1,x.len-1) do if (lv<>x.pbytes[p]) then
+      for p:=xfrom0 to frcmax32(xfrom0+drowsize-1,x.len32-1) do if (lv<>x.pbytes[p]) then
          begin
          inc(result,x.pbytes[p]);
          lv:=x.pbytes[p];
@@ -3215,9 +3236,9 @@ var
    begin
    //a = left, b=above, c=upper left
    p:=a+b-c;//initial estimate
-   pa:=abs(p-a);
-   pb:=abs(p-b);
-   pc:=abs(p-c);
+   pa:=math_abs(p-a);
+   pb:=math_abs(p-b);
+   pc:=math_abs(p-c);
 
    if (pa<=pb) and (pa<=pc) then result:=a
    else if (pb<=pc)         then result:=b
@@ -3594,7 +3615,7 @@ var
       if dok then str__add3(xdata,d,spos-1,xlen) else str__add3(xdata,@d64,spos-1,xlen);
       end;
 
-   if (str__len(xdata)<>xlen) then goto skipend;
+   if (str__len32(xdata)<>xlen) then goto skipend;
    inc(spos,xlen+4);//step over trailing crc32(4b)
 
    //successful
@@ -3608,9 +3629,10 @@ var
    begin
    //a = left, b=above, c=upper left
    p:=a+b-c;//initial estimate
-   pa:=abs(p-a);
-   pb:=abs(p-b);
-   pc:=abs(p-c);
+   pa:=math_abs(p-a);
+   pb:=math_abs(p-b);
+   pc:=math_abs(p-c);
+
    if (pa<=pb) and (pa<=pc) then result:=a
    else if (pb<=pc)         then result:=b
    else                          result:=c;
@@ -3678,7 +3700,7 @@ if not str__asame3(d,0,[137,80,78,71,13,10,26,10],true) then
    //.strip "b64:" header
    if str__asame3(d,0,[98,54,52,58],true) then
       begin
-      str__add3(@d64,d,4,str__len(d));
+      str__add3(@d64,d,4,str__len32(d));
       if not str__fromb64(@d64,@d64) then goto skipend;
       end
    //.raw base64 data (no header)
@@ -3698,7 +3720,7 @@ if not str__asame3(d,0,[137,80,78,71,13,10,26,10],true) then
 spos:=9;
 
 //IHDR                         //name   width.4     height.4   bitdepth.1  colortype.1 (6=R8,G8,B8,A8)  compressionMethod.1(#0 only = deflate/inflate)  filtermethod.1(#0 only) interlacemethod.1(#0=LR -> TB scanline order)
-if (not xpullchunk(xnam,@xval)) or (not low__comparearray(xnam,[uuI,uuH,uuD,uuR])) or (str__len(@xval)<13) then
+if (not xpullchunk(xnam,@xval)) or (not low__comparearray(xnam,[uuI,uuH,uuD,uuR])) or (str__len32(@xval)<13) then
    begin
    e:=gecDatacorrupt;
    goto skipend;
@@ -3751,7 +3773,7 @@ else if low__comparearray(xnam,[uuI,uuD,uuA,uuT]) then str__add(@xdata,@xval)
 //.plte
 else if low__comparearray(xnam,[uuP,uuL,uuT,uuE]) then
    begin
-   int1:=frcrange32(str__len(@xval) div 3,0,1+high(xcollist));
+   int1:=frcrange32(str__len32(@xval) div 3,0,1+high(xcollist));
    if (int1>=1) then
       begin
       int2:=1;
@@ -3767,7 +3789,7 @@ else if low__comparearray(xnam,[uuP,uuL,uuT,uuE]) then
 //.trns
 else if low__comparearray(xnam,[uuT,uuR,uuN,uuS]) then
    begin
-   int1:=frcrange32(str__len(@xval),0,1+high(xcollist));
+   int1:=frcrange32(str__len32(@xval),0,1+high(xcollist));
    if (int1>=1) then
       begin
       for p:=0 to (int1-1) do xcollist[p].a:=str__bytes0(@xval,p);
@@ -3780,7 +3802,7 @@ end;//while
 str__clear(@xval);
 
 //.decompress "xdata"
-if ( (str__len(@xdata)>=1) and (not low__decompress(@xdata)) ) or (str__len(@xdata)<=0) then
+if ( (str__len32(@xdata)>=1) and (not low__decompress(@xdata)) ) or (str__len32(@xdata)<=0) then
    begin
    e:=gecDataCorrupt;
    goto skipend;
@@ -3808,7 +3830,7 @@ end;
 //was: drowsize:=mis__rowsize4(xw,xbits);//29may2025 - error -> PNG does not round like a bitmap - 25jul2025
 drowsize:=xw*(xbits div 8);
 
-if ( (xh * (1+drowsize) ) > str__len(@xdata) ) then
+if ( (xh * (1+drowsize) ) > str__len32(@xdata) ) then
    begin
    e:=gecDataCorrupt;
    goto skipend;
@@ -4432,7 +4454,7 @@ aval2:=0;
 atransparent:=true;
 asyscolors:=true;
 //check
-if (not str__lock(adata)) or (str__len(adata)<13) then goto skipend;
+if (not str__lock(adata)) or (str__len32(adata)<13) then goto skipend;
 //get
 //.header
 int1:=str__bytes0(adata,3);
@@ -4447,7 +4469,7 @@ if (str__bytes0(adata,0)=uuT) and (str__bytes0(adata,1)=uuE) and (str__bytes0(ad
    else if (int1=nn3) then aversion:=3
    else                    goto skipend;
 
-   if (str__len(adata)<(aSOD+1)) then goto skipend;//1 based
+   if (str__len32(adata)<(aSOD+1)) then goto skipend;//1 based
    //transparent
    atransparent:=(str__bytes0(adata,xpos)<>0);
    inc(xpos,1);
@@ -5077,7 +5099,7 @@ if (not str__lock(xdata)) or (not tea__info(xtea,false,xw,xh,xSOD,xversion,xval1
 //init
 str__clear(xdata);
 str__setlen(xdata,xw*xh*3);//RGB
-xdatalen:=str__len(xdata);
+xdatalen:=str__len32(xdata);
 
 //get
 dd:=xSOD;//start of data
@@ -5357,7 +5379,7 @@ if not missize(d,xw,xh) then goto skipend;
 if not misok82432(d,dbits,xw,xh) then goto skipend;
 //get
 
-slen                  :=str__len(sdata);
+slen                  :=str__len32(sdata);
 dd                    :=xSOD;//start of data
 dx                    :=0;
 dy                    :=0;
@@ -5866,7 +5888,7 @@ if not str__lock(d)                       then goto skipend;
 if not misok82432(s,sbits,sw,sh)          then goto skipend;
 
 //init
-dlen          :=str__len(d);
+dlen          :=str__len32(d);
 sw            :=0;
 sh            :=0;
 sx            :=0;
@@ -6232,7 +6254,7 @@ begin
 result:=ia__sfind(xactions,xfindname,svals);
 
 case result and (xvalindex>=0) and (xvalindex<=high(svals)) of
-true:xout:=strint(strdefb(svals[xvalindex],intstr32(xdefval)));
+true:xout:=strint32(strdefb(svals[xvalindex],intstr32(xdefval)));
 else xout:=xdefval;
 end;
 end;
@@ -6293,7 +6315,7 @@ for p:=0 to high(xvals) do xvals[p]:=0;
 result:=ia__find(xactions,xfindname,svals);
 if result then
    begin
-   for p:=0 to smallest32(high(svals),high(xvals)) do xvals[p]:=strint(svals[p]);
+   for p:=0 to smallest32(high(svals),high(xvals)) do xvals[p]:=strint32(svals[p]);
    end;
 end;
 
@@ -6327,7 +6349,7 @@ var
    begin
    //init
    vc:=0;
-   xlen:=low__len(x);
+   xlen:=low__len32(x);
 
    //check
    if (xlen<=0) then exit;
@@ -6363,16 +6385,16 @@ if (xfindname='') then
    end;
 
 //check
-xlen:=low__len(xactions);
+xlen:=low__len32(xactions);
 if (xlen<=0) then exit;
 
 //split name -> some actions have values as part of their name in order to share multiple different value types, such as quality:100: or quality:5 or quality:best
 fn:=xfindname;
 fv:='';
-for p:=1 to low__len(fn) do if (fn[p-1+stroffset]=ia_valsep) then
+for p:=1 to low__len32(fn) do if (fn[p-1+stroffset]=ia_valsep) then
    begin
    fn:=strcopy1(fn,1,p-1);
-   fv:=strcopy1(xfindname,p+1,low__len(xfindname));
+   fv:=strcopy1(xfindname,p+1,low__len32(xfindname));
    break;
    end;
 
@@ -6386,7 +6408,7 @@ if (c=ia_sep) or (p=1)then
    begin
    //extract last action -> first action
    if (c=ia_sep) then z:=strcopy1(xactions,p+1,lp-p) else z:=strcopy1(xactions,p,lp-p+1);
-   zlen:=low__len(z);
+   zlen:=low__len32(z);
 
    //examine extracted action
    if (zlen>=1) then
@@ -6401,7 +6423,7 @@ if (c=ia_sep) or (p=1)then
       if (c=ia_valsep) or (zp=zlen) then
          begin
          n:=strcopy1(z,1,zp-low__insint(1,(zp<>zlen)));
-         v:=strcopy1(z,low__len(n)+2,zlen);
+         v:=strcopy1(z,low__Len32(n)+2,zlen);
          break;
          end;
       end;//p2
@@ -6409,11 +6431,11 @@ if (c=ia_sep) or (p=1)then
       //match base name -> we now stop after this point, only difference is whether it's TRUE (name vals match if any) or FALSE (no match)
       if strmatch(n,fn) then
          begin
-         result:=strmatch(fv,strcopy1(v,1,low__len(fv)));
+         result:=strmatch(fv,strcopy1(v,1,low__Len32(fv)));
          if result then
             begin
             //read values from the end of the xfindname (e.g. past it's base name and it's name's vals)
-            xreadvals( strcopy1(v,low__len(fv)+low__insint(2,fv<>''),low__len(v)) );
+            xreadvals( strcopy1(v,low__Len32(fv)+low__insint(2,fv<>''),low__Len32(v)) );
             end;
 
          //stop
@@ -6652,7 +6674,7 @@ var
       xlen:longint;
    begin
 
-   xlen:=frcmax32(low__len(x),255);
+   xlen:=frcmax32(low__Len32(x),255);
 
    str__addbyt1( d, xlen );
    str__sadd( d, x );
@@ -6665,7 +6687,7 @@ var
    begin
 
    str__addbyt1( d, 12 );//vaLString
-   str__addint4( d, str__len(x) );
+   str__addint4( d, str__len32(x) );
    str__add( d, x );
 
    end;
@@ -6878,7 +6900,7 @@ try
 //check
 if not str__lock(d)              then goto skipend;
 if not misok82432(s,sbits,sw,sh) then goto skipend;
-if (str__len(d)<22) then
+if (str__len32(d)<22) then
    begin
    e:=gecUnknownformat;
    goto skipend;
@@ -6906,7 +6928,7 @@ if (cw<1) or (ch<1) or (cc<1) then
    end;
 if (cms<0) then cms:=0;
 
-if (mult64(mult64(cc,cw),mult64(ch,4))>str__len(d)) then
+if (mult64(mult64(cc,cw),mult64(ch,4))>str__len32(d)) then
    begin
    e:=gecDatacorrupt;
    goto skipend;
@@ -7172,7 +7194,7 @@ if not misok82432(s,sbits,sw,sh) then goto skipend;
 
 {$ifdef jpeg}
 
-dlen:=str__len(d);
+dlen:=str__len32(d);
 if (dlen<22) then
    begin
    e:=gecUnknownformat;
@@ -7331,9 +7353,9 @@ var
 
    //get
    //if strmatch(daction,ia_fairquality) then
-   if (str__len(x)>=1) then
+   if (str__len32(x)>=1) then
       begin
-      for p:=0 to (str__len(x)-1) do
+      for p:=0 to (str__len32(x)-1) do
       begin
       if (xfast<>nil) then v:=xfast.pbytes[p] else v:=str__bytes0(x,p);
       if (v>=1) then
@@ -7444,8 +7466,8 @@ if not mis__todata3(ci,@cd,'jpg',daction,e) then goto skipend;
 if (i=0) then xqualityused:=ia__ifindvalb(daction,ia_info_quality,0,0);
 
 //add jpeg.len
-inc(xbytes_image,str__len(@cd));
-str__addint4(d,str__len(@cd));
+inc(xbytes_image,str__len32(@cd));
+str__addint4(d,str__len32(@cd));
 //add jpeg.data
 str__add(d,@cd);
 
@@ -7455,8 +7477,8 @@ xcrunch(@cd,daction);
 if not low__compress(@cd) then goto skipend;
 
 //mask.len
-inc(xbytes_mask,str__len(@cd));
-str__addint4(d,str__len(@cd));
+inc(xbytes_mask,str__len32(@cd));
+str__addint4(d,str__len32(@cd));
 //mask.data
 str__add(d,@cd);
 end;//i
@@ -7526,7 +7548,7 @@ if not str__lock(s)                  then goto skipend;
 if not misok82432(d,dbits,int1,int2) then goto skipend;
 
 //init
-slen      :=str__len(s);
+slen      :=str__len32(s);
 spos      :=0;
 if (slen<12) then goto skipend;
 
@@ -7709,7 +7731,7 @@ if not str__lock2(s,d) then goto skipend;
 s8:=str__as8(s);
 d8:=str__as8(d);
 
-slen      :=str__len(s);
+slen      :=str__len32(s);
 dbits     :=32;
 dw        :=500+random(5000);
 drowsize  :=dw*4;
@@ -8842,72 +8864,72 @@ bitmap headers:
 4. BITMAPV5HEADER   = most advanced header
 
 1. bmpCOREheader (12b)
- DWORD bcSize;
+ dword32 bcSize;
  WORD  bcWidth;
  WORD  bcHeight;
  WORD  bcPlanes;
  WORD  bcBitCount;
 
 2. bmpINFOheader (40b)
- DWORD biSize;
+ dword32 biSize;
  LONG  biWidth;
  LONG  biHeight;
  WORD  biPlanes;
  WORD  biBitCount;
- DWORD biCompression;
- DWORD biSizeImage;
+ dword32 biCompression;
+ dword32 biSizeImage;
  LONG  biXPelsPerMeter;
  LONG  biYPelsPerMeter;
- DWORD biClrUsed;
- DWORD biClrImportant;
+ dword32 biClrUsed;
+ dword32 biClrImportant;
 
 3. bmpV4header (108b)
- DWORD        bV4Size;
+ dword32        bV4Size;
  LONG         bV4Width;
  LONG         bV4Height;
  WORD         bV4Planes;
  WORD         bV4BitCount;
- DWORD        bV4V4Compression;
- DWORD        bV4SizeImage;
+ dword32        bV4V4Compression;
+ dword32        bV4SizeImage;
  LONG         bV4XPelsPerMeter;
  LONG         bV4YPelsPerMeter;
- DWORD        bV4ClrUsed;
- DWORD        bV4ClrImportant;//0..39
- DWORD        bV4RedMask;
- DWORD        bV4GreenMask;
- DWORD        bV4BlueMask;
- DWORD        bV4AlphaMask;
- DWORD        bV4CSType;
+ dword32        bV4ClrUsed;
+ dword32        bV4ClrImportant;//0..39
+ dword32        bV4RedMask;
+ dword32        bV4GreenMask;
+ dword32        bV4BlueMask;
+ dword32        bV4AlphaMask;
+ dword32        bV4CSType;
  CIEXYZTRIPLE bV4Endpoints;//36b
- DWORD        bV4GammaRed;
- DWORD        bV4GammaGreen;
- DWORD        bV4GammaBlue;
+ dword32        bV4GammaRed;
+ dword32        bV4GammaGreen;
+ dword32        bV4GammaBlue;
 
 4. bmpV5header (124b)
- DWORD        bV5Size;
+ dword32        bV5Size;
  LONG         bV5Width;
  LONG         bV5Height;
  WORD         bV5Planes;
  WORD         bV5BitCount;
- DWORD        bV5Compression;
- DWORD        bV5SizeImage;
+ dword32        bV5Compression;
+ dword32        bV5SizeImage;
  LONG         bV5XPelsPerMeter;
  LONG         bV5YPelsPerMeter;
- DWORD        bV5ClrUsed;
- DWORD        bV5ClrImportant;//0..39
- DWORD        bV5RedMask;
- DWORD        bV5GreenMask;
- DWORD        bV5BlueMask;
- DWORD        bV5AlphaMask;
- DWORD        bV5CSType;
+ dword32        bV5ClrUsed;
+ dword32        bV5ClrImportant;//0..39
+ dword32        bV5RedMask;
+ dword32        bV5GreenMask;
+ dword32        bV5BlueMask;
+ dword32        bV5AlphaMask;
+ dword32        bV5CSType;
  CIEXYZTRIPLE bV5Endpoints;//60+36b
- DWORD        bV5GammaRed;
- DWORD        bV5GammaGreen;
- DWORD        bV5GammaBlue;
- DWORD        bV5Intent;//108..111
- DWORD        bV5ProfileData;//112..115
- DWORD        bV5ProfileSize;//116..119
- DWORD        bV5Reserved;//120..123
+ dword32        bV5GammaRed;
+ dword32        bV5GammaGreen;
+ dword32        bV5GammaBlue;
+ dword32        bV5Intent;//108..111
+ dword32        bV5ProfileData;//112..115
+ dword32        bV5ProfileSize;//116..119
+ dword32        bV5Reserved;//120..123
 {}
 
 function bmp32__fromdata(d:tobject;s:pobject):boolean;//11jun2025: supports DIB +12b patch, 15may2025
@@ -9090,7 +9112,7 @@ if not misok82432(d,dbits,int1,int2) then goto skipend;
 
 //init
 s8        :=str__as8(s);
-slen      :=str__len(s);
+slen      :=str__len32(s);
 spos      :=0;
 if (slen<12) then goto skipend;
 
@@ -9199,7 +9221,7 @@ else if (sheadstyle>=hsW95) then
       begin
 
       //.sdib_patchmode_12 -> there is no clear indication when this is to be used only the total bytes is +12 more than expected - 12jun2025
-      if sdib and sallow_dib_patch_12 and ( (sinfosize+simagesize+12)=str__len(s) ) then
+      if sdib and sallow_dib_patch_12 and ( (sinfosize+simagesize+12)=str__len32(s) ) then
          begin
          sdib_patchmode_12:=true;
          inc(sinfosize,12);
@@ -9701,7 +9723,7 @@ if not misok82432(d,dbits,int1,int2) then goto skipend;
 
 //init
 s8        :=str__as8(s);
-slen      :=str__len(s);
+slen      :=str__len32(s);
 spos      :=0;
 if (slen<12) then goto skipend;
 
@@ -10319,7 +10341,7 @@ while true do
 begin
 if xcompress(v) then
    begin
-   if (v<=1) or (xsizelimitBytes=0) or (str__len(d)<=xsizelimitBytes) then
+   if (v<=1) or (xsizelimitBytes=0) or (str__len32(d)<=xsizelimitBytes) then
       begin
       result:=true;
       goto skipend;
@@ -10344,15 +10366,15 @@ begin
 if xcompress(v) then
    begin
    //assume successful (value is stored in "d" by default)
-   result:=(str__len(d)>=1);
+   result:=(str__len32(d)>=1);
 
-   if (v<=1) or (xsizelimitBytes=0) or (str__len(d)<=xsizelimitBytes) then
+   if (v<=1) or (xsizelimitBytes=0) or (str__len32(d)<=xsizelimitBytes) then
       begin
       str__clear(@vlastdata);
       str__add(@vlastdata,d);
       end;
 
-   if (v<=1) or (xsizelimitBytes=0) or (str__len(d)<=xsizelimitBytes) then
+   if (v<=1) or (xsizelimitBytes=0) or (str__len32(d)<=xsizelimitBytes) then
       begin
       //scan to see if new jpeg "d" via "i" is too different from source image "s"
       if not mis__fromdata(sref,d,e)               then goto skipend;
@@ -10361,13 +10383,13 @@ if xcompress(v) then
       //quality has dropped from the last attempt so use previous value as final value
       if (v<=1) or (xpert<xscanquality) then
          begin
-         if (str__len(@vlastdata)>=1) then
+         if (str__len32(@vlastdata)>=1) then
             begin
             str__clear(d);
             str__add(d,@vlastdata);
             end;
 
-         result:=(str__len(d)>=1);
+         result:=(str__len32(d)>=1);
          goto skipend;
          end;
       end;
@@ -10388,7 +10410,7 @@ except;end;
 try
 //reply info
 daction:=ia__iadd(daction,ia_info_quality,[low__aorb(0,xqualityused,result)]);
-daction:=ia__iadd(daction,ia_info_bytes_image,[str__len(d)]);
+daction:=ia__iadd(daction,ia_info_bytes_image,[str__len32(d)]);
 
 //free
 if (not result) then str__clear(d);
@@ -10847,7 +10869,7 @@ if not str__lock(d) then goto skipend;
 if not misok82432(s,sbits,sw,sh) then goto skipend;
 
 //header - 18b
-if (str__len(d)<18) then
+if (str__len32(d)<18) then
    begin
    e:=gecUnknownformat;
    goto skipend;
@@ -11313,7 +11335,7 @@ if not misok82432(s,dbits,dw,dh) then goto skipend;
 
 //read header
 e:=gecUnknownformat;
-xlen:=str__len(d);
+xlen:=str__len32(d);
 if (xlen<=2) then goto skipend;
 
 dw:=0;
@@ -11348,15 +11370,15 @@ if (v=10) or (v=13) then
             end;
          1:begin
             if (str1='') then goto skipend;
-            for p2:=1 to low__len(str1) do if (str1[p2-1+stroffset]=#32) then
+            for p2:=1 to low__Len32(str1) do if (str1[p2-1+stroffset]=#32) then
                begin
-               dw:=strint(strcopy1(str1,1,p2-1));
-               dh:=strint(strcopy1(str1,p2+1,low__len(str1)));
+               dw:=strint32(strcopy1(str1,1,p2-1));
+               dh:=strint32(strcopy1(str1,p2+1,low__Len32(str1)));
                break;
                end;
             end;
          2:begin
-            xdepth:=strint(str1);
+            xdepth:=strint32(str1);
             if (xdepth<>255) then goto skipend;
             xpos:=p+1;
             break;
@@ -11638,7 +11660,7 @@ if not misok82432(s,dbits,dw,dh) then goto skipend;
 
 //read header
 e:=gecUnknownformat;
-xlen:=str__len(d);
+xlen:=str__len32(d);
 if (xlen<=2) then goto skipend;
 
 dw:=0;
@@ -11673,15 +11695,15 @@ if (v=10) or (v=13) then
             end;
          1:begin
             if (str1='') then goto skipend;
-            for p2:=1 to low__len(str1) do if (str1[p2-1+stroffset]=#32) then
+            for p2:=1 to low__Len32(str1) do if (str1[p2-1+stroffset]=#32) then
                begin
-               dw:=strint(strcopy1(str1,1,p2-1));
-               dh:=strint(strcopy1(str1,p2+1,low__len(str1)));
+               dw:=strint32(strcopy1(str1,1,p2-1));
+               dh:=strint32(strcopy1(str1,p2+1,low__Len32(str1)));
                break;
                end;
             end;
          2:begin
-            xdepth:=strint(str1);
+            xdepth:=strint32(str1);
             if (xdepth<>255) then goto skipend;
             xpos:=p+1;
             break;
@@ -12014,7 +12036,7 @@ if not misok82432(s,dbits,dw,dh) then goto skipend;
 
 //read header
 e:=gecUnknownformat;
-xlen:=str__len(d);
+xlen:=str__len32(d);
 if (xlen<=2) then goto skipend;
 
 dw:=0;
@@ -12048,10 +12070,10 @@ if (v=10) or (v=13) then
             end;
          1:begin
             if (str1='') then goto skipend;
-            for p2:=1 to low__len(str1) do if (str1[p2-1+stroffset]=#32) then
+            for p2:=1 to low__Len32(str1) do if (str1[p2-1+stroffset]=#32) then
                begin
-               dw:=strint(strcopy1(str1,1,p2-1));
-               dh:=strint(strcopy1(str1,p2+1,low__len(str1)));
+               dw:=strint32(strcopy1(str1,1,p2-1));
+               dh:=strint32(strcopy1(str1,p2+1,low__Len32(str1)));
                break;
                end;
             xpos:=p+1;
@@ -12271,7 +12293,7 @@ var
    if (result<>'') then
       begin
 
-      for p:=1 to low__len(result) do
+      for p:=1 to low__Len32(result) do
       begin
       case byte(result[p-1+stroffset]) of
       48..57,65..90,97..122,95:;//0..9, A..Z, a..z
@@ -12502,7 +12524,7 @@ if (sw0>=1) then for sx:=0 to pred(sw0) do p1(false);
 end;//sy
 
 //remove last sep "comma" 
-int1:=str__len(d);
+int1:=str__len32(d);
 if (int1>=1) then
    begin
 
@@ -12611,7 +12633,7 @@ var
    result    :=false;
    xout      :=0;
    xpos      :=0;
-   nlen      :=low__len(xname);
+   nlen      :=low__Len32(xname);
    xmode     :=0;
 
    //check
@@ -12653,7 +12675,7 @@ var
 
    //defaults
    result    :=false;
-   nlen      :=low__len(xname);
+   nlen      :=low__Len32(xname);
    xpos      :=0;
 
    //check
@@ -12783,7 +12805,7 @@ if not str__lock(d)              then goto skipend;
 if not misok82432(s,sbits,sw,sh) then goto skipend;
 
 //init
-xlen        :=str__len(d);
+xlen        :=str__len32(d);
 xpos        :=0;
 xindata     :=false;
 xhexok      :=false;
@@ -13072,7 +13094,7 @@ if dpng or (sw>=257) or (sh>=257) then
    if not result then goto skipend;
 
    //.finish ico header
-   w4(dimg.len);
+   w4(dimg.len32);
    w4(22);//6 + 16 = 22
 
    //.store png
@@ -13083,7 +13105,7 @@ if dpng or (sw>=257) or (sh>=257) then
 
 //ico - store icon + mask ------------------------------------------------------
 //.finish ico header
-w4(40 + dimg.len + dmask.len);
+w4(40 + dimg.len32 + dmask.len32);
 w4(22);//6 + 16 = 22
 
 //.image header (40)
@@ -13093,7 +13115,7 @@ w4(sh * 2);//biHeight (x2 = image + trailing 1bit mask)
 w2(1);//biPlanes
 w2(dbits);//biBitCount
 w4(0);//compression=0
-w4(dimg.len + dmask.len);
+w4(dimg.len32 + dmask.len32);
 w4(0);
 w4(0);
 w4(dcolorsused);//# of colors used
@@ -13285,7 +13307,7 @@ if not misok82432(s,sbits,sw,sh) then goto skipend;
 
 //init
 d8           :=str__as8(d);
-dlen         :=str__len(d);
+dlen         :=str__len32(d);
 dpos         :=0;
 
 //get
@@ -14538,7 +14560,7 @@ label
 var
    b:tstr8;
    dfast:tstr8;//pointer only
-   int1,int2,dw,dh,p:integer;
+   int1,int2,dw,dh,p:longint32;
    anirec:tanirec;
    xicon,xiconlist:tstr8;
    dpng,dcursor,xonce:boolean;
@@ -14708,7 +14730,7 @@ if xonehotspot and ((dhotX<0) or (dhotY<0)) then
    end;
 //.add icon -> 'icon'+from32bit(length(imgs.items[p]^))+imgs.items[p]^
 xiconlist.addstr('icon');
-xiconlist.addint4(xicon.len);
+xiconlist.addint4(xicon.len32);
 xiconlist.add(xicon);
 xicon.clear;
 end;//p
@@ -14724,13 +14746,13 @@ str__addint4(d,sizeof(anirec));
 str__addrec(d,@anirec,sizeof(anirec));
 //._list
 str__sadd(d,'LIST');
-str__addint4(d,4+xiconlist.len);
+str__addint4(d,4+xiconlist.len32);
 str__sadd(d,'fram');
 str__add(d,@xiconlist);
 //.reduce mem
 xiconlist.clear;
 //.set overal size
-str__setint4(d,4,frcmin32(str__len(d)-4,0));
+str__setint4(d,4,frcmin32(str__len32(d)-4,0));
 
 //successful
 result:=true;
@@ -15007,7 +15029,7 @@ try
 if not low__true2(str__lock(x),str__lock(imgdata)) then goto skipend;
 
 //init
-xlen:=str__len(x);
+xlen:=str__len32(x);
 str__clear(imgdata);
 if (xlenpos1<1) or (xlenpos1>xlen) then goto skipend;
 //get
@@ -15143,10 +15165,10 @@ begin//"x=nil" => flush
 //get
 str__addbyt1(@buf,x);
 //set
-if (str__len(@buf)>=255) then
+if (str__len32(@buf)>=255) then
    begin
    //was:pushb(imglen,imgdata,char(length(buf))+buf);
-   str__addbyt1(imgdata,byte(str__len(@buf)));
+   str__addbyt1(imgdata,byte(str__len32(@buf)));
    str__add(imgdata,@buf);
    str__clear(@buf);
    end;
@@ -15154,10 +15176,10 @@ end;
 
 procedure writecharfinish;
 begin//"x=nil" => flush
-if (str__len(@buf)>=1) then
+if (str__len32(@buf)>=1) then
    begin
    //was:pushb(imglen,imgdata,char(length(buf))+buf);
-   str__addbyt1(imgdata,str__len(@buf));
+   str__addbyt1(imgdata,str__len32(@buf));
    str__add(imgdata,@buf);
    str__clear(@buf);
    end;
@@ -15228,7 +15250,7 @@ if not low__true2(str__lock(x),str__lock(imgdata)) then goto skipend;
 
 //init
 str__clear(imgdata);
-xlen:=str__len(x);
+xlen:=str__len32(x);
 xpos:=1;
 if (xlen<=2) then goto skipend;
 h:=thashtable.create;
@@ -15432,7 +15454,7 @@ type
    pgifpal=^tgifpal;
    tgifpal=record
     c:array[0..255] of tcolor24;
-    count:integer;
+    count:longint32;
     init:boolean;
     end;
 var
@@ -15505,7 +15527,7 @@ if (sbits<>8) and (sbits<>24) and (sbits<>32) then goto skipend;
 if not mis__resizable(simage) then simage:=misraw(sbits,sw,sh);
 
 //init
-dslen:=str__len(ds);
+dslen:=str__len32(ds);
 if (dslen<6) then exit;
 imgcount:=0;
 imglimit:=0;
@@ -15610,13 +15632,13 @@ else if (v<>0) then
       else break;
       end;//loop
 
-      if (str__len(@tmp)=0) then goto skipone;
+      if (str__len32(@tmp)=0) then goto skipone;
 
       //set
       case v2 of
       249:begin//control - for image handling
 
-         if (str__len(@tmp)<4) then goto skipone;
+         if (str__len32(@tmp)<4) then goto skipone;
          if xstr8ok then tmp2:=(tmp as tstr8).pbytes[0] else tmp2:=str__bytes1(@tmp,1);
 
          //.defaults
@@ -15646,7 +15668,7 @@ else if (v<>0) then
          end;
 
       255:begin//loop
-         loops:=str__sml2(@tmp,str__len(@tmp)-1-1);
+         loops:=str__sml2(@tmp,str__len32(@tmp)-1-1);
          end;
 
       254:begin//comment
@@ -15818,7 +15840,7 @@ else if (v<>0) then
 
       //draw
       p:=1;
-      len:=str__len(@imgdata);
+      len:=str__len32(@imgdata);
 
       for dy:=0 to (id.h-1) do
       begin
@@ -16158,7 +16180,7 @@ try
 //check
 //.data stream
 if not str__lock(ds)             then goto skipend;
-if (str__len(ds)<12)             then goto skipend;
+if (str__len32(ds)<12)             then goto skipend;
 
 //.gif support object
 if zznil(gs,122)                 then goto skipend;
@@ -16313,7 +16335,7 @@ if dmode8  then inc(dflags,8);//cell's pixels are to be drawn to the screen ONCE
 //graphic control block
 str__aadd(ds,[33,249,4]);
 str__addbyt1(ds,dflags);
-gss.flags__lastpos:=str__len(ds)-1;//store this frame's flags value and position in case a future frame needs to "reach-back" to change it
+gss.flags__lastpos:=str__len32(ds)-1;//store this frame's flags value and position in case a future frame needs to "reach-back" to change it
 gss.flags__lastval:=dflags;
 str__addsmi2(ds,cms);
 str__aadd(ds,[0,0]);//transparent color index = 0 AND block terminator 0
@@ -16417,7 +16439,7 @@ if not str__lock(ds) then exit;
 
 //write the terminator code "59" - 31dec2022: fixed
 try
-if (str__len(ds)>=12) then
+if (str__len32(ds)>=12) then
    begin
    str__aadd(ds,[59]);
    result:=true;
@@ -18532,7 +18554,7 @@ if not str__lock(d)              then goto skipend;
 if not misok82432(s,sbits,sw,sh) then goto skipend;
 
 //init
-dlen            :=str__len(d);
+dlen            :=str__len32(d);
 dshortfall255   :=frcrange32(donshortfall,0,255);
 
 if (dlen<=0) and (donshortfall<0)then goto skipend;
@@ -18720,7 +18742,7 @@ if not str__lock(xdata) then goto skipend;
 
 //length check
 a:=xdata^;//a pointer at this stage
-if (str__len(@a)<=0) then goto skipend;
+if (str__len32(@a)<=0) then goto skipend;
 
 //init
 xonce:=true;
@@ -18815,7 +18837,10 @@ daction:=ia__spreadd(daction,ia_info_filename,[dfilename]);
 if ia__found(daction,ia_usestr9) or (mult64(misw(s),mish(s))>dsizeThreshold) then d:=str__new9 else d:=str__new8;
 result:=mis__todata3(s,@d,dformat,daction,e) and io__tofile(dfilename,@d,e);
 except;end;
-try;str__free(@d);except;end;
+
+//free
+str__free(@d);
+
 end;
 
 function mis__fromfile(s:tobject;sfilename:string;var e:string):boolean;//09jul2021
@@ -19261,32 +19286,44 @@ if (sarea.right<sarea.left) or (sarea.bottom<sarea.top) or (sarea.bottom<0) or (
    result:=true;
    exit;
    end;
-da.left:=frcrange32(sarea.left,0,sw-1);
-da.right:=frcrange32(sarea.right,0,sw-1);
-da.top:=frcrange32(sarea.top,0,sh-1);
-da.bottom:=frcrange32(sarea.bottom,0,sh-1);
+
+da.left      :=frcrange32(sarea.left,0,sw-1);
+da.right     :=frcrange32(sarea.right,0,sw-1);
+da.top       :=frcrange32(sarea.top,0,sh-1);
+da.bottom    :=frcrange32(sarea.bottom,0,sh-1);
 
 //init
 //.color
 if (xcolor <>clnone) and (xcolor2=clnone) then xcolor2:=xcolor;
 if (xcolor2<>clnone) and (xcolor =clnone) then xcolor:=xcolor2;
-xcolorok:=(xcolor<>clnone) and (xcolor2<>clnone);
+
+xcolorok     :=(xcolor<>clnone) and (xcolor2<>clnone);
+
 if xcolorok then
    begin
-   sc:=int__c24(xcolor);
-   sc2:=int__c24(xcolor2);
+
+   sc        :=int__c24(xcolor);
+   sc2       :=int__c24(xcolor2);
+
    end;
+
 //.alpha
 if (xalpha <>clnone) and (xalpha2=clnone) then xalpha2:=xalpha;
 if (xalpha2<>clnone) and (xalpha =clnone) then xalpha:=xalpha2;
-xalphaok:=(xalpha<>clnone) and (xalpha2<>clnone);
+
+xalphaok     :=(xalpha<>clnone) and (xalpha2<>clnone);
+
 if xalphaok then
    begin
-   xalpha:=frcrange32(xalpha,0,255);
-   xalpha2:=frcrange32(xalpha2,0,255);
+
+   xalpha    :=frcrange32(xalpha,0,255);
+   xalpha2   :=frcrange32(xalpha2,0,255);
+
    end;
+
 //check
 if (not xcolorok) and (not xalphaok) then goto skipdone;
+
 //get
 for dy:=da.top to da.bottom do
 begin
@@ -19339,6 +19376,7 @@ if xalphaok and ((xalpha<>xalpha2) or (dy=da.top)) then//fixed error - 22apr2021
       xa:=byte(frcrange32(round( (xalpha*(1-xpert))+(xalpha2*xpert) ),0,255));
       end;
    end;
+
 //.scan
 if not misscan2432(s,dy,sr24,sr32) then goto skipend;
 
@@ -19378,9 +19416,11 @@ case sbits of
    end;
 end;//case
 end;//dy
+
 //successful
 skipdone:
 result:=true;
+
 skipend:
 except;end;
 end;
@@ -20781,7 +20821,7 @@ var//Note: Speed optimised using x-pixel limiter "d1,d2", y-pixel limiter "d3,d4
    da:twinrect;
 
    function cint32(x:currency):longint;
-   begin//Note: Clip a 64bit integer to a 32bit integer range
+   begin//Note: Clip a 64bit longint32 to a 32bit longint32 range
    if (x>max32) then x:=max32
    else if (x<min32) then x:=min32;
    result:=trunc(x);
@@ -21185,7 +21225,7 @@ var//Performance Boost:
    da:twinrect;
 
    function cint32(x:currency):longint;
-   begin//Note: Clip a 64bit integer to a 32bit integer range
+   begin//Note: Clip a 64bit longint32 to a 32bit longint32 range
    if (x>max32) then x:=max32
    else if (x<min32) then x:=min32;
    result:=trunc(x);
@@ -21536,7 +21576,7 @@ var//Performance Boost:
    da:twinrect;
 
    function cint32(x:currency):longint;
-   begin//Note: Clip a 64bit integer to a 32bit integer range
+   begin//Note: Clip a 64bit longint32 to a 32bit longint32 range
    if (x>max32) then x:=max32
    else if (x<min32) then x:=min32;
    result:=trunc(x);
@@ -21813,7 +21853,7 @@ var
    da:twinrect;
 
    function cint32(x:currency):longint;
-   begin//Note: Clip a 64bit integer to a 32bit integer range
+   begin//Note: Clip a 64bit longint32 to a 32bit longint32 range
    if (x>max32) then x:=max32
    else if (x<min32) then x:=min32;
    result:=trunc(x);
@@ -23863,7 +23903,7 @@ if (dfontsize<0) then dfontsize:=round(-dfontsize/dheightscale);
 dfontsize:=frcrange32(dfontsize,3,5000);
 
 //init
-xlen:=low__len(x);
+xlen:=low__Len32(x);
 if (xlen<=0) then goto skipdone;
 dthick0:=frcmax32(frcmin32(dfontsize div 5,1),dfontsize div 3);
 dthick:=frcmax32(frcmin32(dfontsize div low__aorb(5,2,xbold),1),dfontsize div 3);
@@ -24067,7 +24107,7 @@ var//Note: Speed optimised using x-pixel limiter "d1,d2", y-pixel limiter "d3,d4
    socLevel:longint;
 
    function cint32(x:currency):longint;
-   begin//Note: Clip a 64bit integer to a 32bit integer range
+   begin//Note: Clip a 64bit longint32 to a 32bit longint32 range
    if (x>max32) then x:=max32
    else if (x<min32) then x:=min32;
    result:=trunc(x);
@@ -25162,7 +25202,10 @@ if xdestructive and (sbits=32) then
 result:=true;
 skipend:
 except;end;
-try;freeobj(@a);except;end;
+
+//free
+freeobj(@a);
+
 end;
 
 function mismatch82432(s,d:tobject;xtol,xfailrate:longint):boolean;//10jul2021
@@ -26078,7 +26121,7 @@ if (xtranscolor<>clnone) then
    tg:=sc24.g;
    tb:=sc24.b;
    tcSAFE24:=sc24;
-   //fixed out of bounds / integer overflow error - 17sep202
+   //fixed out of bounds / longint32 overflow error - 17sep202
    if (tcSAFE24.r>=3) then//avoid using BLACK
       begin
       dec(tcSAFE24.r);
@@ -26145,7 +26188,10 @@ end;//case
 result:=true;
 skipend:
 except;end;
-try;freeobj(@d);except;end;
+
+//free
+freeobj(@d);
+
 end;
 
 function miscrop82432(s:tobject):boolean;
@@ -26309,7 +26355,10 @@ if xretainT32 then
 result:=true;
 skipend:
 except;end;
-try;freeobj(@a);except;end;
+
+//free
+freeobj(@a);
+
 end;
 
 function misframe82432(s:tobject;da_cliparea,xouterarea:twinrect;xautoouterarea:boolean;var slist:array of longint;scount:longint;var e:string):boolean;//28jan2021
@@ -26871,7 +26920,7 @@ var
    //init
    c1:=xfindcol(strcopy1(x+'s',1,1),0);
    c2:=xfindcol(strcopy1(x+'d',2,1),c1);
-   b :=frcrange32(strint(strcopy1(x,3,low__len(x))),0,100);
+   b :=frcrange32(strint32(strcopy1(x,3,low__Len32(x))),0,100);
    //get
    xoutcolor:=int__splice24_100(b,c1,c2)//use 2nd color
    except;end;
@@ -26887,7 +26936,7 @@ xclear;
 if not str__lock(@xdata) then exit;
 //init
 sremsize:=frcrange32(sremsize,0,sframesize);
-xlen:=xdata.len;
+xlen:=xdata.len32;
 xpos:=frcmin32(xpos,0);
 if (xpos>=xlen) then goto skipend;
 if (scolor=clnone)  then scolor:=int_255_255_255;
@@ -26922,11 +26971,11 @@ if (xcount<=0) then
 n:=strcopy1(v1,1,1);
 if (n='m') then//special value: specifies recommended minimum size of frame - 26feb2022
    begin
-   dminsize:=frcmin32(strint(strcopy1(v1,2,low__len(v1))),0);
+   dminsize:=frcmin32(strint32(strcopy1(v1,2,low__Len32(v1))),0);
    goto loop;
    end
 else if (n='') or (n='100')    then dsize:=sframesize//uses ALL remaining frame size
-else                           dsize:=(frcrange32(strint(v1),0,100)*sframesize) div 100;
+else                           dsize:=(frcrange32(strint32(v1),0,100)*sframesize) div 100;
 //.restrict
 dsize:=frcrange32(dsize,0,sremsize);
 //2nd
@@ -27007,7 +27056,7 @@ var
    sr24:pcolorrow24;
    sr32:pcolorrow32;
    x:array[word] of tcolor32;
-   xlimit,ibits,iw,ih,p,count,rx,ry:integer;
+   xlimit,ibits,iw,ih,p,count,rx,ry:longint32;
    lc32,c32:tcolor32;
    lc24,c24:tcolor24;
    lc8,c8:tcolor8;
@@ -27452,7 +27501,7 @@ imghdr.biheight:=2*dsize;
 imghdr.biplanes:=1;
 imghdr.bibitcount:=dBPP;
 imghdr.bicompression:=0;
-imghdr.bisizeimage:=xpal.len+ximg.len+xmask.len;
+imghdr.bisizeimage:=xpal.len32+ximg.len32+xmask.len32;
 //.icon header - 16b
 icohdr.width:=byte(frcrange32(dsize,0,255));
 icohdr.height:=byte(frcrange32(dsize,0,255));
@@ -27499,7 +27548,7 @@ label
    //dtranscol: clnone=solid (no see thru parts), clTopLeft=pixel(0,0), else=user specified color
    skipend;
 var
-   dtranscol,int1,dw,dh,p:integer;
+   dtranscol,int1,dw,dh,p:longint32;
    anirec:tanirec;
    xicon,xiconlist:tstr8;
    xonce:boolean;
@@ -27615,7 +27664,7 @@ if not xpullcell(p,true) then goto skipend;
 if not low__toico(dcell,true,dsize,dBPP,dtranscol,dfeather,dtransframe,dhotX,dhotY,xicon,e) then goto skipend;
 //.add icon -> 'icon'+from32bit(length(imgs.items[p]^))+imgs.items[p]^
 xiconlist.addstr('icon');
-xiconlist.addint4(xicon.len);
+xiconlist.addint4(xicon.len32);
 xiconlist.add(xicon);
 xicon.clear;
 end;//p
@@ -27630,13 +27679,13 @@ xdata.addint4(sizeof(anirec));
 xdata.addrec(@anirec,sizeof(anirec));
 //._list
 xdata.addstr('LIST');
-xdata.addint4(4+xiconlist.len);
+xdata.addint4(4+xiconlist.len32);
 xdata.addstr('fram');
 xdata.add(xiconlist);
 //.reduce mem
 xiconlist.clear;
 //.set overal size
-xdata.int4[4]:=frcmin32(xdata.len-4,0);
+xdata.int4[4]:=frcmin32(xdata.len32-4,0);
 //successful
 result:=true;
 skipend:
@@ -27662,7 +27711,8 @@ var
    dtmp32,dm8:tbasicimage;//mask - 07apr2015
    dtmp:tstr8;
    z:string;
-   lastWH,lastS,lastS2,bestindex,bestindex2,int1,mrowlen,mrowfix,rowlen,rowfix,tc,len,bmpLEN,maskLEN,p,pos,palcount,mbpp,bpp,dx,dy,dw,dh,dbits:longint;
+   lastWH,lastS,lastS2,bestindex,bestindex2,int1,mrowlen,mrowfix,rowlen,rowfix,tc,bmpLEN,maskLEN,p,palcount,mbpp,bpp,dx,dy,dw,dh,dbits:longint;
+   len,pos:longint64;
    pal:array[0..255] of tcolor24;
    dr32:pcolorrow32;
    dr24:pcolorrow24;
@@ -27704,10 +27754,10 @@ var
    label
       skipend;
    const
-      bits4:array[0..1] of integer=(16,1);
-      bits1:array[0..7] of integer=(128,64,32,16,8,4,2,1);
+      bits4:array[0..1] of longint32=(16,1);
+      bits1:array[0..7] of longint32=(128,64,32,16,8,4,2,1);
    var
-      mode,p,v:integer;
+      mode,p,v:longint32;
       z:tcolor24;
 
       function pushpixel32(col:tcolor24;mcol:longint):boolean;
@@ -27746,7 +27796,7 @@ var
       else result:=false;
       end;
 
-      function pushpixel8(col8:integer):boolean;
+      function pushpixel8(col8:longint32):boolean;
       begin
       if (dx>=0) and (dx<dw) then
          begin
@@ -27787,7 +27837,7 @@ var
       if (pos>=1) and (pos<=len) then
          begin
          v:=255-str__bytes1(sdata,pos);//now invert transparent values to line up with standard 32bit alpha mask values - 23may2022, was: v:=sdata.bytes1[pos]//byte(icondata[pos]);
-         inc(pos,1);
+         inc64(pos,1);
          end
       else v:=255;//not transparent by default
       for p:=0 to high(bits1) do if not pushpixel8(takefrom(v,bits1[p])*255) then goto skipend;
@@ -27795,17 +27845,17 @@ var
    1:begin
       v:=str__bytes1(sdata,pos);//byte(icondata[pos]);
       for p:=0 to high(bits1) do if not pushpixel32(pal[takefrom(v,bits1[p])],-1) then goto skipend;
-      inc(pos,1);
+      inc64(pos,1);
       end;
    4:begin
       v:=str__bytes1(sdata,pos);//byte(icondata[pos]);
       for p:=0 to high(bits4) do if not pushpixel32(pal[takefrom(v,bits4[p])],-1) then goto skipend;
-      inc(pos,1);
+      inc64(pos,1);
       end;
    8:begin
 //was:      if not pushpixel32(pal[byte(icondata[pos])],-1) then goto skipend;
       if not pushpixel32(pal[ str__bytes1(sdata,pos) ],-1) then goto skipend;
-      inc(pos,1);
+      inc64(pos,1);
       end;
    24:begin//pixel color order "BGR" - 14JAN2012
       if ((pos+2)>len) then goto skipend;
@@ -27813,7 +27863,7 @@ var
       z.g:=str__bytes1(sdata,pos+1);
       z.r:=str__bytes1(sdata,pos+2);
       if not pushpixel32(z,-1) then goto skipend;
-      inc(pos,3);
+      inc64(pos,3);
       end;
    32:begin//pixel color order "BGRT" - 16JAN2012
       if ((pos+3)>len) then goto skipend;
@@ -27822,14 +27872,14 @@ var
       z.r:=str__bytes1(sdata,pos+2);
       //was: if not pushpixel32(z,byte(icondata[pos+3])) then goto skipend;
       if not pushpixel32(z, str__bytes1(sdata,pos+3) ) then goto skipend;
-      inc(pos,4);
+      inc64(pos,4);
       end;
    end;//case
    //successful
    result:=true;
    //round up to nearest 4th byte
    skipend:
-   if (dx>=dw) then inc(pos,low__aorb(rowfix,mrowfix,asmask));
+   if (dx>=dw) then inc64(pos,low__aorb(rowfix,mrowfix,asmask));
    except;end;
    end;
 begin
@@ -27950,12 +28000,14 @@ end;//p
 //.best match
 if (bestindex2>=0) then bestindex:=bestindex2;
 if (bestindex<0) then goto skipend;
+
 //set
-dw:=imghdrs[bestindex].biwidth;
-dh:=imghdrs[bestindex].biheight;
-bpp:=imghdrs[bestindex].biBitCount;
-pos:=frcrange32(icohdrs[bestindex].diboffset+imghdrs[bestindex].bisize+1,1,str__len(sdata));//20JAN2012
-len:=pos+icohdrs[bestindex].dibsize-1;//last pos for this icon data chunk - don't read past this point - 20JAN2012
+dw   :=imghdrs[bestindex].biwidth;
+dh   :=imghdrs[bestindex].biheight;
+bpp  :=imghdrs[bestindex].biBitCount;
+pos  :=frcrange32(icohdrs[bestindex].diboffset+imghdrs[bestindex].bisize+1,1,str__len32(sdata));//20JAN2012
+len  :=pos+icohdrs[bestindex].dibsize-1;//last pos for this icon data chunk - don't read past this point - 20JAN2012
+
 //hotspot - for information purposes only - 21JAN2012
 misai(d).hotspotX:=icohdrs[bestindex].reserved1;
 misai(d).hotspotY:=icohdrs[bestindex].reserved2;
@@ -28039,7 +28091,7 @@ if imghdrsPNG[bestindex] and (dtmp32<>nil) then
 if (palcount>=1) then for p:=0 to (palcount-1) do
    begin
    //get
-   if ((p+3)>str__len(sdata)) then
+   if ((p+3)>str__len32(sdata)) then
       begin
       e:=gecDataCorrupt;
       goto skipend;
@@ -28050,7 +28102,7 @@ if (palcount>=1) then for p:=0 to (palcount-1) do
    pal[p].r:=str__bytes1(sdata,pos+2);
    //n/a: pal[p].a:=sdata.bytes1[pos+3];
    //inc
-   inc(pos,4);
+   inc64(pos,4);
    end;
 
 //image
@@ -28184,7 +28236,7 @@ label
 type
    tlabelANDsize=packed record
       cap:array[0..3] of char;
-      size:dword;
+      size:dword32;
       end;
    tlabelonly=packed record
       cap:array[0..3] of char;
@@ -28192,7 +28244,7 @@ type
 var
    a,imgs:tbasicimage;//temp image for each icon to be read onto
    str1:string;
-   int1,imgscount,dcount,ddelay,dbits,dw,dh,i,p,len,pos:integer;
+   int1,imgscount,dcount,ddelay,dbits,dw,dh,i,p,len,pos:longint32;
    csrec:tlabelANDsize;
    crec:tlabelonly;
    anirec:tanirec;
@@ -28201,18 +28253,18 @@ var
    z:tstr8;
    firsticon:boolean;
 
-   function pullstrucex(var pos:integer;len:longint;data:pobject;a:pointer;asize:longint):boolean;//23may2022
+   function pullstrucex(var pos:longint32;len:longint;data:pobject;a:pointer;asize:longint):boolean;//23may2022
    begin
    //defaults
    result:=false;
    //range
    if not str__ok(data) then exit;
-   if (len<=0) then len:=str__len(data);
+   if (len<=0) then len:=str__len32(data);
    if (asize<1) then exit;
    if (pos<1) then pos:=1;
    if (pos>len) then exit;
    //get
-   result:=str__writeto1b(data,a,asize,pos,asize);
+   result:=str__writeto1b32(data,a,asize,pos,asize);
    end;
 
    function pullrec(a:pointer;asize:longint):boolean;//22JAN2012
@@ -28260,7 +28312,7 @@ imgscount:=0;
 e:=gecUnknownFormat;
 pos:=1;
 //was: if (not pullstruc(pos,sdata,@csrec,sizeof(csrec))) or (string(csrec.cap)<>'RIFF') then goto skipend;
-if (not str__writeto1b(sdata,@csrec,sizeof(csrec),pos,sizeof(csrec))) or (string(csrec.cap)<>'RIFF') then goto skipend;
+if (not str__writeto1b32(sdata,@csrec,sizeof(csrec),pos,sizeof(csrec))) or (string(csrec.cap)<>'RIFF') then goto skipend;
 len:=csrec.size;//enforce length from now on
 //read chunks
 while true do
@@ -28313,7 +28365,7 @@ else if pullrec(@csrec,sizeof(csrec)) then
       //.fit image to "imgs" strip cell dimensions
       miscopyarea32(imgscount*dw,0,dw,dh,area__make(0,0,a.width-1,a.height-1),imgs,a);
       //seq2
-      iseq2.int4i[iseq2.count div 4]:=imgscount;//used instead of "seq" when "seq" is omitted from data - 22JAN2012
+      iseq2.int4i[iseq2.count32 div 4]:=imgscount;//used instead of "seq" when "seq" is omitted from data - 22JAN2012
       //inc
       inc(pos,csrec.size);
       inc(imgscount);
@@ -28362,14 +28414,14 @@ if (irate.count>=1) then
    begin
    //get
    int1:=0;
-   for p:=0 to (irate.count-1) do inc(int1,irate.int4i[p]);
-   int1:=int1 div nozero__int32(1100145,irate.count);
+   for p:=0 to (irate.count32-1) do inc(int1,irate.int4i[p]);
+   int1:=int1 div nozero__int32(1100145,irate.count32);
    //set
    ddelay:=frcmin32(round(int1*16.666),20);//no faster than 50fps
    misai(d).delay:=ddelay;
    end;
 //draw - using "seqptr" to refer to cells stored in "imgs", note: d should already be sized correctly - 22JAN2012
-for p:=0 to ((iseqptr.count div 4)-1) do
+for p:=0 to ((iseqptr.count32 div 4)-1) do
 begin
 i:=iseqptr.int4i[p];//cell index
 miscopyarea32(p*dw,0,dw,dh,area__make(i*dw,0,i*dw+(dw-1),dh-1),d,imgs);
@@ -28704,7 +28756,7 @@ imghdr.biheight:=2*dsize;
 imghdr.biplanes:=1;
 imghdr.bibitcount:=dBPP;
 imghdr.bicompression:=0;
-imghdr.bisizeimage:=xpal.len+ximg.len+xmask.len;
+imghdr.bisizeimage:=xpal.len32+ximg.len32+xmask.len32;
 //.icon header - 16b
 //was: icohdr.width:=byte(frcrange32(dsize,0,255));
 //was: icohdr.height:=byte(frcrange32(dsize,0,255));
@@ -28743,7 +28795,7 @@ typhdr.wtype:=low__aorb(1,2,dcursor);//0=stockicon, 1=icon (default for icons), 
 typhdr.count:=1;//number of icons
 //.size
 case dpng of
-true:icohdr.dibsize:=ximg.len;
+true:icohdr.dibsize:=ximg.len32;
 else icohdr.dibsize:=sizeof(imghdr)+imghdr.bisizeimage;//length of "dibHEADER+dibDATA"
 end;//case
 
@@ -28789,7 +28841,7 @@ label
    //Force to dBPP when >=1, 0=automatic bpp
    skipend;
 var
-   int1,int2,dw,dh,p:integer;
+   int1,int2,dw,dh,p:longint32;
    anirec:tanirec;
    xicon,xiconlist:tstr8;
    dcursor,dtransparent,xonce:boolean;
@@ -28942,7 +28994,7 @@ if xonehotspot and ((dhotX<0) or (dhotY<0)) then
    end;
 //.add icon -> 'icon'+from32bit(length(imgs.items[p]^))+imgs.items[p]^
 xiconlist.addstr('icon');
-xiconlist.addint4(xicon.len);
+xiconlist.addint4(xicon.len32);
 xiconlist.add(xicon);
 xicon.clear;
 end;//p
@@ -28957,13 +29009,13 @@ xdata.addint4(sizeof(anirec));
 xdata.addrec(@anirec,sizeof(anirec));
 //._list
 xdata.addstr('LIST');
-xdata.addint4(4+xiconlist.len);
+xdata.addint4(4+xiconlist.len32);
 xdata.addstr('fram');
 xdata.add(xiconlist);
 //.reduce mem
 xiconlist.clear;
 //.set overal size
-xdata.int4[4]:=frcmin32(xdata.len-4,0);
+xdata.int4[4]:=frcmin32(xdata.len32-4,0);
 
 //successful
 result:=true;
@@ -29047,7 +29099,7 @@ x.addbyt1(70);//F
 x.addbyt1(49);//1
 for p:=1 to 6 do x.addbyt1(0);
 //.label
-xlen:=low__len(xlabel);
+xlen:=low__Len32(xlabel);
 for p:=1 to 14 do if (p<=xlen) then x.addbyt1(ord(xlabel[p-1+stroffset])) else x.addbyt1(0);
 //.X blank blocks
 if (xsize>=1) then
@@ -29137,7 +29189,7 @@ end;
 function ref_count(x:tstr8):longint;
 begin
 str__lock(@x);
-if ref_valid(x) then result:=(x.len-24) div 10 else result:=0;
+if ref_valid(x) then result:=(x.len32-24) div 10 else result:=0;
 str__uaf(@x);
 end;
 
@@ -29279,7 +29331,7 @@ if ref_valid(x) then
    for p:=11 to 24 do if (x.bytes1[p]<>0) then result:=result+char(x.bytes1[p]);
    //was:
    //result:=copy(x,11,14);
-   //for p:=1 to low__len(result) do if (result[p-1+stroffset]=#0) then
+   //for p:=1 to low__Len32(result) do if (result[p-1+stroffset]=#0) then
    //   begin
    //   result:=strcopy1(result,1,p-1);
    //   break;
@@ -29295,7 +29347,7 @@ var
 begin
 if str__lock(@x) and ref_valid(x) then
    begin
-   ylen:=low__len(y);
+   ylen:=low__Len32(y);
    //was: y:=strcopy1(y+#0#0#0#0#0#0#0#0#0#0#0#0#0#0,1,14);
    for p:=11 to 24 do
    begin
@@ -29476,8 +29528,11 @@ for p:=0 to (c-1) do ref_setval(x,p,ref_val(y,(c-1)-p));
 ref_incid(x);
 skipend:
 except;end;
-try;str__free(@y);except;end;
-try;str__uaf(@x);except;end;
+
+//free
+str__free(@y);
+str__uaf(@x);
+
 end;
 
 procedure ref_flip(x:tstr8);
@@ -29533,8 +29588,11 @@ end;//p
 ref_incid(x);
 skipend:
 except;end;
-try;str__free(@y);except;end;
-try;str__uaf(@x);except;end;
+
+//free
+str__free(@y);
+str__uaf(@x);
+
 end;
 
 procedure ref_shifty(x:tstr8;xby:extended);
@@ -29673,7 +29731,7 @@ if (xindex>=25) and ((xindex+9)<=x.len) then
    a.bytes[7]:=x.bytes1[xindex+7];
    a.bytes[8]:=x.bytes1[xindex+8];
    a.bytes[9]:=x.bytes1[xindex+9];
-   result:=round(ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(xindex-25) div 10,(x.len-24) div 10));
+   result:=round(ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(xindex-25) div 10,(x.len32-24) div 10));
    end
 else result:=round(ref_proc(0,xval,xmin,xmax,0,0,0));
 //range
@@ -29693,7 +29751,7 @@ result:=0;
 //check
 if not str__lock(@x) then exit;
 //get                 //count  * percentage * blocksize
-xindex:=25+(round((xval/255)*(((x.len-24) div 10)-1))*10);
+xindex:=25+(round((xval/255)*(((x.len32-24) div 10)-1))*10);
 if (xindex>=25) and ((xindex+9)<=x.len) then
    begin
    a.bytes[0]:=x.bytes1[xindex+0];
@@ -29706,7 +29764,7 @@ if (xindex>=25) and ((xindex+9)<=x.len) then
    a.bytes[7]:=x.bytes1[xindex+7];
    a.bytes[8]:=x.bytes1[xindex+8];
    a.bytes[9]:=x.bytes1[xindex+9];
-   result:=round(ref_proc(x.bytes1[10],xval,0,255,a.val,(xindex-25) div 10,(x.len-24) div 10));
+   result:=round(ref_proc(x.bytes1[10],xval,0,255,a.val,(xindex-25) div 10,(x.len32-24) div 10));
    end
 else result:=round(ref_proc(0,xval,0,255,0,0,0));
 //range
@@ -29726,7 +29784,7 @@ result:=0;
 //check
 if not str__lock(@x) then exit;
 //get                 //count  * percentage * blocksize
-xindex:=25+(round((xval/255)*(((x.len-24) div 10)-1))*10);
+xindex:=25+(round((xval/255)*(((x.len32-24) div 10)-1))*10);
 if (xindex>=25) and ((xindex+9)<=x.len) then
    begin
    a.bytes[0]:=x.bytes1[xindex+0];
@@ -29739,7 +29797,7 @@ if (xindex>=25) and ((xindex+9)<=x.len) then
    a.bytes[7]:=x.bytes1[xindex+7];
    a.bytes[8]:=x.bytes1[xindex+8];
    a.bytes[9]:=x.bytes1[xindex+9];
-   result:=round(ref_proc(x.bytes1[10],xval,-255,255,a.val,(xindex-25) div 10,(x.len-24) div 10));
+   result:=round(ref_proc(x.bytes1[10],xval,-255,255,a.val,(xindex-25) div 10,(x.len32-24) div 10));
    end
 else result:=round(ref_proc(0,xval,-255,255,0,0,0));
 //range
@@ -29799,7 +29857,7 @@ if (zpos>=25) and ((zpos+9)<=x.len) then
    a.bytes[7]:=x.bytes1[zpos+7];
    a.bytes[8]:=x.bytes1[zpos+8];
    a.bytes[9]:=x.bytes1[zpos+9];
-   result:=round(ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(zpos-25) div 10,(x.len-24) div 10));
+   result:=round(ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(zpos-25) div 10,(x.len32-24) div 10));
    end
 else result:=round(ref_proc(0,xval,xmin,xmax,0,0,0));
 //range
@@ -29891,7 +29949,7 @@ if (zpos>=25) and ((zpos+9)<=x.len) then
    a.bytes[7]:=x.bytes1[zpos+7];
    a.bytes[8]:=x.bytes1[zpos+8];
    a.bytes[9]:=x.bytes1[zpos+9];
-   result:=ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(zpos-25) div 10,(x.len-24) div 10);
+   result:=ref_proc(x.bytes1[10],xval,xmin,xmax,a.val,(zpos-25) div 10,(x.len32-24) div 10);
    end
 else result:=ref_proc(0,xval,xmin,xmax,0,0,0);
 //range
@@ -30192,7 +30250,7 @@ x:=y;
 y:=z;
 end;
 
-function c32__int(x:tcolor32):longint;//16sep2025
+function c32__int(const x:tcolor32):longint;//16sep2025
 begin
 tint4(result).r:=x.r;
 tint4(result).g:=x.g;
@@ -30810,7 +30868,7 @@ if (sx='') then
 
 //init
 x         :=strlow(sx);
-xlen      :=low__len(x);
+xlen      :=low__Len32(x);
 xhavehash :=(strcopy1(x,1,1)='#');
 
 //get
@@ -31213,7 +31271,7 @@ end;
 function wincanvas__textout(x:hdc;xtransparent:boolean;dx,dy:longint;const xval:string):boolean;
 begin
 result:=(x<>0);
-if result then win____TextOut(x,dx,dy,pchar(xval),low__len(xval));
+if result then win____TextOut(x,dx,dy,pchar(xval),low__Len32(xval));
 end;
 
 function wincanvas__textextent(x:hdc;const xval:string):tpoint;
@@ -31222,17 +31280,20 @@ begin
 result.x:=0;
 result.y:=0;
 //get
-if (x<>0) then win____GetTextExtentPoint(x,pchar(xval),low__len(xval),result);
+if (x<>0) then win____GetTextExtentPoint(x,pchar(xval),low__Len32(xval),result);
 end;
 
-function wincanvas__textrect(x:hdc;xtransparent:boolean;xarea:twinrect;dx,dy:longint;const xval:string):boolean;
+function wincanvas__textrect(const x:hdc;const xtransparent:boolean;const xarea:twinrect;const dx,dy:longint;const xval:string):boolean;//20dec2025
 var
    xoptions:longint;
 begin
-result:=(x<>0);
-xoptions:=ETO_CLIPPED;
+
+result    :=(x<>0);
+xoptions  :=ETO_CLIPPED;
+
 if not xtransparent then inc(xoptions,ETO_OPAQUE);
-if result then win____ExtTextOut(x,dx,dy,xoptions,@xarea,pchar(xval),low__len(xval),nil);
+if result then win____ExtTextOut(x,dx,dy,xoptions,@xarea,pchar(xval),low__Len32(xval),nil);
+
 end;
 
 
@@ -31265,7 +31326,7 @@ dh:=frcmin32(sh,1);
 except;end;
 end;
 
-procedure low__scale(maxw,maxh,sw,sh:integer;var dw,dh:integer);//20feb2025: tweaked
+procedure low__scale(maxw,maxh,sw,sh:longint32;var dw,dh:longint32);//20feb2025: tweaked
 var
    r1,r2:extended;
 begin
@@ -31289,7 +31350,7 @@ dh:=frcmin32(round(sh*r1),1);
 except;end;
 end;
 
-procedure low__scalecrop(maxw,maxh,sw,sh:integer;var dw,dh:integer);//20feb2025: fixed
+procedure low__scalecrop(maxw,maxh,sw,sh:longint32;var dw,dh:longint32);//20feb2025: fixed
 var
    wratio,hratio:double;
 begin

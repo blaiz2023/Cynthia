@@ -7,6 +7,7 @@ interface
 {$ifdef gui} {$define snd} {$endif}
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define jpeg} {$endif}
+{$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
 uses gosswin2, gossroot, gosswin;
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
@@ -14,7 +15,7 @@ uses gosswin2, gossroot, gosswin;
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -30,10 +31,10 @@ uses gosswin2, gossroot, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. sound/audio/midi/chimes (gosssnd.pas)
-//## Version.................. 4.00.9256 (+119)
-//## Items.................... 10
-//## Last Updated ............ 06nov2025, 02nov2025, 24oct2025, 16sep2025, 09sep2025, 07sep2025, 21aug2025, 11aug2025, 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
-//## Lines of Code............ 9,800+
+//## Version.................. 4.00.9400 (+123)
+//## Items.................... 11
+//## Last Updated ............ 12dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 16sep2025, 09sep2025, 07sep2025, 21aug2025, 11aug2025, 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
+//## Lines of Code............ 10,300+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -47,18 +48,20 @@ uses gosswin2, gossroot, gosswin;
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | tbasicmidi             | tobjectex         | 1.00.5974 | 06nov2025   | Midi Engine for realtime reliable midi playback (supports midi formats 0/1 in tick mode only) for file formats .mid, .midi and .rmi - 24oct2025, 16sep2025, 14sep2025, 09sep2025, 21aug2025, 20aug2025, 18feb2025, 22nov2024, 16mar2022, 23feb2022, 30sep2021, 21may2021, 21may2021: thread safe version -> all attempts to use high level thread safe locking and syncing failed over the Windows 95 to Windows 10 range -> tried Windows message queues also failed, instead built a managed thread system for FAST rock-solid inter-thread communication via "systhread__*" family of procs, 19feb2022, 10may2021, 20apr2021: thread error hunt begins, 15apr2021, 04apr2021, 30mar2021, 22feb2021
-//## | tbasicchimes           | tobjectex         | 1.00.2011 | 29apr2025   | Centralised system chiming + audio alerts support via midi - 15nov2022
+//## | tbasicmidi             | tobjectex         | 1.00.5984 | 12dec2025   | Midi Engine for realtime reliable midi playback (supports midi formats 0/1 in tick mode only) for file formats .mid, .midi and .rmi - 24oct2025, 16sep2025, 14sep2025, 09sep2025, 21aug2025, 20aug2025, 18feb2025, 22nov2024, 16mar2022, 23feb2022, 30sep2021, 21may2021, 21may2021: thread safe version -> all attempts to use high level thread safe locking and syncing failed over the Windows 95 to Windows 10 range -> tried Windows message queues also failed, instead built a managed thread system for FAST rock-solid inter-thread communication via "systhread__*" family of procs, 19feb2022, 10may2021, 20apr2021: thread error hunt begins, 06nov2025, 15apr2021, 04apr2021, 30mar2021, 22feb2021
+//## | tbasicchimes           | tobjectex         | 1.00.2021 | 04dec2025   | Centralised system chiming + audio alerts support via midi - 29apr2025, 15nov2022
 //## | tsnd32                 | tobjectex         | 1.00.220  | 30sep2021   | 32bit slot based audio stream storage and manipulation handler - 14jul2021
 //## | taudiobasic            | tobjectex         | 1.00.300  | 19feb2022   | Audio playback and recording - 20jul2024: updated, 14apr2017: updated, 25JUN2009: created and operational
 //## | tmm                    | tobjectex         | 1.00.600  | 20jul2024   | Managed multimedia playback for audio files - 20jul2024: tweaked for gossamer, 25mar2016: updated, 23may2013: created
 //## | mid_*                  | family of procs   | 1.00.152  | 23oct2025   | Indirect control of midi subsystem - 16sep2025, 14sep2025, 09sep2025, 21aug2025, 22nov2024
+//## | simplemidi__*          | family of procs   | 1.00.120  | 03dec2025   | Simple midi track construction from text code/commands - 14feb2021
 //## | chm_*                  | family of procs   | 1.00.030  | 22nov2024   | Indirect control of chiming subsystem
 //## | mm_*                   | family of procs   | 1.00.030  | 22nov2024   | Indirect control of Microsoft Windows MCI subsystem
 //## | snd_*                  | family of procs   | 1.00.010  | 22nov2024   | Support procs for tsnd32
@@ -96,7 +99,7 @@ type
 {tbasicmidi}
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//mmmmmmmmmmmmmmmmmmmmmmmmmmmm
    tmidiitem=record
-      handle       :longint;
+      handle       :hauto;
       ms           :longint;//delay offset -> -100..100 ms
       vol          :longint;//0=mute, 1..200=on
       ch           :array[0..15] of boolean;
@@ -141,7 +144,7 @@ type
     function getpos:longint;
     function getpertpos:double;
     function gettranspose:longint;
-    function gethandle:longint;
+    function gethandle:hauto;//first active handle
     procedure setitem(xindex:longint;const xitem:tmidiitem);
     function getitem(xindex:longint):tmidiitem;
     function getitemsettings(xindex:longint):string;
@@ -203,7 +206,7 @@ type
     property midbytes              :longint read imidbytes;
     property msgs                  :longint read imidmsgs;
     function msgssent              :longint;
-    property handle                :longint read gethandle;
+    property handle                :hauto read gethandle;
     function handlecount           :longint;//07sep2025
 
     property itemsid                      :longint   read iitemsid;//increments each time an item changes
@@ -420,48 +423,48 @@ type
     taudiobasic=class(tobjectex)//Note: Playback and Recording systems now fully operational as at 25JUN2009
     private
      //commmon
-     ihandle:hwnd;
+     ihandle:hauto;
      //push - play
-     isamplems,isamplesize,isecsize,ipvolume,ipmaxV:integer;
+     isamplems,isamplesize,isecsize,ipvolume,ipmaxV:longint32;
      ipopen,iformatmodified:boolean;
      iformat:twaveformatex;
      iformatstr:string;
      iptime:currency;
-     iphandle:HWAVEOUT;
+     iphandle:hauto;
      ipH:array [0..1] of twavehdr;
      ipB:array [0..1] of taudiobasicbuffer;
      ippos:byte;
-     ipchcount,ipcount:integer;
+     ipchcount,ipcount:longint32;
      ipdata:tstr8;
      ip16bit,ipplaying:boolean;
      //pull - record
-     irsamplems,irsamplesize,irsecsize,irvolume,irmaxV:integer;
+     irsamplems,irsamplesize,irsecsize,irvolume,irmaxV:longint32;
      irformatmodified:boolean;
      irformat:twaveformatex;
      irformatstr:string;
      irtime:currency;
-     irhandle:HWAVEIN;
+     irhandle:hauto;
      irH:array [0..1] of twavehdr;
      irB:array [0..1] of taudiobasicbuffer;
      irpos:byte;
-     irchcount,ircount:integer;
+     irchcount,ircount:longint32;
      irdata:tstr8;
      ir16bit,irrecording:boolean;
      //core
      ilocked:boolean;
-     itimer:integer;
+     itimer:longint32;
      procedure _ontimer(sender:tobject);
      procedure pdo;
      procedure paoc;//automatic open/close
      procedure raoc;//automatic open/close
-     function handle:hwnd;
-     procedure onmessage(m,w,l:longint);
+     function handle:hauto;
+     procedure onmessage(m:msg_message;w:msg_wparam;l:msg_lparam);
      procedure setformat(x:string);
      procedure setrformat(x:string);
-     procedure setvolume(x:integer);
-     procedure setrvolume(x:integer);
-     procedure setsamplems(x:integer);
-     procedure setrsamplems(x:integer);
+     procedure setvolume(x:longint32);
+     procedure setrvolume(x:longint32);
+     procedure setsamplems(x:longint32);
+     procedure setrsamplems(x:longint32);
     public
      //options
      oplay_timeout:longint;//milliseconds to wait before timing out play buffer, default=10000 (10sec), use longer such for "tts" of "60000 (1 minute)" - 14apr2017
@@ -471,41 +474,41 @@ type
      destructor destroy; override;
      function onems(xformat:string):longint;//number of bytes for "1 millsecond" of sound - 21JUL2009
      //workers - common
-     function wkMaxV(_16bit:boolean;z:tstr8):integer;
+     function wkMaxV(_16bit:boolean;z:tstr8):longint32;
      procedure wkFast(_16bit:boolean;z:tstr8);
-     procedure wkAdjustVolume(_16bit:boolean;z:tstr8;_vol:integer);//adjust volume
+     procedure wkAdjustVolume(_16bit:boolean;z:tstr8;_vol:longint32);//adjust volume
      //-- PLAY -----------------------------------------------------------------
      //information
-     property samplems:integer read isamplems write setsamplems;
-     property samplesize:integer read isamplesize;
-     property secsize:integer read isecsize;
+     property samplems:longint32 read isamplems write setsamplems;
+     property samplesize:longint32 read isamplesize;
+     property secsize:longint32 read isecsize;
      property format:string read iformatstr write setformat;
      property playing:boolean read ipplaying;//23JUN2009
-     property pmaxV:integer read ipmaxV;
-     property volume:integer read ipvolume write setvolume;//adjust playback volume in realtime
+     property pmaxV:longint32 read ipmaxV;
+     property volume:longint32 read ipvolume write setvolume;//adjust playback volume in realtime
      property p16bit:boolean read ip16bit;
-     property pchcount:integer read ipchcount;
-     property pcount:integer read ipcount;//number of buffers in use (0=none, 1=one, 2=both)
+     property pchcount:longint32 read ipchcount;
+     property pcount:longint32 read ipcount;//number of buffers in use (0=none, 1=one, 2=both)
      //push
      function pushonline:boolean;
-     function pushlen:integer;//amount of data length in push buffer for playback
+     function pushlen:longint32;//amount of data length in push buffer for playback
      function canpush:boolean;
-     function canpushex(seconds:integer):boolean;
-     function canpushexMS(ms:integer):boolean;//23JUN2009
+     function canpushex(seconds:longint32):boolean;
+     function canpushexMS(ms:longint32):boolean;//23JUN2009
      function push(data:tstr8):boolean;//14apr2017
      procedure pflush;
      function pempty:boolean;//assume "ipdata" is never entirely empty as audio rounds to nearest block
      //-- RECORD ---------------------------------------------------------------
      //information
-     property rsamplems:integer read irsamplems write setrsamplems;
-     property rsamplesize:integer read irsamplesize;
-     property rsecsize:integer read irsecsize;
+     property rsamplems:longint32 read irsamplems write setrsamplems;
+     property rsamplesize:longint32 read irsamplesize;
+     property rsecsize:longint32 read irsecsize;
      property rformat:string read irformatstr write setrformat;
      property recording:boolean read irrecording write irrecording;
-     property rmaxV:integer read irmaxV write irmaxV;
-     property rvolume:integer read irvolume write setrvolume;//adjust playback volume in realtime
+     property rmaxV:longint32 read irmaxV write irmaxV;
+     property rvolume:longint32 read irvolume write setrvolume;//adjust playback volume in realtime
      property r16bit:boolean read ir16bit;
-     property rchcount:integer read irchcount;
+     property rchcount:longint32 read irchcount;
      //pull
      function pullonline:boolean;//hardware is running
      function canpull:boolean;
@@ -517,54 +520,65 @@ type
 {tmm}
     tmm=class(tobjectex)
     private
+
      istate:byte;
      ideviceid:word;
-     ihandle:hwnd;
+     ihandle:hauto;
      iformat,ifilename:string;
      iplayBUSY,itrackformat,istoplock,ivalid:boolean;//special note: ibk=true=>using backup audio system (ours) - 19MAY2013
-     itracknumber,itrackstart:integer;
+     itracknumber,itrackstart:longint32;
      inewposition,ilength:longint;
      inewpertpos:double;//06mar2022
+
      procedure _ontimer(sender:tobject);
      function getplaying:boolean;
      procedure _stop;
      function _open(var e:string):boolean;
      function _play(var e:string):boolean;
-     function gethandle:hwnd;
-     procedure onmessage(m,w,l:longint);
+     function gethandle:hauto;
+     procedure onmessage(m:msg_message;w:msg_wparam;l:msg_lparam);
      function getmode:tmmodes;
      function getposition:longint;
      procedure setposition(x:longint);//Working - 29JUN2010
      function getpertpos:double;
      procedure setnewpertpos(x:double);//06mar2022
+
     public
+
      //options
      oAutostop:boolean;//default=false
      oLoop:boolean;//default=false - 01MAY2011
      //events
      onstop:tevent;
+
      //create
-     constructor create; 
+     constructor create;
      destructor destroy; override;
+
      //workers
+
      //.play
      property playBUSY:boolean read iplayBUSY;//true=play() is working and is not yet finished, so POS and LEN could be undefined or incorrect - 23MAY2013
      function canplay:boolean;
      function play(x:string;var e:string):boolean;//reinforced, 12AUG2010
      property playing:boolean read getplaying;
+
      //.stop
      function canstop:boolean;
      procedure stop;
+
      //.information
      function positionBUSY:boolean;//we are waiting for "inewposition" to be implemented - 23MAY2013
-     property position:integer read getposition write setposition;
+     property position:longint32 read getposition write setposition;
      property pertpos:double read getpertpos write setnewpertpos;
      property len:longint read ilength;//set by "play" and "stop"
      property mode:tmmodes read getmode;
      property filename:string read ifilename;
      property state:byte read istate;
+
      //.handle
-     property handle:hwnd read gethandle;
+     property handle:hauto read gethandle;
+
     end;
 
 type
@@ -607,7 +621,7 @@ type
 
 var
    //.started
-   system_started               :boolean=false;
+   system_started_snd           :boolean=false;
 
    //system support - 29mar2021
    mmsys_midi:tbasicmidi=nil;
@@ -656,8 +670,8 @@ var
 //start-stop procs -------------------------------------------------------------
 procedure gosssnd__start;
 procedure gosssnd__stop;
-function gosssnd__onmessage_mm(m,w,l:longint):longint;//multimedia message handler
-function gosssnd__onmessage_wave(m,w,l:longint):longint;//wave message handler
+function gosssnd__onmessage_mm(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;//multimedia message handler
+function gosssnd__onmessage_wave(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;//wave message handler
 
 //info procs -------------------------------------------------------------------
 function app__info(xname:string):string;
@@ -775,7 +789,7 @@ function mid_mspert100:double;//timer resolution expressed as a percentage (0..1
 function mid_pcount:double;//timer events per second
 function mid_bytes:longint;//size of midi in bytes
 function mid_midbytes:longint;//size of midi in bytes
-function mid_phandle:longint;//handle of midi device
+function mid_phandle:hauto;//handle of midi device
 function mid_handlecount:longint;//number of active midi devices
 function mid_itemsid:longint;//09sep2025
 function mid_itemcount:longint;//07sep2025
@@ -863,28 +877,30 @@ function mm_chimes:tbasicchimes;
 function mm_wave:taudiobasic;
 function mm_mm:tmm;
 //.wave out
-function waveOutOpen(lphWaveOut: PHWaveOut; uDeviceID: UINT; lpFormat: PWaveFormatEx; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
-function waveOutClose(hWaveOut: HWAVEOUT): MMRESULT;
+function waveOutOpen(lphWaveOut:pauto; uDeviceID: uint32; lpFormat: PWaveFormatEx; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
+function waveOutClose(hWaveOut:hauto): MMRESULT;
 //.wave in
-function waveInOpen(lphWaveIn: PHWAVEIN; uDeviceID: UINT; lpFormatEx: PWaveFormatEx; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
-function waveInClose(hWaveIn: HWAVEIN): MMRESULT;
+function waveInOpen(lphWaveIn:pauto; uDeviceID: uint32; lpFormatEx: PWaveFormatEx; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
+function waveInClose(hWaveIn:hauto): MMRESULT;
 //.midi - out - 20JAN2011
-function midiOutOpen(lphMidiOut:PHMIDIOUT; uDeviceID: UINT; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
-function midiOutClose(hMidiOut: HMIDIOUT): MMRESULT;
-function midioutflush(xhandle:HMIDIOUT):boolean;//01sep2025, 11aug2025
+function midiOutOpen(lphMidiOut:pauto; uDeviceID: uint32; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
+function midiOutClose(hMidiOut:hauto): MMRESULT;
+function midioutflush(xhandle:hauto):boolean;//01sep2025, 11aug2025
 //.volume support
 function low__getvol:longint;//0..100% - 29mar2021,07OCT2010
 procedure low__setvol(x:longint);//0..100% - 29mar2021, 07OCT2010
 
-//** Low level midi note storage procs for use with "tstr8" - 14feb2021
-function low__midcount(x:tstr8):longint;
-function low__midbytes(x:tstr8):longint;
-function low__midtime(x:tstr8):longint;
-function low__midget(x:tstr8;xindex:longint;var xtimeuSEC:comp;var xmsg,xval1,xval2,xval3:byte):boolean;
-function low__midset(x:tstr8;xindex:longint;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
-function low__midadd(x:tstr8;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
-function low__makemid(x:string;var xdata:tstr8;var e:string):boolean;//make a simple, single track midi - 15nov2022, 16mar2022
-function low__txttomid(x,xtext:tstr8;var e:string):boolean;
+//simple midi procs ------------------------------------------------------------
+//** low level midi contruction procs for use with "tstr8"
+function simplemidi__count(x:tstr8):longint;
+function simplemidi__bytes(x:tstr8):longint;
+function simplemidi__time(x:tstr8):longint;
+function simplemidi__get(x:tstr8;xindex:longint;var xtimeuSEC:comp;var xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__set(x:tstr8;xindex:longint;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__add(x:tstr8;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__make(x:string;var xdata:tstr8;var e:string):boolean;//make a simple, single track midi - 03dec2025, 15nov2022, 16mar2022
+function simplemidi__txttomid(x,xtext:tstr8;var e:string):boolean;
+
 
 //** tsnd32 support procs and system handlers
 function nsnd32:tsnd32;
@@ -945,7 +961,7 @@ begin
 try
 
 //check
-if system_started then exit else system_started:=true;
+if system_started_snd then exit else system_started_snd:=true;
 
 //audio start
 mm_init;
@@ -956,20 +972,20 @@ procedure gosssnd__stop;
 begin
 try
 //check
-if not system_started then exit else system_started:=false;
+if not system_started_snd then exit else system_started_snd:=false;
 
 //audio stop
 mm_shut;
 except;end;
 end;
 
-function gosssnd__onmessage_mm(m,w,l:longint):longint;//multimedia message handler
+function gosssnd__onmessage_mm(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;//multimedia message handler
 begin
 result:=0;
 if (mmsys_mm<>nil) then mmsys_mm.onmessage(m,w,l);
 end;
 
-function gosssnd__onmessage_wave(m,w,l:longint):longint;//wave message handler
+function gosssnd__onmessage_wave(m:msg_message;w:msg_wparam;l:msg_lparam):msg_result;//wave message handler
 begin
 result:=0;
 if (mmsys_wave<>nil) then mmsys_wave.onmessage(m,w,l);
@@ -995,8 +1011,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosssnd.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.9256'
-else if (xname='date')       then result:='06nov2025'
+if      (xname='ver')        then result:='4.00.9400'
+else if (xname='date')       then result:='12dec2025'
 else if (xname='name')       then result:='Sound'
 else
    begin
@@ -1457,7 +1473,7 @@ var
    low__setlen(str1,sizeof(moc.szPname));
    if (str1<>'') then
       begin
-      for p:=1 to low__len(str1) do
+      for p:=1 to low__len32(str1) do
       begin
       v:=frcrange32(ord(moc.szPname[p-1]),0,255);
       if (v=0) then
@@ -2380,7 +2396,7 @@ begin
 if mm_inited then result:=mm_midi.midbytes else result:=0;
 end;
 
-function mid_phandle:longint;//handle of midi device
+function mid_phandle:hauto;//handle of midi device
 begin
 if mm_inited then result:=mm_midi.handle else result:=0;
 end;
@@ -3100,7 +3116,7 @@ if (win____midioutgetdevcaps(mid_deviceindex-1,@moc,sizeof(moc))=MMSYSERR_NOERRO
 except;end;
 end;
 
-function midiOutOpen(lphMidiOut:PHMIDIOUT; uDeviceID: UINT; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
+function midiOutOpen(lphMidiOut:pauto; uDeviceID: uint32; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
 begin
 
 result:=win____midiOutOpen(lphMidiOut,uDeviceID,dwCallback,dwInstance,dwFlags);
@@ -3108,7 +3124,7 @@ if (result=0) then track__inc(satMidiopen,1);
 
 end;
 
-function midiOutClose(hMidiOut: HMIDIOUT): MMRESULT;
+function midiOutClose(hMidiOut: hauto): MMRESULT;
 begin
 
 result:=win____midiOutClose(hMidiOut);
@@ -3162,7 +3178,7 @@ if (0=midiOutPrepareHeader(hMidiOut,@a,sizeof(a))) then
 except;end;
 end;
 {
-function midioutflush(xhandle:hmidiout;xstyle:longint):boolean;
+function midioutflush(xhandle:hauto;xstyle:longint):boolean;
 begin
 try
 //get
@@ -3184,7 +3200,7 @@ except;end;
 end;
 {}
 
-function midioutflush(xhandle:HMIDIOUT):boolean;//11aug2025
+function midioutflush(xhandle:hauto):boolean;//11aug2025
 var//Note: Takes about 140ms to execute - 26may2021
    xch,xnote,p:byte;
    xcount:longint;
@@ -3276,12 +3292,14 @@ except;end;
 end;
 
 
-//-- Low level midi note storage procs for use with "tstr8" - 14feb2021 --------------------------------
-function low__makemid(x:string;var xdata:tstr8;var e:string):boolean;//make a simple, single track midi - 15nov2022, 16mar2022
+//simple midi procs ------------------------------------------------------------
+function simplemidi__make(x:string;var xdata:tstr8;var e:string):boolean;//make a simple, single track midi - 03dec2025, 15nov2022, 16mar2022
 label//Example usage:  "0i14 50n98 150n99 200n97 180n96 100n94 200n94 200n94 100n96 100n96 100n96 100n96 100n96 100n96 1000e 200n80 200n90 100n80 100n90 200n80 200n90" or "0i14 0n90 1000e0" or "0i14 0s-10 0n90 1000e0"
    skipend;
+
 const
    xtempo_ms=500;
+
 var
    a:twrd2;
    b:tint4;
@@ -3297,155 +3315,211 @@ var
    var
       a:longint;
    begin
-   //defaults
-   result:=false;
-   t:=0;
-   n:='?';
-   v:=0;
-   vbig:=0;
-   vint:=0;
-   lp2:=lp;
 
-   try
+   //defaults
+   result :=false;
+   t      :=0;
+   n      :='?';
+   v      :=0;
+   vbig   :=0;
+   vint   :=0;
+   lp2    :=lp;
+
+   //check
+   if (xpos>xlen) then exit;//03dec2025
+
    //get
    redo:
    a:=ord(x[xpos-1+stroffset]);
+
    if (a>=33) and ((a<48) or (a>57)) and (a<>45) then lp2:=xpos;
-   if (a=10) or (a=13) or (a=32) or (a=44) then
+
+   if (a=10) or (a=13) or (a=32) or (a=44)       then
       begin
+
       if (lp=lp2) then
          begin
-         lp:=xpos+1;
-         lp2:=lp;
+
+         lp  :=xpos+1;
+         lp2 :=lp;
          goto skipone;
+
          end;
+
       //get
-      t:=frcmin32(strint(strcopy1(x,lp,lp2-lp)),0);
-      n:=strcopy1(x+'?',lp2,1)[1];
-      v:=frcrange32(strint(strcopy1(x,lp2+1,xpos-lp2-1)),0,127);
-      vbig:=frcmin32(strint(strcopy1(x,lp2+1,xpos-lp2-1)),0);
-      vint:=strint(strcopy1(x,lp2+1,xpos-lp2-1));//15nov2022
+      t       :=frcmin32(strint32(strcopy1(x,lp,lp2-lp)),0);
+      n       :=strcopy1(x+'?',lp2,1)[1];
+      v       :=frcrange32(strint32(strcopy1(x,lp2+1,xpos-lp2-1)),0,127);
+      vbig    :=frcmin32(strint32(strcopy1(x,lp2+1,xpos-lp2-1)),0);
+      vint    :=strint32(strcopy1(x,lp2+1,xpos-lp2-1));//15nov2022
+
       //reset
       inc(xpos);
-      lp:=xpos;
-      lp2:=lp;
-      result:=true;
+      lp      :=xpos;
+      lp2     :=lp;
+      result  :=true;
+
       goto skipend;
+
       end;
+
    //.loop
    skipone:
+
    inc(xpos);
    if (xpos<=xlen) then goto redo;
+
    skipend:
-   except;end;
+
    end;
 
    procedure tadd(xms:longint);//adds delta tick delay
    var
       v1,v2,v3,v4,xticks:longint;
    begin
-   try
+
    //range
-   if (xms>=1) and (xdelayshift<>0) then inc(xms,round(xms*(xdelayshift/100)));//15nov2022
-   xms:=frcrange32(xms,0,30000);
+   if (xms>=1) and (xdelayshift<>0) then
+      begin
+
+      inc(xms,round(xms*(xdelayshift/100)));//15nov2022
+
+      end;
+
+   xms      :=frcrange32(xms,0,30000);
+
    //convert
-   xticks:=trunc((xms*xBPM)/xtempo_ms);
+   xticks   :=trunc((xms*xBPM)/xtempo_ms);
+
    //get
    //.v1
-   v1:=xticks div (128*128*128);
+   v1       :=xticks div (128*128*128);
    dec(xticks,v1*(128*128*128));
+
    //.v2
-   v2:=xticks div (128*128);
+   v2       :=xticks div (128*128);
    dec(xticks,v2*(128*128));
+
    //.v3
-   v3:=xticks div 128;
+   v3       :=xticks div 128;
    dec(xticks,v3*128);
+
    //.v4
-   v4:=xticks;
+   v4       :=xticks;
+
    //set
+
    //.4b var-len
    if (v1>=1) then
       begin
+
       xdata.addbyt1(v1+128);//the 128 is to mark this as PART of the variable length number, only the last byte falls in the range 0..127 (never 128+)
       xdata.addbyt1(v2+128);
       xdata.addbyt1(v3+128);
       xdata.addbyt1(v4);
+
       end
+
    //.3b var-len
    else if (v2>=1) then
       begin
+
       xdata.addbyt1(v2+128);
       xdata.addbyt1(v3+128);
       xdata.addbyt1(v4);
+
       end
+
    //.2b var-len
    else if (v3>=1) then
       begin
+
       xdata.addbyt1(v3+128);
       xdata.addbyt1(v4);
+
       end
+
    //.1b var-len
    else
       begin
+
       xdata.addbyt1(v4);
+
       end;
-   except;end;
+
    end;
 
    procedure iadd(xinstrument:longint);
    begin
+
    //range
    xinstrument:=frcrange32(xinstrument,0,127);
+
    //get
    tadd(t);
    xdata.aadd([$C0,byte(xinstrument)]);
+
    end;
 
    procedure nadd(xnote,xvol:longint);
    begin
+
    //range
-   xnote:=frcrange32(xnote,0,127);
-   xvol :=frcrange32(xvol ,0,127);
+   xnote  :=frcrange32(xnote,0,127);
+   xvol   :=frcrange32(xvol ,0,127);
+
    //get
    tadd(t);
+
    case (xvol>=1) of
    true:xdata.aadd([$90,byte(xnote),byte(xvol)]);//note on
 //   false:xdata.aadd([$90,byte(xnote),0]);//note off
    else xdata.aadd([$80,byte(xnote),64]);//note off
    end;//case
+
    end;
 
    procedure vadd(xvol:longint);
    begin
+
    //range
-   xvol :=frcrange32(xvol ,0,127);
+   xvol   :=frcrange32(xvol ,0,127);
+
    //get
    tadd(t);
    xdata.aadd([$B0,$07,byte(xvol)]);//channel volume
+
    end;
+
 begin
+
 //defaults
-result:=false;
-e:=gecTaskfailed;
-dtracklen:=0;
+result         :=false;
+e              :=gecTaskfailed;
+dtracklen      :=0;
 
 //check
 if not str__lock(@xdata) then exit;
 
 try
 //init
-xnoteshift:=0;
-xdelayshift:=0;
-xBPM:=1000;//120;
+xnoteshift     :=0;
+xdelayshift    :=0;
+xBPM           :=1000;//120;
 xdata.clear;
+
 for p:=0 to high(xnotes) do xnotes[p]:=0;
-xvol:=127;
-xpos:=1;
-lp:=1;
-lp2:=1;
+
+xvol           :=127;
+xpos           :=1;
+lp             :=1;
+lp2            :=1;
+
 if (x<>'') then x:=x+#10;//enforce trailing return code
-xlen:=low__len(x);
-xonce:=true;
+
+xlen           :=low__len32(x);
+xonce          :=true;
+
 //check
 if (xlen<=0) then goto skipend;
 
@@ -3454,86 +3528,119 @@ xdata.aadd([uuM,uuT,llh,lld]);
 xdata.aadd([0,0,0,6]);
 xdata.aadd([0,0]);//format 0 - single track
 xdata.aadd([0,1]);//track count = 1
-a.val:=xBPM;
+
+a.val          :=xBPM;
+
 xdata.aadd([a.bytes[1],a.bytes[0]]);//timeDiv
 xdata.aadd([uuM,uuT,llr,llk]);//start track
 xdata.aadd([0,0,0,0]);//track length - fill with proper value later - 16mar2022
-dtracklen:=xdata.len;//remember where to write track length
+dtracklen:=xdata.len32;//remember where to write track length
 
 while true do
 begin
+
 //.next
 if not xnext then break;
 
 //.instrument
 if (n='i') then
    begin
+
    iadd(v);
    if xonce then vadd(xvol);//full volume
+
    end
+
 //.volume
 else if (n='v') then xvol:=frcrange32(v,0,127)
+
 //.note shift up/down
 else if (n='s') then
    begin
+
    xnoteshift:=frcrange32(vint,-127,127);
    t:=0;
+
    end
+
 //.delay shift up/down
 else if (n='f') then
    begin
+
    xdelayshift:=vint;//percentage to increase or decrease timing delay by, 0=off, 100=add 100% more delay, -100=take away all delay
    t:=0;
+
    end
+
 //.note on/off
 else if (n='n') then
    begin
+
    v:=frcrange32(v+xnoteshift,0,127);//15nov2022
    xnotes[v]:=xvol;
    nadd(v,xvol);//note on OR off
+
    end
+
 //.note off
 else if (n='x') then
    begin
+
    v:=frcrange32(v+xnoteshift,0,127);//15nov2022
    xnotes[v]:=0;
    nadd(v,0);//note off
+
    end
+
 //.fade down to zero
 else if (n='d') then
    begin
+
    vbig:=frcmin32(vbig,5);
+
    for i:=20 downto 0 do
    begin
    t:=frcmin32(round(vbig/20),1);
    vadd(round(127*(i/20)));//on
    end;//i
+
    end
+
 //.fade up from zero
 else if (n='u') then
    begin
+
    vbig:=frcmin32(vbig,5);
+
    for i:=0 to 20 do
    begin
    t:=frcmin32(round(vbig/20),1);
    vadd(round(127*(i/20)));//on
    end;//i
+
    end
+
 //.end
 else if (n='e') then break;
-end;
+
+end;//while
+
 //.finalise -> turn off all active notes
 for p:=0 to high(xnotes) do
 begin
+
 if (xnotes[p]>=1) then
    begin
 //   nadd(p,1);
    nadd(p,0);//note off
    t:=0;//only require the time delay for the 1st note, all the others follow on immedately afterwards - 16mar2022
    end;
+
 end;//p
+
 //.write "end of track"
 tadd(t);
+
 xdata.aadd([$FF,$2F,$00]);
 
 //successful
@@ -3543,32 +3650,41 @@ skipend:
 //.write track len back into track header - 16mar2022
 if ((xdata.len-dtracklen)>=1) then
    begin
-   b.val:=xdata.len-dtracklen;
-   xdata.byt1[dtracklen-4]:=b.bytes[3];
-   xdata.byt1[dtracklen-3]:=b.bytes[2];
-   xdata.byt1[dtracklen-2]:=b.bytes[1];
-   xdata.byt1[dtracklen-1]:=b.bytes[0];
+
+   b.val                   :=xdata.len32-dtracklen;
+   xdata.byt1[dtracklen-4] :=b.bytes[3];
+   xdata.byt1[dtracklen-3] :=b.bytes[2];
+   xdata.byt1[dtracklen-2] :=b.bytes[1];
+   xdata.byt1[dtracklen-1] :=b.bytes[0];
+
    end;
+
 except;end;
-try;str__uaf(@xdata);except;end;
+
+//free
+str__uaf(@xdata);
+
 end;
 
-function low__txttomid(x,xtext:tstr8;var e:string):boolean;
+function simplemidi__txttomid(x,xtext:tstr8;var e:string):boolean;
 label
    skipend;
+
 const
-   maxms=999999999;
-   maxtick=(127*128*128*128) + (127*128*128) + (127*128) + 127;
-   xtickrate=120;//120 beats per minute
-   xtempo=500000;//default tempo is 500K uSEC
-   xtempo_ms=500;
+   maxms       =999999999;
+   maxtick     =(127*128*128*128) + (127*128*128) + (127*128) + 127;
+   xtickrate   =120;//120 beats per minute
+   xtempo      =500000;//default tempo is 500K uSEC
+   xtempo_ms   =500;
+
    //modes
-   mnoteon=0;
-   mnoteoff=1;
-   mchannel=2;
-   mvelocity=3;
-   mdelay=4;
-   mtrack=5;//optional
+   mnoteon     =0;
+   mnoteoff    =1;
+   mchannel    =2;
+   mvelocity   =3;
+   mdelay      =4;
+   mtrack      =5;//optional
+
 var
    a,aoutdata:tstr8;
    aout:array[0..255] of tstr8;
@@ -3580,182 +3696,235 @@ var
 
    procedure ainit2(xtrack:longint);
    begin//Note: "xtrack" is internal var, not current track - 18feb2021
+
    xtrack:=frcrange32(xtrack,0,high(aout));
    if zznil(aout[xtrack],4501) then aout[xtrack]:=str__new8;
+
    end;
 
    procedure ainit;
    begin
+
    ainit2(xtrack);
+
    end;
 
    procedure xdef;
    begin
-   xmode:=mnoteon;
-   xchannel:=0;
-   xvelocity:=64;
-   xdelay:=0;
-   xtrack:=0;//0..255
-   dcount:=0;
+
+   xmode        :=mnoteon;
+   xchannel     :=0;
+   xvelocity    :=64;
+   xdelay       :=0;
+   xtrack       :=0;//0..255
+   dcount       :=0;
+
    end;
 
    procedure xadddelta(xtrack,xms:longint);
    var//Note: assumes "xtickrate" 96 ticks per quarter note (or 384 ticks / second / 1,000 ms)
       v1,v2,v3,v4,xticks:longint;
    begin
-   try
+
    //range
-   xtrack:=frcrange32(xtrack,0,high(aout));
-   xms:=frcrange32(xms,0,maxms);
+   xtrack    :=frcrange32(xtrack,0,high(aout));
+   xms       :=frcrange32(xms,0,maxms);
+
    //aouttime
    inc(aouttime[xtrack],xms);
+
    //convert
    //xticks:=frcrange32(round((xms/250)*xtickrate),0,maxtick);
 
-   xticks:=trunc((xms*xtickrate)/frcmin32(xtempo_ms,1));
+   xticks    :=trunc((xms*xtickrate)/frcmin32(xtempo_ms,1));
+
    //get
    //.v1
-   v1:=xticks div (128*128*128);
+   v1        :=xticks div (128*128*128);
    dec(xticks,v1*(128*128*128));
+
    //.v2
-   v2:=xticks div (128*128);
+   v2        :=xticks div (128*128);
    dec(xticks,v2*(128*128));
+
    //.v3
-   v3:=xticks div 128;
+   v3        :=xticks div 128;
    dec(xticks,v3*128);
+
    //.v4
-   v4:=xticks;
+   v4        :=xticks;
+
    //set
+
    //.4b var-len
    if (v1>=1) then
       begin
+
       ainit2(xtrack);
       aout[xtrack].addbyt1(v1+128);//the 128 is to mark this as PART of the variable length number, only the last byte falls in the range 0..127 (never 128+)
       aout[xtrack].addbyt1(v2+128);
       aout[xtrack].addbyt1(v3+128);
       aout[xtrack].addbyt1(v4);
+
       end
+
    //.3b var-len
    else if (v2>=1) then
       begin
+
       ainit2(xtrack);
       aout[xtrack].addbyt1(v2+128);
       aout[xtrack].addbyt1(v3+128);
       aout[xtrack].addbyt1(v4);
+
       end
+
    //.2b var-len
    else if (v3>=1) then
       begin
+
       ainit2(xtrack);
       aout[xtrack].addbyt1(v3+128);
       aout[xtrack].addbyt1(v4);
+
       end
+
    //.1b var-len
    else
       begin
+
       ainit2(xtrack);
       aout[xtrack].addbyt1(v4);
+
       end;
-   except;end;
+
    end;
 
    procedure xuseval;//if there is a value in the "dval" list then build it into a 32bit number and apply it to the current mode
    var
       vmultiplier,v,dc,p:longint;
    begin
-   try
+
    //check
    if (dcount<=0) then exit;
+
    //get
-   v:=0;
-   vmultiplier:=1;
-   dc:=0;
+   v            :=0;
+   vmultiplier  :=1;
+   dc           :=0;
+
    for p:=(dcount-1) downto 0 do//read from right-to-left to convert into decimal, a maximum of 9 digits to be read so it never exceeds the 32bit number limit, e.g. largest number is "999,999,999"
    begin
+
    inc(v,dval[p]*vmultiplier);
-   vmultiplier:=vmultiplier*10;//1 -> 10, 100, 1000, 10000, etc
+
+   vmultiplier  :=vmultiplier*10;//1 -> 10, 100, 1000, 10000, etc
+
    inc(dc);
    if (dc>=9) then break;//stop at this point -> else number MAY end up exceeding 32bit range of 2,100,000,000
+
    end;//p
+
    //set
    case xmode of
    mnoteon:begin//note on -> 3 bytes "9n note velocity"
+
       v:=frcrange32(v,0,127);
       ainit;
       xadddelta(xtrack,xdelay);//ms -> var-len delta ticks
       aout[xtrack].addbyt1($90+xchannel);//note on + channel -> $90..$9F (ch0..15)
       aout[xtrack].addbyt1(v);//note: 0..127
       aout[xtrack].addbyt1(xvelocity);//default for equipment without velocity sensors is 64, and ZERO (0) has special "note off" meaning for running status - 18feb2021
+
       end;
+
    mnoteoff:begin//note off -> 3 bytes "9n note velocity"
+
       v:=frcrange32(v,0,127);
       ainit;
       xadddelta(xtrack,xdelay);//ms -> var-len delta ticks
       aout[xtrack].addbyt1($80+xchannel);//note on + channel -> $90..$9F (ch0..15)
       aout[xtrack].addbyt1(v);//note: 0..127
       aout[xtrack].addbyt1(xvelocity);//default for equipment withou velocity sensors is 64
+
       end;
-   mchannel:xchannel:=frcrange32(v,0,15);
-   mvelocity:xvelocity:=frcrange32(v,0,127);
-   mdelay:xdelay:=frcrange32(v,0,maxms);
-   mtrack:xtrack:=frcrange32(v,0,high(aout));
+
+   mchannel      :xchannel:=frcrange32(v,0,15);
+   mvelocity     :xvelocity:=frcrange32(v,0,127);
+   mdelay        :xdelay:=frcrange32(v,0,maxms);
+   mtrack        :xtrack:=frcrange32(v,0,high(aout));
+
    end;
+
    //clear
-   dcount:=0;
-   except;end;
+   dcount        :=0;
+
    end;
 
    procedure xsetmode(x:byte);
    begin
+
    xuseval;
-   xmode:=x;
-   dcount:=0;
+
+   xmode         :=x;
+   dcount        :=0;
+
    end;
+
 begin
+
 //defaults
-result:=false;
-e:=gecTaskfailed;
+result      :=false;
+e           :=gecTaskfailed;
+a           :=nil;
+aoutdata    :=nil;
+xtotaltime  :=0;
 
 try
-a:=nil;
+//init
 for p:=0 to high(aout) do
 begin
-aout[p]:=nil;
-aouttime[p]:=0;
+aout[p]     :=nil;
+aouttime[p] :=0;
 end;//p
-aoutdata:=nil;
-xtotaltime:=0;
-//lock
-str__lock(@x);
-str__lock(@xtext);
 
-//check
-if zznil(x,4012) or zznil(xtext,4013) then goto skipend;
+//lock
+if not low__true2( str__lock(@x), str__lock(@xtext) ) then goto skipend;
 
 //init
-a:=str__new8;
-aoutdata:=str__new8;
+a           :=str__new8;
+aoutdata    :=str__new8;
 x.clear;
-alen:=xtext.len;
+alen        :=xtext.len32;
+
+//check
 if (alen<=0) then goto skipend;
 
 //filter
 for p:=0 to (alen-1) do
 begin
-byt1:=xtext.byt1[p];
+
+byt1        :=xtext.byt1[p];
+
 case byt1 of
-lln,llo,llc,llv,lld,llt,nn0..nn9,ssDot,ssSpace:a.addbyt1(byt1);
-uuN,uuO,uuC,uuV,uuD,uuT:a.addbyt1(byt1+vvUppertolower);//convert uppercase to lowercase
+lln,llo,llc,llv,lld,llt,nn0..nn9,ssDot,ssSpace  :a.addbyt1(byt1);
+uuN,uuO,uuC,uuV,uuD,uuT                         :a.addbyt1(byt1+vvUppertolower);//convert uppercase to lowercase
 end;//case
-end;
-alen:=a.len;
+
+end;//p
+
+//check
+alen        :=a.len32;
 if (alen<=0) then goto skipend;
 
 //get
 xdef;
+
 for p:=0 to (alen-1) do
 begin
-byt1:=a.byt1[p];
+
+byt1        :=a.byt1[p];
+
 case byt1 of
 lln:xsetmode(mnoteon);//note on
 llo:xsetmode(mnoteoff);//note off
@@ -3763,180 +3932,249 @@ llc:xsetmode(mchannel);//channel
 llv:xsetmode(mvelocity);//velocity
 lld:xsetmode(mdelay);//delay
 llt:xsetmode(mtrack);//track
+
 nn0..nn9:begin//value
+
    if (dcount<=high(dval)) then
       begin
+
       dval[dcount]:=byt1-nn0;//0..9
       inc(dcount);
+
       end;
+
    end;
+
 ssSpace:xuseval;
+
 ssDot:begin//end of midi
+
    xuseval;
    break;
+
    end;
+
 end;//case
+
 end;//p
+
 //.finalise
 xuseval;
 
 //set - build midi file
 //.write tracks
-xtrackcount:=0;
+xtrackcount :=0;
+
 for p:=0 to high(aout) do if zzok(aout[p],4502) and (aout[p].len>=1) then
    begin
+
    inc(xtrackcount);
+
    //time - reference only
    if (aouttime[p]>xtotaltime) then xtotaltime:=aouttime[p];
+
    //insert EOT -> end of track -> <delatticks> + "FF 2F 00" -> uses current delay so notes can finishing playing if track hasn't been finished off properly - 18feb2021
    xadddelta(p,xdelay);
+
    aout[p].addbyt1($FF);
    aout[p].addbyt1($2F);
    aout[p].addbyt1($00);
+
    //track header
    aoutdata.aadd([uuM,uuT,llr,llk]);
+
    //track length
-   aoutdata.addint4R(aout[p].len);
+   aoutdata.addint4R(aout[p].len32);
+
    //track data
    aoutdata.add(aout[p]);
+
    end;
+
 //.write midi header
 x.aadd([uuM,uuT,llh,lld]);
+
 //.32bit number check.4R
 x.addint4R(6);
+
 //.write formattype.2R + trackcount.2R + tickrate.2R
 x.addwrd2R(low__insint(1,xtrackcount>=2));//0=single track, 1=multi-track, 2=we don't support
 x.addwrd2R(xtrackcount);
 x.addwrd2R(xtickrate);//for us we use ticks always for simplicity
+
 //.write all tracks data
 x.add(aoutdata);
+
 //successful
 result:=true;
 skipend:
+
 except;end;
-try;if (not result) and zzok(x,4503) then x.clear;except;end;
-try
+
+//clear on error
+if (not result) then str__clear(@x);//03dec2025
+
+//free
 str__free(@a);
 str__free(@aoutdata);
+
 for p:=0 to high(aout) do str__free(@aout[p]);
+
 str__uaf(@x);
 str__uaf(@xtext);
-except;end;
+
 end;
 
-function low__midcount(x:tstr8):longint;
+function simplemidi__count(x:tstr8):longint;
 begin
-result:=0;
-if zzok(x,4504) then result:=x.len div 12;
+
+//get
+case zzok(x,4504) of
+true:result:=x.len32 div 12;
+else result:=0;
+end;//case
+
+//auto-free
 if (x<>nil) then str__af(@x);
+
 end;
 
-function low__midbytes(x:tstr8):longint;
+function simplemidi__bytes(x:tstr8):longint;
 begin
-result:=0;
-if zzok(x,4505) then result:=x.len;
-if (x<>nil) then str__af(@x);
+
+//get
+case zzok(x,4505) of
+true:result:=x.len32;
+else result:=0;
 end;
 
-function low__midtime(x:tstr8):longint;
+//auto-free
+if (x<>nil) then str__af(@x);
+
+end;
+
+function simplemidi__time(x:tstr8):longint;
 var
    i:longint;
    xmsg,xval1,xval2,xval3:byte;
    xtimeuSEC:comp;
 begin
+
+//defaults
 result:=0;
 
 try
+
 if str__lock(@x) then
    begin
-   i:=low__midcount(x);
+
+   i:=simplemidi__count(x);
+
    if (i>=1) then
       begin
-      low__midget(x,i-1,xtimeuSEC,xmsg,xval1,xval2,xval3);
+
+      simplemidi__get(x,i-1,xtimeuSEC,xmsg,xval1,xval2,xval3);
       //was:   result:=trunc(xtimeuSEC/1000.0);
       result:=div32(xtimeuSEC,1000);
+
       end;
+
    end;
 except;end;
-try;str__uaf(@x);except;end;
+
+//free
+str__uaf(@x);
+
 end;
 
-function low__midget(x:tstr8;xindex:longint;var xtimeuSEC:comp;var xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__get(x:tstr8;xindex:longint;var xtimeuSEC:comp;var xmsg,xval1,xval2,xval3:byte):boolean;
 var
    xpos:longint;
    a:tint4;
 begin
 
 //defaults
-result:=false;
-xtimeuSEC:=0;
-xmsg :=0;
-xval1:=0;
-xval2:=0;
-xval3:=0;
+result     :=false;
+xtimeuSEC  :=0;
+xmsg       :=0;
+xval1      :=0;
+xval2      :=0;
+xval3      :=0;
 
 try
-
 //init
 if (xindex<0) then xpos:=0 else xpos:=xindex*12;
 
 //get
 if zzok(x,4506) and (xpos>=0) and ((xpos+11)<x.len) then
    begin
-   xtimeuSEC:=x.cmp8[xpos+0];
-   a.val:=x.int4[xpos+8];
-   xmsg :=a.bytes[0];
-   xval1:=a.bytes[1];
-   xval2:=a.bytes[2];
-   xval3:=a.bytes[3];
-   result:=true;
+
+   xtimeuSEC :=x.cmp8[xpos+0];
+   a.val     :=x.int4[xpos+8];
+   xmsg      :=a.bytes[0];
+   xval1     :=a.bytes[1];
+   xval2     :=a.bytes[2];
+   xval3     :=a.bytes[3];
+   result    :=true;
+
    end;
 
 except;end;
 
-//free
+//auto-free
 if (x<>nil) then str__af(@x);
 
 end;
 
-function low__midset(x:tstr8;xindex:longint;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__set(x:tstr8;xindex:longint;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
 var
    xpos:longint;
    a:tint4;
 begin
+
 //defaults
-result:=false;
+result :=false;
 
 try
 //init
 if (xindex<0) then xpos:=0 else xpos:=xindex*12;
+
 //get
 if zzok(x,4507) then
    begin
+
    //init
-   a.bytes[0]:=xmsg;
-   a.bytes[1]:=xval1;
-   a.bytes[2]:=xval2;
-   a.bytes[3]:=xval3;
+   a.bytes[0]     :=xmsg;
+   a.bytes[1]     :=xval1;
+   a.bytes[2]     :=xval2;
+   a.bytes[3]     :=xval3;
+
    //get
-   x.cmp8[xpos+0]:=xtimeuSEC;
-   x.int4[xpos+8]:=a.val;
-   result:=true;
+   x.cmp8[xpos+0] :=xtimeuSEC;
+   x.int4[xpos+8] :=a.val;
+
+   result         :=true;
+
    end;
 except;end;
-try;if (x<>nil) then str__af(@x);except;end;
+
+//auto-free
+if (x<>nil) then str__af(@x);
+
 end;
 
-function low__midadd(x:tstr8;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
+function simplemidi__add(x:tstr8;xtimeuSEC:comp;xmsg,xval1,xval2,xval3:byte):boolean;
 begin
-result:=low__midset(x,low__midcount(x),xtimeuSEC,xmsg,xval1,xval2,xval3);
+
+result:=simplemidi__set(x,simplemidi__count(x),xtimeuSEC,xmsg,xval1,xval2,xval3);
+
 end;
 
 
 //## tbasicmidi ################################################################
-procedure mid__timeusec__add(var xtimeuSEC:comp;xtempo,xtimediv,xmultipler:longint);//22nov2024
+procedure mid__timeusec__add(var xtimeuSEC:comp;xtempo,xtimediv,xmultipler:longint);//12dec2025, 22nov2024
 begin
-try;if (xtimediv<>0) and (xmultipler<>0) then xtimeuSEC:=xtimeuSEC+((xtempo/xtimediv)*xmultipler);except;end;
+try;if (xtimediv<>0) and (xmultipler<>0) then xtimeuSEC:=xtimeuSEC + round64((xtempo/xtimediv)*xmultipler);except;end;
 end;
 
 constructor tbasicmidi.create;
@@ -4155,12 +4393,13 @@ if (result=0) then
 
 end;
 
-function tbasicmidi.gethandle:longint;//first active handle
+function tbasicmidi.gethandle:hauto;//first active handle
 var
    p:longint;
 begin
 
 result:=0;
+
 for p:=0 to high(ihandlelist) do if (ihandlelist[p].handle<>0) then
    begin
 
@@ -4345,7 +4584,7 @@ xdata:=xdata+';';//enforce trailing comma
 c   :=0;
 lp  :=1;
 
-for p:=1 to low__len(xdata) do if (xdata[p-1+stroffset]=';') then
+for p:=1 to low__len32(xdata) do if (xdata[p-1+stroffset]=';') then
    begin
 
    //get
@@ -4360,7 +4599,7 @@ for p:=1 to low__len(xdata) do if (xdata[p-1+stroffset]=';') then
    2:x.ms   :=strint32(v);
    3:begin
 
-      for p2:=1 to low__len(v) do
+      for p2:=1 to low__len32(v) do
       begin
 
       case (pred(p2)<=high(x.ch)) of
@@ -4474,7 +4713,7 @@ label//Special Note: iresetvol allows for a gentle fading in to full volume and 
    redo, skipend;
 var
    xbroadcasting,bol1:boolean;
-   xchannel,xdeviceToTrack,xdevicefrom,xdeviceto,dhandlecount,xhandle,xtrack,int1,xsysvol,rvol,xmaxp,xsongms32,xtimems32,p:longint;
+   xhandleindex,xchannel,xdeviceToTrack,xdevicefrom,xdeviceto,dhandlecount,xtrack,int1,xsysvol,rvol,xmaxp,xsongms32,xtimems32,p:longint;
    xmsg,xnote,xrawvol,xvol,xvolUNMUTED,xval3:byte;
    dsysvol:array[0..high(tmidilist)] of byte;
    xout:tint4;
@@ -4646,15 +4885,15 @@ for p:=0 to xmaxp do
 begin
 
 
-for xhandle:=xdevicefrom to xdeviceto do if (ihandlelist[xhandle].handle<>0) then
+for xhandleindex:=xdevicefrom to xdeviceto do if (ihandlelist[xhandleindex].handle<>0) then
 begin
 
 redo:
-if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpos[xhandle][p],xtimems32,xmsg,xnote,xvol,xval3) then
+if (ilistcount[p]>=1) and (ilistpos[xhandleindex][p]<ilistcount[p]) and get(p,ilistpos[xhandleindex][p],xtimems32,xmsg,xnote,xvol,xval3) then
    begin
 
    //ms adjustment
-   if (ihandlelist[xhandle].ms<>0) then xtimems32:=xtimems32+ihandlelist[xhandle].ms;
+   if (ihandlelist[xhandleindex].ms<>0) then xtimems32:=xtimems32+ihandlelist[xhandleindex].ms;
 
    //get
    if (xtimems32<xsongms32) or ((not idisablenotes) and (xtimems32<=xsongms32)) then
@@ -4665,7 +4904,7 @@ if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpo
       xvolUNMUTED    :=xvol;
 
       //inc
-      inc(ilistpos[xhandle][p]);
+      inc(ilistpos[xhandleindex][p]);
 
       //disable notes
       if idisablenotes and (xmsg>=$80) and (xmsg<=$9F) then goto redo;//skip over all NOTE ON and NOTE OFF msgs
@@ -4681,11 +4920,11 @@ if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpo
       if (xchannel>=0) then
          begin
 
-         if (xvol>=1) and ( (dsysvol[xhandle]<>100) or (rvol<>100) or (mmsys_mid_chvol[xchannel]<>100) ) then
+         if (xvol>=1) and ( (dsysvol[xhandleindex]<>100) or (rvol<>100) or (mmsys_mid_chvol[xchannel]<>100) ) then
             begin
 
             //apply volume change
-            xvol        :=byte(frcrange32( trunc( longint(xvol) * (dsysvol[xhandle]/100) * (rvol/100) * (low__posn(mmsys_mid_chvol[xchannel])/100) ) ,1,127));
+            xvol        :=byte(frcrange32( trunc( longint(xvol) * (dsysvol[xhandleindex]/100) * (rvol/100) * (low__posn(mmsys_mid_chvol[xchannel])/100) ) ,1,127));
             xvolUNMUTED :=xvol;
 
             //mute
@@ -4721,10 +4960,10 @@ if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpo
          $80..$8F:begin//note off
 
             //note volume
-            if mmsys_mid_mutetrack[xtrack] or mmsys_mid_mutenote[xnote] or (xbroadcasting and (not ihandlelist[xhandle].ch[xmsg-$80])) then xvol:=0;
+            if mmsys_mid_mutetrack[xtrack] or mmsys_mid_mutenote[xnote] or (xbroadcasting and (not ihandlelist[xhandleindex].ch[xmsg-$80])) then xvol:=0;
 
             //track note with beat extender - 03sep2025
-            if (xhandle=xdeviceToTrack) then xtracknote(xtrack,xmsg-$80,xnote,0,0,0);
+            if (xhandleindex=xdeviceToTrack) then xtracknote(xtrack,xmsg-$80,xnote,0,0,0);
 
             //status
             low__irollone(mmsys_mid_notesref);
@@ -4734,10 +4973,10 @@ if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpo
          $90..$9F:begin//note on
 
             //note volume
-            if mmsys_mid_mutetrack[xtrack] or mmsys_mid_mutenote[xnote] or (xbroadcasting and (not ihandlelist[xhandle].ch[xmsg-$90])) then xvol:=0;
+            if mmsys_mid_mutetrack[xtrack] or mmsys_mid_mutenote[xnote] or (xbroadcasting and (not ihandlelist[xhandleindex].ch[xmsg-$90])) then xvol:=0;
 
             //track note with beat extender - 03sep2025
-            if (xhandle=xdeviceToTrack) then xtracknote(xtrack,xmsg-$90,xnote,xrawvol,xvol,xvolUNMUTED);
+            if (xhandleindex=xdeviceToTrack) then xtracknote(xtrack,xmsg-$90,xnote,xrawvol,xvol,xvolUNMUTED);
 
             //status
             low__irollone(mmsys_mid_notesref);
@@ -4760,7 +4999,7 @@ if (ilistcount[p]>=1) and (ilistpos[xhandle][p]<ilistcount[p]) and get(p,ilistpo
       xout.bytes[3]:=xval3;
 
       //send message to midi device(s)
-      if (0<>win____MidiOutShortMsg(ihandlelist[xhandle].handle,xout.val)) then goto skipend;//break on error - 18apr2021
+      if (0<>win____MidiOutShortMsg(ihandlelist[xhandleindex].handle,xout.val)) then goto skipend;//break on error - 18apr2021
 
       low__irollone(mmsys_mid_msgoutcount);
 
@@ -5030,7 +5269,7 @@ if (ms64>itimer100) or ihalt then
       begin
 
 //was:      inewpos:=frcrange32(round(ilen*inewpertpos) div 100,0,frcmin32(ilen-1,0));
-      inewpos:=frcrange32( restrict32( div64( mult64(ilen,inewpertpos) ,100) ) ,0,frcmin32(ilen-1,0));//now able to handle massive range for midi's with bad timing errors - 22nov2024
+      inewpos:=frcrange32( restrict32( div64( mult64E(ilen,inewpertpos) ,100) ) ,0,frcmin32(ilen-1,0));//now able to handle massive range for midi's with bad timing errors - 22nov2024
       inewpertpos:=-1;//off
 
       end;
@@ -5250,7 +5489,7 @@ end;
 
 function tbasicmidi.msgssent:longint;
 var
-   xhandle,p:longint;
+   xhandleindex,p:longint;
 begin
 
 result:=0;
@@ -5258,10 +5497,10 @@ result:=0;
 if (ilistlimit>=1) then
    begin
 
-   for xhandle:=0 to high(ihandlelist) do
+   for xhandleindex:=0 to high(ihandlelist) do
    begin
 
-   for p:=0 to (ilistlimit-1) do if (ilistcount[p]>=1) and (ilistpos[xhandle][p]>=1) then inc(result,ilistpos[xhandle][p]);
+   for p:=0 to (ilistlimit-1) do if (ilistcount[p]>=1) and (ilistpos[xhandleindex][p]>=1) then inc(result,ilistpos[xhandleindex][p]);
 
    end;//xhandle
 
@@ -5417,7 +5656,7 @@ end;
 
 procedure tbasicmidi.restart;
 var
-   xhandle,p:longint;
+   p:longint;
 begin//Re-syncs midi playback at the new location
 try
 moretime;
@@ -5487,7 +5726,7 @@ end;
 
 function tbasicmidi.lcount:longint;
 begin
-result:=ilyricsref.len div 12;
+result:=ilyricsref.len32 div 12;
 end;
 
 function tbasicmidi.lfind(xpos:longint;xshowsep:boolean):string;//find lyrics - 24feb2022
@@ -5572,7 +5811,7 @@ var
 
    procedure setdatpos(x:longint);
    begin
-   xdatpos:=frcrange32(x,0,xdata.len-1);
+   xdatpos:=frcrange32(x,0,xdata.len32-1);
    end;
 
    function xsame(const x:array of byte):boolean;
@@ -5743,7 +5982,7 @@ var
 
    if (xtempo<1) then xtempo:=1;
 
-   xcount                     :=xtickcount8.len div 8;
+   xcount                     :=xtickcount8.len32 div 8;
    xtickcount8.cmp8[xcount*8] :=xtickcount;
    xticktemp4.int4[xcount*4]  :=xtempo;
 
@@ -5812,7 +6051,7 @@ var
    if (xlen<=0) then exit;
 
    //init
-   xcount :=ilyricsref.len div 12;
+   xcount :=ilyricsref.len32 div 12;
    xms    :=div32(xtimeuSEC,1000);
 
    //get
@@ -5820,7 +6059,7 @@ var
       begin
 
       ilyricsref.int4[(xcount*12)+0]:=xms;
-      ilyricsref.int4[(xcount*12)+4]:=ilyrics.len;
+      ilyricsref.int4[(xcount*12)+4]:=ilyrics.len32;
       ilyricsref.int4[(xcount*12)+8]:=xlen;
 
       end;
@@ -5861,7 +6100,7 @@ xdata       :=str__new8;
 xdata.add(idata);
 idata.clear;
 
-xdatlen     :=xdata.len;
+xdatlen     :=xdata.len32;
 xtickcount8 :=str__new8;
 xticktemp4  :=str__new8;
 
@@ -5947,7 +6186,7 @@ xcasiopackets  :=false;//24feb2022
 if (xlistcount>=1) and (xformat>=1) then
    begin
 
-   xcount8 :=xtickcount8.len div 8;
+   xcount8 :=xtickcount8.len32 div 8;
    xlist8  :=xtickcount8.core;
    xlist4  :=xticktemp4.core;
 
@@ -6005,7 +6244,7 @@ $00..$7F:begin//** Important: the 0..127 range are NOTES that are running AFTER 
 $80..$BF,$E0..$EF:begin//3b messages - note off -> note on -> polyphonic pressure -> controller ->  -> pitch bend messages
    if not xval1(byt1) then goto skipend;
    if not xval1(byt2) then goto skipend;
-   low__midadd(ilistdata[xlistcount],xtimeuSEC,xmsg,byt1,byt2,0);//stores values "asis"
+   simplemidi__add(ilistdata[xlistcount],xtimeuSEC,xmsg,byt1,byt2,0);//stores values "asis"
 
    //.note off/on related "hearable" messages - 11jan2025
    if (xtimeuSEC>xlastnotetimeuSEC) then xlastnotetimeuSEC:=xtimeuSEC;
@@ -6013,7 +6252,7 @@ $80..$BF,$E0..$EF:begin//3b messages - note off -> note on -> polyphonic pressur
 $C0..$DF:begin//2b messages - program change -> channel pressure
 
    if not xval1(byt1) then goto skipend;
-   low__midadd(ilistdata[xlistcount],xtimeuSEC,xmsg,byt1,0,0);//stores values "asis"
+   simplemidi__add(ilistdata[xlistcount],xtimeuSEC,xmsg,byt1,0,0);//stores values "asis"
 
    case xmsg of
    $C0..$CF:mmsys_mid_voiceindex[xmsg-$C0]:=frcrange32(byt1,0,127);//21aug2025
@@ -6051,7 +6290,7 @@ $FF:begin//meta-events "FF type length data"
       //ignore
       end;
    $2F:begin//end of track (required) -> "FF 2F 00"
-      low__midadd(ilistdata[xlistcount],xprevtimeuSEC,xmsg,mtype,0,0);//stores values "asis"
+      simplemidi__add(ilistdata[xlistcount],xprevtimeuSEC,xmsg,mtype,0,0);//stores values "asis"
       xtotaluSEC:=xprevtotaluSEC;//exclude this from the total time count
       break;
       end;
@@ -6093,7 +6332,7 @@ skipone:
 end;//while -> end of track
 
 //sync tracker handlers
-ilistcount[xlistcount]:=low__midcount(ilistdata[xlistcount]);
+ilistcount[xlistcount]:=simplemidi__count(ilistdata[xlistcount]);
 
 //detect last usable list
 if ((xlistcount+1)>=ilistlimit) then ilistlimit:=xlistcount+1;
@@ -6109,7 +6348,7 @@ skipend:
 if (ilistlimit>=1) then
    begin
    int1:=0;
-   for p:=0 to frcmax32(ilistlimit-1,high(ilistdata)) do if (ilistcount[p]>=1) and zzok(ilistdata[p],4513) then inc(int1,ilistdata[p].len);
+   for p:=0 to frcmax32(ilistlimit-1,high(ilistdata)) do if (ilistcount[p]>=1) and zzok(ilistdata[p],4513) then inc(int1,ilistdata[p].len32);
    ibytes:=int1;
    end;
 except;end;
@@ -6168,47 +6407,52 @@ if classnameis('tbasicchimes') then track__inc(satChimes,1);
 need_mm;
 
 //vars
-ivol:=100;
-iplaying:=false;
-imuststop:=false;
-imustplay:=-1;//off
-iworklist:='';
-iworkindex:=0;
-iworkmins:=0;
-iworkpos:=0;
-iworkcount:=1;
-iwork0:=true;
-iwork15:=true;
-iwork30:=true;
-iwork45:=true;
-iworktest:=false;
-ipausenote64:=0;
-ibuzzer:=0;//off
-ibuzzer2:=0;
-ibuzzerpaused:=false;
+ivol           :=100;
+iplaying       :=false;
+imuststop      :=false;
+imustplay      :=-1;//off
+iworklist      :='';
+iworkindex     :=0;
+iworkmins      :=0;
+iworkpos       :=0;
+iworkcount     :=1;
+iwork0         :=true;
+iwork15        :=true;
+iwork30        :=true;
+iwork45        :=true;
+iworktest      :=false;
+ipausenote64   :=0;
+ibuzzer        :=0;//off
+ibuzzer2       :=0;
+ibuzzerpaused  :=false;
 
 //clear
-icount:=0;
-inumberfrom1:=0;
-inumberfrom2:=0;
-inumberfrom3:=0;
-ibuzzercount:=0;
+icount         :=0;
+inumberfrom1   :=0;
+inumberfrom2   :=0;
+inumberfrom3   :=0;
+ibuzzercount   :=0;
+
 for p:=0 to high(iname) do
 begin
-iname[p]   :='';
-iintro[p]  :=nil;
-idong[p]   :=nil;
-idong2[p]  :=nil;
-itemp[p]   :=nil;
-iintroX[p] :='';
-idongX[p]  :='';
-idong2X[p] :='';
+
+iname[p]       :='';
+iintro[p]      :=nil;
+idong[p]       :=nil;
+idong2[p]      :=nil;
+itemp[p]       :=nil;
+iintroX[p]     :='';
+idongX[p]      :='';
+idong2X[p]     :='';
+
 end;//p
 
 //init
 xinitChimes;
+
 //timer
 low__timerset(self,_ontimer,30);
+
 end;
 
 destructor tbasicchimes.destroy;//02mar2022
@@ -6216,33 +6460,46 @@ var
    p:longint;
 begin
 try
+
 //timer
 low__timerdel(self,_ontimer);//disconnect our timer event from the system timer
+
 //vars
 for p:=0 to high(iname) do
 begin
+
 str__free(@iintro[p]);
 str__free(@idong[p]);
 str__free(@idong2[p]);
 str__free(@itemp[p]);
+
 end;//p
+
 //.buzzers
 for p:=low(ibuzzers) to high(ibuzzers) do str__free(@ibuzzers[p]);
+
 //self
 if classnameis('tbasicchimes') then track__inc(satChimes,-1);
+
 inherited destroy;
+
 except;end;
 end;
 
 procedure tbasicchimes.setbuzzer(x:longint);
 begin
+
 ibuzzer:=frcrange32(x,0,chm_buzzercount);
+
 end;
 
 function tbasicchimes.findbuzzerlabel(x:longint):string;
 begin
+
 x:=frcrange32(x,0,high(ibuzzers));
+
 if (x<low(ibuzzerlabels)) then result:='None' else result:=ibuzzerlabels[x];
+
 end;
 
 function tbasicchimes.addbuzzer(xlabel,xdata:string;const xmiddata:array of byte):boolean;
@@ -6252,31 +6509,43 @@ var
    p,xlabelcount:longint;
    dlabel:string;
 begin
+
 //defaults
-result:=false;
-xlabelcount:=1;
+result      :=false;
+xlabelcount :=1;
 
 try
 //check
-if (ibuzzercount<0) then ibuzzercount:=0;
+if (ibuzzercount<0)               then ibuzzercount:=0;
 if (ibuzzercount>=high(ibuzzers)) then exit;
+
 //find existing
 redo:
+
 dlabel:=xlabel+insstr(#32+intstr32(xlabelcount),xlabelcount>=2);
+
 for p:=1 to frcmax32(ibuzzercount,high(ibuzzerlabels)) do
 begin
+
 if strmatch(ibuzzerlabels[p],dlabel) then
    begin
+
    inc(xlabelcount);
    goto redo;
+
    end;
+
 end;//p
+
 //get
 if (ibuzzercount<high(ibuzzers)) then
    begin
+
    inc(ibuzzercount);
    setbuzzerdata(ibuzzercount,dlabel,xdata,xmiddata);
+
    end;
+
 except;end;
 end;
 
@@ -6285,32 +6554,45 @@ var//x: 0=off, 1..9=buzzer data
    a:tstr8;
    e:string;
 begin
-try
+
 //defaults
 a:=nil;
+
+try
 //range
 x:=frcrange32(x,0,high(ibuzzers));
 if (x<low(ibuzzers)) then exit;
+
 //init
 if (ibuzzers[x]=nil) then ibuzzers[x]:=str__new8;
 ibuzzers[x].clear;
+
 //get
 if (sizeof(xmiddata)<4) then
    begin
+
    a:=str__new8;
-   low__makemid(xdata,a,e);
+   simplemidi__make(xdata,a,e);
    ibuzzers[x].add(a);
+
    end
 else ibuzzers[x].aadd(xmiddata);
+
 //set
 ibuzzerlabels[x]:=strdefb(xlabel,intstr32(x));
+
 except;end;
-try;str__free(@a);except;end;
+
+//free
+str__free(@a);
+
 end;
 
 procedure tbasicchimes.setvol(x:longint);
 begin
+
 ivol:=frcrange32(x,0,100);
+
 end;
 
 procedure tbasicchimes.xinitChimes;
@@ -6850,89 +7132,115 @@ end;
 
 function tbasicchimes.getchiming:boolean;
 begin//covers seeking, worklist setup and playing of chimes - 02mar2022
+
 result:=(imustplay>=0) or (iworklist<>'') or iplaying;
+
 end;
 
 function tbasicchimes.chimingpert:double;
 begin
+
 if (iworkcount=1) and iplaying then result:=low__makepertD0(mid_pos+1,mid_len+1) else result:=low__makepertD0(iworkpos,iworkcount+1);
+
 end;
 
 function tbasicchimes.canstop:boolean;
 begin
+
 result:=(not imuststop) and chiming;
+
 end;
 
 procedure tbasicchimes.stop;
 begin
+
 imuststop:=true;
+
 end;
 
 function tbasicchimes.mustplayname(xname:string;xmins:longint):boolean;
 var
    int1:longint;
 begin
+
 findname(xname,int1);result:=mustplayindex(int1,xmins);
+
 end;
 
 function tbasicchimes.mustplayindex(xindex,xmins:longint):boolean;
 var
    h23,m59:longint;
 begin
-xindex:=frcrange32(xindex,0,frcmin32(icount-1,0));
-h23:=xmins div 60;
-m59:=xmins-(h23*60);
-result:=(xindex>=1) and ((m59=0) or (m59=15) or (m59=30) or (m59=45));
+
+xindex  :=frcrange32(xindex,0,frcmin32(icount-1,0));
+h23     :=xmins div 60;
+m59     :=xmins-(h23*60);
+result  :=(xindex>=1) and ((m59=0) or (m59=15) or (m59=30) or (m59=45));
+
 end;
 
 function tbasicchimes.canplay:boolean;
 begin
+
 result:=(icount>=1) and mid_ok;
+
 end;
 
 procedure tbasicchimes.playname(xname:string;xmins:longint;x0,x15,x30,x45,xtest:boolean);
 var
    int1:longint;
 begin
-findname(xname,int1);playindex(int1,xmins,x0,x15,x30,x45,xtest);
+
+findname(xname,int1);
+playindex(int1,xmins,x0,x15,x30,x45,xtest);
+
 end;
 
 procedure tbasicchimes.playname3(xname:string;xmins:longint;n0,n15,n30,n45,b0,s0,s15,s30,s45,xtest:boolean);
 var
    int1:longint;
 begin
+
 findname(xname,int1);
+
 case istyle[int1] of
 chmsStandard:playindex(int1,xmins,n0,n15,n30,n45,xtest);
 chmsBells   :playindex(int1,xmins,b0,true,true,true,xtest);
 chmsSonnerie:playindex(int1,xmins,s0,s15,s30,s45,xtest);
 end;//case
+
 end;
 
 procedure tbasicchimes.playname2(xname:string);
 var
    int1:longint;
 begin
+
 findname(xname,int1);
 playindex2(int1);
+
 end;
 
 procedure tbasicchimes.playindex(xindex,xmins:longint;x0,x15,x30,x45,xtest:boolean);
 begin
-iworkmins:=xmins;
-iwork0 :=x0;
-iwork15:=x15;
-iwork30:=x30;
-iwork45:=x45;
-iworktest:=xtest;
-imustplay:=frcrange32(xindex,0,frcmin32(icount-1,0));
+
+iworkmins  :=xmins;
+iwork0     :=x0;
+iwork15    :=x15;
+iwork30    :=x30;
+iwork45    :=x45;
+iworktest  :=xtest;
+imustplay  :=frcrange32(xindex,0,frcmin32(icount-1,0));
+
 end;
 
 procedure tbasicchimes.playindex2(xindex:longint);
 begin
+
 imustplay:=frcrange32(xindex,0,frcmin32(icount-1,0));
+
 end;
-//xxxxxxxxxxxxxxxxxxxxxxxxxxx//cccccccccccccccc
+
 procedure tbasicchimes._ontimer(sender:tobject);
 label
    redo,dobuzzer;
@@ -6943,85 +7251,120 @@ var
 
    function mok(x:tstr8;var xout:tstr8):boolean;
    begin
-   result:=(x<>nil) and (x.len>=2);//1 or less is considered an empty or NIL midi - 02mar2022
-   xout:=x;
+
+   result :=(x<>nil) and (x.len>=2);//1 or less is considered an empty or NIL midi - 02mar2022
+   xout   :=x;
+
    end;
 
    procedure xstop;
    begin
+
    mid_stop;
    mid_setpos(-1);//required in-order for midi playback to recommence properly - 02mar2022
+
    end;
 
    procedure xplay(x:tstr8);
    begin
+
    mid_stop;
+
    if (x<>nil) and (x.len>=2) then mid_playmidi(x);
+
    mid_setpos(-1);//required in-order for midi playback to recommence properly - 02mar2022
+
    end;
 
    procedure xresetSpecials;
    begin
+
    ipausenote64:=0;
+
    mid_setspeed2(100);
    mid_setvol2(ivol);//13mar2022
+
    end;
 
    function wval:string;//variable length worklist value - 16mar2022
    var
       p:longint;
    begin
+
    result:='';
+
    if (iworklist<>'') then
       begin
-      for p:=1 to low__len(iworklist) do if (iworklist[p-1+stroffset]='/') then
+
+      for p:=1 to low__len32(iworklist) do if (iworklist[p-1+stroffset]='/') then
          begin
+
          result:=strcopy1(iworklist,1,p-1);
          strdel1(iworklist,1,p);
          break;
+
          end;
+
       end;
+
    end;
+
 begin
 try
+
 //check
 if (ibuzzer2>=1) and (not ibuzzerpaused) then goto dobuzzer;
 
 //muststop
 if imuststop or (imustplay>=0) then//note: stop current playback before starting a new playback - 02mar2022
    begin
+
    xstop;
-   iplaying:=false;
-   iworklist:='';
-   iworkpos:=0;
-   iworkcount:=1;
+
+   iplaying    :=false;
+   iworklist   :='';
+   iworkpos    :=0;
+   iworkcount  :=1;
+
    xresetSpecials;
+
    if ibuzzerpaused then mid_setvol2(20);//start soft and grow louder
-   imuststop:=false;
+
+   imuststop   :=false;
+
    end;
 
 //mustplay
 if (imustplay>=0) then
    begin
-   iplaying:=true;
+
+   iplaying    :=true;
+
    xresetSpecials;
-   iworkindex:=imustplay;//chime to play
+
+   iworkindex  :=imustplay;//chime to play
+
    findworklist(iworkindex,iworkmins,iwork0,iwork15,iwork30,iwork45,iworktest,iworklist);//even a empty list will proceed onto the "playback" handler below for consistent AND predictable execution - 03mar2022
-   iworkpos:=0;
-   iworkcount:=frcmin32(low__len(iworklist),1);
-   imustplay:=-1;//off
+
+   iworkpos    :=0;
+   iworkcount  :=frcmin32(low__len32(iworklist),1);
+   imustplay   :=-1;//off
+   
    end;
 
 //playback
-//yyyyyyy (system_program as tbasicprg2).rootwin.xhead.caption:=bnc(app__fastOK)+bnc(app__turboOK)+'<<'+ms64str;//xxxxxxxxxxxxxxx
 if iplaying then
    begin
+
    //.ultra-fast timing - 16mar2022
    app__turbo;
+
    //.realtime chime vol sync - 13mar2022
    if (ivol<>mid_vol2) then mid_setvol2(ivol);
+
    //.continue
    xworkindex:=iworkindex;
+
    if ((ipausenote64=0) or (ms64>=ipausenote64)) and (not mid_seeking) and mid_canplaymidi and (not imuststop) and ((mid_pos>=mid_len) or (not mid_playing)) then
       begin
 redo:
@@ -7029,41 +7372,56 @@ redo:
       if (iworklist='') then imuststop:=true
       else
          begin
+
          //init
-         v:=strlow(strcopy1(iworklist,1,1));
+         v        :=strlow(strcopy1(iworklist,1,1));
          strdel1(iworklist,1,1);
-         iworkpos:=frcrange32(iworkpos+1,0,iworkcount);//07mar2022
+         iworkpos :=frcrange32(iworkpos+1,0,iworkcount);//07mar2022
+
          //get
          if (v='i') then
             begin
+
             if mok(iintro[xworkindex],a) then xplay(a) else goto redo;
+
             end
          else if (v='s') then
             begin
+
             if mok(idong[xworkindex],a) then xplay(a) else goto redo;
+
             end
          else if (v='d') then
             begin
+
             if mok(idong2[xworkindex],a) then xplay(a) else goto redo;
+
             end
          else if (v='g') then//variable length gap
             begin
-            int1:=frcrange32(strint(wval),0,5000);//0-5s
-            ipausenote64:=add64(ms64,(int1*10000) div frcmin32(mid_speed*mid_speed2,1));
+
+            int1         :=frcrange32(strint32(wval),0,5000);//0-5s
+            ipausenote64 :=add64(ms64,(int1*10000) div frcmin32(mid_speed*mid_speed2,1));
+
             end
          else if (v='t') then//a multi-part chiming sequence as one large TEMP midi
             begin
+
             if mok(itemp[xworkindex],a) then xplay(a) else goto redo;
+
             end
          else if (v='a') or (v='b') or (v='c') then
             begin
+
             //init
             if      (v='a') then int1:=300
             else if (v='b') then int1:=600
             else if (v='c') then int1:=900
             else                 int1:=300;
+
             //get
             ipausenote64:=add64(ms64,(int1*10000) div frcmin32(mid_speed*mid_speed2,1));
+
             end
          else if (v='0') then mid_setspeed2(100)
          else if (v='1') then mid_setspeed2(110)
@@ -7076,8 +7434,11 @@ redo:
          else if (v='8') then mid_setspeed2(180)
          else if (v='9') then mid_setspeed2(190)
          else goto redo;
+
          end;
+
       end;
+
    end;
 
 //mustbuzzer + buzzer - Special Note: Playback of above chime takes priority over buzzer, it will interrupt the buzzer and then recommence buzzer when chime completes - 03mar2022
@@ -7086,40 +7447,58 @@ dobuzzer:
 //.stop buzzer
 if (ibuzzer=0) and (ibuzzer2<>ibuzzer) and ( (iplaying or ibuzzerpaused) or ((not mid_seeking) and mid_canplaymidi and ((mid_pos>=mid_len) or (not mid_playing))) ) then
    begin
+
    if not iplaying then
       begin
+
       xstop;
       xresetSpecials;
+
       end;
-   ibuzzerpaused:=false;
-   ibuzzer2:=0;
+
+   ibuzzerpaused :=false;
+   ibuzzer2      :=0;
+
    end
+
 //.start buzzeer
 else if (ibuzzer>=1) and (ibuzzer2<>ibuzzer) and (not iplaying) and (not imuststop) and (imustplay<0) and (not mid_seeking) and mid_canplaymidi then
    begin
+
    xstop;
    xresetSpecials;
    mid_setvol2(20);//start soft and grow louder
-   ibuzzerpaused:=false;
-   ibuzzer2:=ibuzzer;
+
+   ibuzzerpaused :=false;
+   ibuzzer2      :=ibuzzer;
+
    end;
 
 //.play buzzer
 if (ibuzzer2>=1) and (not mid_seeking) and mid_canplaymidi and ((mid_pos>=mid_len) or (not mid_playing)) then
    begin
+
    if iplaying or imuststop or (imustplay>=0) then
       begin
+
       ibuzzerpaused:=true;
+
       end
    else
       begin
+
       ibuzzerpaused:=false;
+
       if (mid_vol2<100) then mid_setvol2(frcmax32(mid_vol2+5,100));
+
       //.play specific buzzer
       if (ibuzzer2>=1) then
          begin
+
          int1:=frcrange32(ibuzzer2,low(ibuzzers),high(ibuzzers));
+
          xplay(ibuzzers[int1]);
+
          end;
       end;
    end;
@@ -7134,139 +7513,175 @@ var
    v,n23,n12:string;
    xmustdong2:boolean;
 
-   function xset(x:string):boolean;
+   function xset(const x:string):boolean;
    begin
-   result:=true;//pass-thru
-   xworklist:=x;
+
+   result     :=true;//pass-thru
+   xworklist  :=x;
+
    end;
 
-   function xset2(x:string;xuse:boolean):boolean;
+   function xset2(const x:string;xuse:boolean):boolean;
    begin
-   result:=true;//pass-thru
+
+   result     :=true;//pass-thru
    if xuse then xworklist:=x;
+
    end;
 
    function ms(xcount:longint):string;//make single dong
    var
       p:longint;
    begin
-   result:='';
+
+   result     :='';
    if (xcount>=1) then for p:=1 to (xcount) do result:=result+'s';
+
    end;
 
    function md(xcount:longint):string;//make double dong
    var
       p:longint;
    begin
-   result:='';
+
+   result     :='';
    if (xcount>=1) then for p:=1 to (xcount) do result:=result+'d';
+
    end;
 
    function mgap(xms:longint):string;//make MS gap
    begin
-   result:='';
+
+   result     :='';
    if (xms>=1) then result:='g'+intstr32(xms)+'/';//terminator symbol
+
    end;
 
    function h112:longint;//always returns 1 to 12
    begin
+
    result:=h12;
    if (result=0) then result:=12;
+
    end;
 
-   function mSonnerie(xgap,xcount1,xcount2:longint;xdong,xdong2:string;var xtemp:tstr8):string;
+   function mSonnerie(xgap,xcount1,xcount2:longint;xdong,xdong2:string;var xtemp:tstr8):string;//04dec2025
    var
       p:longint;
       e,str1:string;
    begin
-   //defaults
-   result:='t';
 
-   try
-   //check
-   if (xtemp=nil) then xtemp:=str__new8;
-   //range
-   xcount1:=frcmin32(xcount1,0);
-   xcount2:=frcmin32(xcount2,0);
-   xgap:=frcrange32(xgap,0,5000);//0-5s
+   //defaults
+   result  :='t';
+
    //init
+   if (xtemp=nil) then xtemp:=str__new8;
+
    xtemp.clear;
+
+   //range
+   xcount1 :=frcmin32(xcount1,0);
+   xcount2 :=frcmin32(xcount2,0);
+   xgap    :=frcrange32(xgap,0,5000);//0-5s
+
    //get
-   str1:='';
+   str1    :='';
+
    if (xcount1>=1) then
       begin
-      //get
+
       for p:=1 to xcount1 do str1:=str1+xdong+#32;
+
       end;
+
    if (xcount2>=1) then
       begin
+
       //gap
       if (xcount1>=1) and (xgap>=1) then str1:=str1+'0x0 '+intstr32(xgap)+'x0 ';//2 note-off's will cause a silent delay
+
       //get
       for p:=1 to xcount2 do str1:=str1+xdong2+#32;
+
       end;
+
    //set
-   xtemp.clear;
-   low__makemid(str1,xtemp,e);
-   except;end;
+   simplemidi__make(str1,xtemp,e);
+
    end;
 begin//note: xindex=chime index, xstyle=melody, standard, ships, ships - british, sonneque, xmins=total mins 0..1439 (1 whole day), xtest=return test sequence instead of current time
+
 //defaults
-result:=false;
-xworklist:='';
-xmustdong2:=false;
+result       :=false;
+xworklist    :='';
+xmustdong2   :=false;
 
 try
 //check
-xindex:=frcrange32(xindex,0,high(iname));
+xindex       :=frcrange32(xindex,0,high(iname));
 if (xindex=0) then goto skipend;//1st chime name is "None" - e.g. No Chiming - 04mar2022
+
 //init
-xstyle:=istyle[xindex];
+xstyle       :=istyle[xindex];
+
 //test
 if xtest then
    begin
+
    case xstyle of
    chmsStandard   :xmins:=420;//"0700"
    chmsBells      :xmins:=1170;//"1930"
    chmsSonnerie   :xmins:=low__aorb(465,420,x0 or (not x45));//"0745" or "0700"
    end;//case
+
    end;
+
 //range
-xmins:=frcrange32(xmins,0,1439);
-h:=frcrange32(xmins div 60,0,23);//0..23
-h12:=h;
+xmins        :=frcrange32(xmins,0,1439);
+h            :=frcrange32(xmins div 60,0,23);//0..23
+h12          :=h;
 if (h12>12) then h12:=frcrange32(h12-12,0,11);//0..11
-m:=frcrange32(xmins-(h*60),0,59);//0..59
-n23:=low__digpad11(h,2)+low__digpad11(m,2);
-n12:=low__digpad11(h12,2)+low__digpad11(m,2);
+m            :=frcrange32(xmins-(h*60),0,59);//0..59
+n23          :=low__digpad11(h,2)+low__digpad11(m,2);
+n12          :=low__digpad11(h12,2)+low__digpad11(m,2);
+
 //init
-if (xstyle=chmsTitle)          then goto skipend//can't play a title!
+if      (xstyle=chmsTitle)     then goto skipend//can't play a title!
 else if (xstyle=chmsStandard)  then dstyle:=low__aorb(0,1,x0)//intro+dongs OR dongs only
 else if (xstyle=chmsBells)     then dstyle:=low__aorb(2,3,x0)//ships bells OR british royal
 else if (xstyle=chmsSonnerie)  then dstyle:=low__aorb(4,5,x0)//grande sonnerie OR petite sonnerie
 else                                goto skipend;
 
 //get
+
 //.melody + dongs
 if (dstyle=0) then
    begin
+
    if      (m=15)       then xset2('s',x15)
    else if (m=30)       then xset2('s',x30)
    else if (m=45)       then xset2('s',x45)
    else if (m=0)        then xset('i'+ms(h112));//0 - o'clock
+
    end
+
 //.dongs only
 else if (dstyle=1) then
    begin
+
    if      (m=15)       then xset2('s',x15)
    else if (m=30)       then xset2('s',x30)
    else if (m=45)       then xset2('s',x45)
    else if (m=0)        then xset(ms(h112));//0 - o'clock
+
    end
+
 //ships bells - standard
 else if (dstyle=2) then
    begin
+
    xmustdong2:=true;
+
    if      (n12='0030') then xset('s')
    else if (n12='0100') then xset('d')
    else if (n12='0130') then xset('ds')
@@ -7291,11 +7706,14 @@ else if (dstyle=2) then
    else if (n12='1100') then xset('dd d')
    else if (n12='1130') then xset('dd ds')
    else if (n12='0000') then xset('dd dd');
+
    end
+
 //ships bells - British Royal, from 1797 due to a mutiny on the dog watch of 5 bells this was removed never again to be rung
 else if (dstyle=3) then
    begin
    xmustdong2:=true;
+
    //dog watch - five bell "dd s" removed due to it being used in a muntiny in around 1797
    if      (n23='1630') then xset('s')
    else if (n23='1700') then xset('d')
@@ -7330,98 +7748,127 @@ else if (dstyle=3) then
    else if (n12='1100') then xset('dd d')
    else if (n12='1130') then xset('dd ds')
    else if (n12='0000') then xset('dd dd')
+
    end
+
 //Grande Sonnerie -> hour dongs + quarterly double-triple dongs (low to high) every 15 minutes (0=hour dongs, 15=(hour dongs) + 1 dong, 30=(hour dongs) + 2 dongs, 45=(hour dongs) + 3 dongs)
 else if (dstyle=4) then//Grande Sonnerie
    begin
+
    //.use built-in pre-built midi files
    if (idongX[xindex]='') then
       begin
+
       if      (m=15)   then xset2(ms(h112)+mgap(igap[xindex])+md(1),x15)//15
       else if (m=30)   then xset2(ms(h112)+mgap(igap[xindex])+md(2),x30)//30
       else if (m=45)   then xset2(ms(h112)+mgap(igap[xindex])+md(3),x45)//45
       else if (m=0)    then xset(ms(h112));//0 - o'clock
+
       end
+
    //.dynamically create a single midi with all chimes etc in one - 16mar2022
    else
       begin
+
       if      (m=15)   then xset2(mSonnerie(igap[xindex],h112,1,idongX[xindex],idong2X[xindex],itemp[xindex]),x15)
       else if (m=30)   then xset2(mSonnerie(igap[xindex],h112,2,idongX[xindex],idong2X[xindex],itemp[xindex]),x30)
       else if (m=45)   then xset2(mSonnerie(igap[xindex],h112,3,idongX[xindex],idong2X[xindex],itemp[xindex]),x45)
       else if (m=0 )   then xset2(mSonnerie(igap[xindex],h112,0,idongX[xindex],idong2X[xindex],itemp[xindex]),true);
+
       end;
+
    end
+
 //Petite Sonnerie -> hour dongs on the our AND only quarterly double-triple dongs (low to high) every 15 minutes (0=hour dongs, 15=1 dong, 30=2 dongs, 45=3 dongs)
 else if (dstyle=5) then
    begin
+
    //.use built-in pre-built midi files
    if (idongX[xindex]='') then
       begin
+
       if      (m=15)   then xset2(md(1),x15)//15
       else if (m=30)   then xset2(md(2),x30)//30
       else if (m=45)   then xset2(md(3),x45)//45
       else if (m=0)    then xset(ms(h112));//0 - o'clock
+
       end
+
   else
    //.dynamically create a single midi with all chimes etc in one - 16mar2022
      begin
+
      if      (m=15)   then xset2(mSonnerie(igap[xindex],0,1,idongX[xindex],idong2X[xindex],itemp[xindex]),x15)
      else if (m=30)   then xset2(mSonnerie(igap[xindex],0,2,idongX[xindex],idong2X[xindex],itemp[xindex]),x30)
      else if (m=45)   then xset2(mSonnerie(igap[xindex],0,3,idongX[xindex],idong2X[xindex],itemp[xindex]),x45)
      else if (m=0 )   then xset2(mSonnerie(igap[xindex],h112,0,idongX[xindex],idong2X[xindex],itemp[xindex]),true);
+
      end;
+
   end;
 
 //no double dong support -> make a double dong out of TWO fast SINGLE dongs -> chime does not support Double Dong (dong2) -> so we must confiure the worklist to modify the playback of a single dong to simulate a double dong - 04mar2022
 if xmustdong2 and (xworklist<>'') and ((idong2[xindex]=nil) or (idong2[xindex].len<2)) then
    begin
+
    //init
-   v:=xworklist;
-   xworklist:='';
+   v         :=xworklist;
+   xworklist :='';
+
    //get
-   for p:=1 to low__len(v) do
+   for p:=1 to low__len32(v) do
    begin
+
    if (strcopy1(v,p,1)='d') then xworklist:=xworklist+'9ss0a'//speed up to 190%, then do a Dong, and another Dong, then revert speed down to 100% (normal) and wait 600ms
    else                          xworklist:=xworklist+strcopy1(v,p,1);
+
    end;//p
+
    end;
 
 skipend:
 except;end;
 
-try;result:=(xworklist<>'');except;end;
+//successful
+result:=(xworklist<>'');
+
 end;
 
 function tbasicchimes.info(xindex:longint;var xname:string;var xstyle,xtep:longint;var xintro,xdong,xdong2:tstr8):boolean;
 begin
+
 //defaults
-result:=(xindex>=0) and (xindex<high(iname)) and (xindex<icount);
-xname:='';
-xstyle:=0;
-xtep:=tepNone;
-xintro:=nil;
-xdong:=nil;
-xdong2:=nil;
+result     :=(xindex>=0) and (xindex<high(iname)) and (xindex<icount);
+xname      :='';
+xstyle     :=0;
+xtep       :=tepNone;
+xintro     :=nil;
+xdong      :=nil;
+xdong2     :=nil;
 
 //get
 if result then
    begin
+
    xname  :=iname[xindex];
    xstyle :=istyle[xindex];
    xtep   :=itep[xindex];
    xintro :=iintro[xindex];
    xdong  :=idong[xindex];
    xdong2 :=idong2[xindex];
+
    end;
+
 end;
 
 function tbasicchimes.findname(xname:string;var xindex:longint):boolean;
 var
    p:longint;
 begin
+
 //defaults
-result:=false;
-xindex:=0;
+result :=false;
+xindex :=0;
 
 //check
 if (icount<=0) then exit;
@@ -7429,71 +7876,99 @@ if (icount<=0) then exit;
 //find
 for p:=0 to (icount-1) do
 begin
+
 if strmatch(xname,iname[p]) then
    begin
-   xindex:=p;
-   result:=true;
+
+   xindex  :=p;
+   result  :=true;
+
    break;
+
    end;
+
 end;//p
+
 end;
 
 procedure tbasicchimes.xaddTitle(xname:string);
 var
    i:longint;
 begin
+
 if not findname(xname,i) then
    begin
+
    //get
    if (icount>high(iname)) then exit;//at capacity
+
    i:=icount;
    inc(icount);
+
    //set - new
    iname[i]   :=xname;
    istyle[i]  :=0;//title
    itep[i]    :=tepNone;
    igap[i]    :=0;
+
    end;
+
 end;
 
 procedure tbasicchimes.xaddStandard(xname:string;const xintro,xdong:array of byte);
 begin
+
 xadd(0,'m:'+xname,xintro,xdong,[0],chmsStandard,low__aorb(tepBlank20,tepMid20,(sizeof(xintro)>=2) or (sizeof(xdong)>=2)));
+
 end;
 
 procedure tbasicchimes.xaddStandard2(xname,xintro,xdong:string);
 begin
+
 xadd2(0,'m:'+xname,[0],[0],[0],xintro,xdong,'',chmsStandard,low__aorb(tepBlank20,tepMid20,(low__len(xintro)>=2) or (low__len(xdong)>=2)));
+
 end;
 
 procedure tbasicchimes.xaddStandard3(xname,xintro,xdong:string;const aintro,adong:array of byte);//15nov2022
 begin
+
 xadd2(0,'m:'+xname,aintro,adong,[0],xintro,xdong,'',chmsStandard,low__aorb(tepBlank20,tepMid20,(low__len(xintro)>=2) or (low__len(xdong)>=2) or (sizeof(aintro)>=2) or (sizeof(adong)>=2)));
+
 end;
 
 procedure tbasicchimes.xaddBells(xname:string;const xdong,xdong2:array of byte);
 begin
+
 xadd(0,'b:'+xname,[0],xdong,xdong2,chmsBells,tepBell20);
+
 end;
 
 procedure tbasicchimes.xaddBells2(xgap:longint;xname,xdong,xdong2:string);
 begin
+
 xadd2(xgap,'b:'+xname,[0],[0],[0],'',xdong,xdong2,chmsBells,tepBell20);
+
 end;
 
 procedure tbasicchimes.xaddSonnerie(xgap:longint;xname:string;const xdong,xdong2:array of byte);
 begin
+
 xadd(xgap,'s:'+xname,[0],xdong,xdong2,chmsSonnerie,tepSonnerie20);
+
 end;
 
 procedure tbasicchimes.xaddSonnerie2(xgap:longint;xname,xdong,xdong2:string);
 begin
+
 xadd2(xgap,'s:'+xname,[0],[0],[0],'',xdong,xdong2,chmsSonnerie,tepSonnerie20);
+
 end;
 
 procedure tbasicchimes.xadd(xgap:longint;xname:string;const xintro,xdong,xdong2:array of byte;xstyle,xtep:longint);
 begin
+
 xadd2(xgap,xname,xintro,xdong,xdong2,'','','',xstyle,xtep);
+
 end;
 
 procedure tbasicchimes.xadd2(xgap:longint;xname:string;const xintro,xdong,xdong2:array of byte;sintro,sdong,sdong2:string;xstyle,xtep:longint);
@@ -7508,67 +7983,98 @@ var
       e:string;
    begin
    try
+
    //defaults
    a:=nil;
+
    //check
    if (x=nil) or ((sizeof(xdata)<2) and (xdata2='')) then exit;
+
    //init
    a:=str__new8;
+
    //get
-   if (sizeof(xdata)>=2) then a.aadd(xdata) else low__makemid(xdata2,a,e);
+   if (sizeof(xdata)>=2) then a.aadd(xdata) else simplemidi__make(xdata2,a,e);
+
    //decompress "x"
    if (a.len>=1) then
       begin
+
       x.clear;
       x.add(a);
+
       end;
+
    except;end;
-   try;str__free(@a);except;end;
+
+   //free
+   str__free(@a);
+
    end;
+
 begin
-try
+
 //init
 if not findname(xname,i) then
    begin
+
    //get
    if (icount>high(iname)) then exit;//at capacity
+
    i:=icount;
    inc(icount);
+
    //set - new
    iname[i]   :=xname;
    istyle[i]  :=frcrange32(xstyle,1,3);
    igap[i]    :=frcrange32(xgap,0,10000);//0-10sec
    itep[i]    :=xtep;
-   if (iintro[i]=nil) then iintro[i]:=str__new8;
-   if (idong[i]=nil)  then idong[i]:=str__new8;
-   if (idong2[i]=nil) then idong2[i]:=str__new8;
+
+   if (iintro[i]=nil) then iintro[i]  :=str__new8;
+   if (idong[i]=nil)  then idong[i]   :=str__new8;
+   if (idong2[i]=nil) then idong2[i]  :=str__new8;
+
    end;
+
 //check
 if (i<0) or (i>high(iname)) then goto skipend;
+
 //get
 if (sizeof(xintro)>=2) or (sintro<>'') then
    begin
+
    xset(iintro[i],xintro,sintro);
    iintroX[i]:=sintro;
+
    end;
+
 if (sizeof(xdong)>=2)  or (sdong<>'')  then
    begin
+
    xset(idong[i] ,xdong,sdong);
    idongX[i]:=sdong;
+
    end;
+
 if (sizeof(xdong2)>=2) or (sdong2<>'') then
    begin
+
    xset(idong2[i],xdong2,sdong2);
    idong2X[i]:=sdong2;
+
    end;
+
 skipend:
-except;end;
+
 end;
+
 
 //## tsnd32 ####################################################################
 function snd_waveheaderlen:longint;
 begin
+
 result:=58;
+
 end;
 
 function snd_waveheader(format:string;datalen:longint;xoutpos:longint;xout:tstr8):boolean;
@@ -7684,7 +8190,7 @@ end;
 
 function snd_fromformat(x:string;var xhz,xbits,xchs:longint):boolean;
 var
-   p,lp,vc,v:integer;
+   p,lp,vc,v:longint32;
 begin//Input: "8/11/12/16/22/24/32/44/48" "8/16" "1/2", e.g. "44 16 2" for CD quality
 //defaults
 result:=false;
@@ -7697,12 +8203,12 @@ try
 x:=x+#32;
 vc:=1;
 lp:=1;
-for p:=1 to low__len(x) do
+for p:=1 to low__len32(x) do
 begin
 if (strcopy1(x,p,1)=#32) then
    begin
    //get
-   v:=strint(strcopy1(x,lp,p-lp));
+   v:=strint32(strcopy1(x,lp,p-lp));
    case vc of
    1:xhz:=snd_safehz(v);
    2:xbits:=snd_safebits(v);
@@ -8099,7 +8605,7 @@ try
 dhz:=snd_safehz(dhz);
 xpower255:=frcrange32(xpower255,0,255);
 //init
-slen:=x.len div 2;
+slen:=x.len32 div 2;
 sfrom:=xfrom;
 sto:=xfrom+xlen-1;
 if xasms then
@@ -8260,7 +8766,7 @@ xsameok:=(dhz=ihz);
 //init
 scount:=0;
 dcount:=0;
-dlen:=x.len div 2;
+dlen:=x.len32 div 2;
 dpos:=dlen;
 sfrom:=xfrom;
 sto:=xfrom+xlen-1;
@@ -8531,7 +9037,7 @@ end;
 
 function playlist__count(x:tstr8):longint;
 begin
-if (x<>nil) then result:=x.len div playlist__onelen else result:=0;//secs=4, title=512, filename=512
+if (x<>nil) then result:=x.len32 div playlist__onelen else result:=0;//secs=4, title=512, filename=512
 end;
 
 function playlist__getone(xplaylistfilename:string;x:tstr8;xindex:longint;var xsec:longint;var xtitle,xfilename:string):boolean;
@@ -8580,7 +9086,7 @@ var
 
    try
    //check
-   xlen:=low__len(xfilename);
+   xlen:=low__len32(xfilename);
    if (xlen<=3) then exit;
    //find
    for p:=1 to (xlen-2) do if (xfilename[p-1+stroffset]=':') and (xfilename[p-1+stroffset+1]='/') and (xfilename[p-1+stroffset+2]='/') then
@@ -8606,11 +9112,11 @@ var
    //check 3
    if (xfilename='') then exit;
    //get
-   for p:=low__len(xfilename) downto 1 do
+   for p:=low__len32(xfilename) downto 1 do
    begin
    if (xfilename[p-1+stroffset]='\') or (xfilename[p-1+stroffset]='/') then
       begin
-      xtitle:=strcopy1(xfilename,p+1,low__len(xfilename));
+      xtitle:=strcopy1(xfilename,p+1,low__len32(xfilename));
       break;
       end;
    end;//p
@@ -8692,18 +9198,18 @@ if (xline.count>=1) then
    begin
    //get
    v:=xline.text;
-   vlen:=low__len(v);
+   vlen:=low__len32(v);
    //decide
    if strmatch(strcopy1(v,1,8),'#EXTINF:') then
       begin
       xnoinfo;
       v:=strcopy1(v,9,vlen);
-      vlen:=low__len(v);
+      vlen:=low__len32(v);
       if (vlen>=2) then
          begin
          for p:=1 to vlen do if (v[p-1+stroffset]=',') then
             begin
-            xsec:=strint(strcopy1(v,1,p-1));
+            xsec:=strint32(strcopy1(v,1,p-1));
             xtitle:=strcopy1(v,p+1,vlen);
             break;
             end;//p
@@ -8731,7 +9237,7 @@ end;
 
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 //## taudiobasic ###############################################################
-function waveOutOpen(lphWaveOut: PHWaveOut; uDeviceID: UINT; lpFormat: PWaveFormatEx; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
+function waveOutOpen(lphWaveOut:pointer3264; uDeviceID: uint32; lpFormat: PWaveFormatEx; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
 begin
 result:=0;
 try
@@ -8740,7 +9246,7 @@ if (result=0) then track__inc(satWaveopen,1);
 except;end;
 end;
 
-function waveOutClose(hWaveOut: HWAVEOUT): MMRESULT;
+function waveOutClose(hWaveOut:longint3264): MMRESULT;
 begin
 result:=0;
 try
@@ -8749,7 +9255,7 @@ if (result=0) then track__inc(satWaveopen,-1);
 except;end;
 end;
 
-function waveInOpen(lphWaveIn: PHWAVEIN; uDeviceID: UINT; lpFormatEx: PWaveFormatEx; dwCallback, dwInstance, dwFlags: DWORD): MMRESULT;
+function waveInOpen(lphWaveIn:pointer3264; uDeviceID: uint32; lpFormatEx: PWaveFormatEx; dwCallback, dwInstance, dwFlags: dword32): MMRESULT;
 begin
 result:=0;
 try
@@ -8758,7 +9264,7 @@ if (result=0) then track__inc(satWaveopen,1);
 except;end;
 end;
 
-function waveInClose(hWaveIn: HWAVEIN): MMRESULT;
+function waveInClose(hWaveIn:longint3264): MMRESULT;
 begin
 result:=0;
 try
@@ -8769,7 +9275,7 @@ end;
 
 constructor taudiobasic.create;
 var
-   p:integer;
+   p:longint32;
 begin
 //self
 inherited create;
@@ -8834,12 +9340,12 @@ inherited destroy;
 except;end;
 end;
 
-procedure taudiobasic.setvolume(x:integer);
+procedure taudiobasic.setvolume(x:longint32);
 begin//Note: 100%=Normal
 ipvolume:=frcrange32(x,0,1000);
 end;
 
-procedure taudiobasic.setrvolume(x:integer);
+procedure taudiobasic.setrvolume(x:longint32);
 begin//Note: 100%=Normal
 irvolume:=frcrange32(x,0,1000);
 end;
@@ -8864,7 +9370,7 @@ begin
 result:=(irdata.len<10);
 end;
 
-procedure taudiobasic.setsamplems(x:integer);
+procedure taudiobasic.setsamplems(x:longint32);
 var
    z:string;
 begin
@@ -8880,7 +9386,7 @@ if (x<>isamplems) then
    end;
 end;
 
-procedure taudiobasic.setrsamplems(x:integer);
+procedure taudiobasic.setrsamplems(x:longint32);
 var
    z:string;
 begin
@@ -8899,7 +9405,7 @@ end;
 function taudiobasic.onems(xformat:string):longint;//number of bytes for "1 millsecond" of sound - 21JUL2009
 var
    xhz,xbits,xchs:longint;
-begin//Important Note: Round all figures to integer for stable recording and playback control
+begin//Important Note: Round all figures to longint32 for stable recording and playback control
      //                even though we will incorrectly report length/timing figures.
 snd_fromformat(xformat,xhz,xbits,xchs);
 result:=(xhz div 1000)*(xbits div 8)*xchs;
@@ -8907,7 +9413,7 @@ end;
 
 procedure taudiobasic.setformat(x:string);
 var
-   xhz,xbits,xchs:integer;
+   xhz,xbits,xchs:longint32;
 begin//Input: "8/11/12/16/22/24/32/44/48" "8/16" "1/2", e.g. "44 16 2" for CD quality
 try
 //check
@@ -8937,7 +9443,7 @@ end;
 
 procedure taudiobasic.setrformat(x:string);
 var
-   xhz,xbits,xchs:integer;
+   xhz,xbits,xchs:longint32;
 begin//Input: "8/11/12/16/22/24/32/44/48" "8/16" "1/2", e.g. "44 16 2" for CD quality
 try
 //check
@@ -8975,12 +9481,12 @@ raoc;
 if not ipplaying then pdo;
 end;
 
-procedure taudiobasic.wkAdjustVolume(_16bit:boolean;z:tstr8;_vol:integer);//adjust volume
+procedure taudiobasic.wkAdjustVolume(_16bit:boolean;z:tstr8;_vol:longint32);//adjust volume
 var
    a:shortint;//tbytechar;
-   p:integer;
+   p:longint32;
    m:extended;
-   v:integer;
+   v:longint32;
 begin
 try
 //check
@@ -8990,7 +9496,7 @@ _vol:=frcrange32(_vol,0,1000);//100%=Normal, no change
 if (_vol=100) then exit;
 //get
 m:=_vol/100;
-for p:=1 to z.len do
+for p:=1 to z.len32 do
 begin
 //.get
 case _16bit of
@@ -9015,7 +9521,7 @@ label
    skipend,redo;
 var
    z:tstr8;
-   count,len,p:integer;
+   count,len,p:longint32;
    h:pwavehdr;
    a:paudiobasicbuffer;
 begin
@@ -9039,7 +9545,7 @@ z.add3(ipdata,0,isamplesize);
 //.adjust volume
 if (ipvolume<>100) then wkAdjustVolume(p16bit,z,ipvolume);
 //.continue
-len:=z.len;
+len:=z.len32;
 if (len=0) then goto skipend;
 for p:=1 to len do a[p-1]:=byte(z.bytes1[p]);
 h.dwBufferlength:=len;
@@ -9066,10 +9572,13 @@ else
    end;
 skipend:
 except;end;
-try;str__free(@z);except;end;
+
+//free
+str__free(@z);
+
 end;
 
-function taudiobasic.handle:hwnd;
+function taudiobasic.handle:hauto;
 begin
 if (ihandle=0) then ihandle:=app__wproc.window;//system message handler - shared
 result:=ihandle;
@@ -9077,8 +9586,8 @@ end;
 
 procedure taudiobasic.paoc;//automatic open/close
 var
-   p:integer;
-   ptr:HWAVEOUT;
+   p:longint32;
+   ptr:hauto;
 begin
 try
 //open
@@ -9127,7 +9636,7 @@ else iformatmodified:=false;
 except;end;
 end;
 
-procedure taudiobasic.onmessage(m,w,l:longint);
+procedure taudiobasic.onmessage(m:msg_message;w:msg_wparam;l:msg_lparam);
 var
    a:pwavehdr;
    b:tstr8;
@@ -9148,7 +9657,7 @@ MM_WIM_DATA:begin
    //check
    if ilocked then exit;//26JUL2009
    //get
-   a:=pointer(l);
+   a:=pointer(msg_l3264(l));
    if (a<>nil) and (a^.dwBytesRecorded>=1) then
       begin
       try
@@ -9162,7 +9671,10 @@ MM_WIM_DATA:begin
       //reset
       win____waveInAddBuffer(irhandle,a,sizeof(twavehdr));
       except;end;
-      try;str__free(@b);except;end;
+      
+      //free
+      str__free(@b);
+
       end;
    end;//begin
 end;//case
@@ -9171,8 +9683,8 @@ end;
 
 procedure taudiobasic.raoc;//automatic open/close
 var
-   p:integer;
-   ptr:HWAVEIN;
+   p:longint32;
+   ptr:hauto;
 begin
 try
 //open
@@ -9223,9 +9735,9 @@ else irformatmodified:=false;
 except;end;
 end;
 
-function taudiobasic.wkMaxV(_16bit:boolean;z:tstr8):integer;
+function taudiobasic.wkMaxV(_16bit:boolean;z:tstr8):longint32;
 var
-   dc,tmp,zlen,step,p:integer;
+   dc,tmp,zlen,step,p:longint32;
    v:twrd2;
 begin
 //defaults
@@ -9241,7 +9753,7 @@ try
 if _16bit then step:=2 else step:=1;
 //get
 p:=1;
-zlen:=z.len;
+zlen:=z.len32;
 while true do
 begin
 //get
@@ -9280,7 +9792,7 @@ end;
 
 procedure taudiobasic.wkFast(_16bit:boolean;z:tstr8);
 var
-   dlen,zlen,step,p:integer;
+   dlen,zlen,step,p:longint32;
    v:twrd2;
 begin
 try
@@ -9290,7 +9802,7 @@ if not str__lock(@z) then exit;
 if _16bit then step:=2 else step:=1;
 //get
 p:=1;
-zlen:=z.len;
+zlen:=z.len32;
 dlen:=1;
 while true do
 begin
@@ -9325,9 +9837,9 @@ begin
 result:=(iphandle<>0);
 end;
 
-function taudiobasic.pushlen:integer;//amount of data length in push buffer for playback
+function taudiobasic.pushlen:longint32;//amount of data length in push buffer for playback
 begin
-result:=ipdata.len;
+result:=ipdata.len32;
 end;
 
 function taudiobasic.canpush:boolean;
@@ -9335,25 +9847,25 @@ begin
 result:=canpushex(2);
 end;
 
-function taudiobasic.canpushex(seconds:integer):boolean;
+function taudiobasic.canpushex(seconds:longint32):boolean;
 begin
 result:=(pushlen<(frcmin32(seconds,1)*isecsize));
 end;
 
-function taudiobasic.canpushexMS(ms:integer):boolean;
+function taudiobasic.canpushexMS(ms:longint32):boolean;
 begin
 result:=(pushlen<frcmin32(round((ms/1000)*isecsize),1));
 end;
 {//yyyyyyyyyyyy - proc below simulates what 3bit audio sounds like (our own audio compression tests - quality=not bad) - 24aug2014
 procedure taudiobasic.push16BIT(var data:string);
 var
-   p:integer;
+   p:longint32;
    w:twrd2;
    ok:boolean;
 
    procedure pushval(var vIN,vREF:smallint);
    var
-      vd,y:integer;
+      vd,y:longint32;
       vdINV:boolean;
    begin
    //get
@@ -9454,38 +9966,47 @@ except;end;
 try;str__uaf(@data);except;end;
 end;
 
+
 //## tmm #######################################################################
 constructor tmm.create;
 begin//sate: 0=nil, 1=opened, 2=playing, 3=closing
+
 //self
 inherited create;
 if classnameis('tmm') then track__inc(satMM,1);
+
 //defaults
-itracknumber:=1;
-itrackformat:=false;//if true then media being played (eg CD) uses tracks to play it's data and must use different procs for this
-istate:=msFree;
-ihandle:=0;
-ideviceid:=0;
-ifilename:='';
-ivalid:=false;
-inewposition:=-1;
+itracknumber   :=1;
+itrackformat   :=false;//if true then media being played (eg CD) uses tracks to play it's data and must use different procs for this
+istate         :=msFree;
+ihandle        :=0;
+ideviceid      :=0;
+ifilename      :='';
+ivalid         :=false;
+inewposition   :=-1;
+
 //timer - fast
 low__timerset(self,_ontimer,50);//start timer
+
 end;
 
 destructor tmm.destroy;
 begin
 try
+
 //timer
 low__timerdel(self,_ontimer);//disconnect our timer event from the system timer
+
 //stop
 stop;
+
 //handle
 if (ihandle<>0) then ihandle:=0;
+
 //self
 if classnameis('tmm') then track__inc(satMM,-1);
 inherited destroy;
-//sd
+
 except;end;
 end;
 
@@ -9502,6 +10023,7 @@ var
    playparm:tmci_play_parms;
 begin
 try
+
 //range
 if (istate=msFree) and (inewposition>=0) then inewposition:=-1;//automatic safe reset - 23MAY2013
 //.newposition
@@ -9548,7 +10070,7 @@ function tmm.play(x:string;var e:string):boolean;//reinforced, 12AUG2010
 label
    skipend;
 var
-   z:integer;
+   z:longint32;
    s:currency;
    statusparm:tmci_status_parms;
    fflags:longint;
@@ -9708,7 +10230,7 @@ if (ifilename<>'') then
    if (ext='CDA') then
       begin
       openparm.lpstrDeviceType:=pchar('CDAudio');
-      _tracknumber:=strint(copy(ifilename,low__len(ifilename)-5,2));
+      _tracknumber:=strint32(copy(ifilename,low__len32(ifilename)-5,2));
       end;
    end;
 itrackformat:=(string(openparm.lpstrDeviceType)<>'');
@@ -9766,7 +10288,7 @@ result:=(ferror=0);
 except;end;
 end;
 
-function tmm.gethandle:hwnd;
+function tmm.gethandle:hauto;
 begin
 if (ihandle=0) then ihandle:=app__wproc.window;//system message handler - shared
 result:=ihandle;
@@ -9824,11 +10346,11 @@ if (x<0) then x:=0 else if (x>100) then x:=100;
 inewpertpos:=x;
 end;
 
-procedure tmm.onmessage(m,w,l:longint);
+procedure tmm.onmessage(m:msg_message;w:msg_wparam;l:msg_lparam);
 begin
 case m of
 mm_mcinotify:begin
-   case w of
+   case msg_w32(w) of
    mci_notify_aborted,mci_notify_successful,mci_notify_failure:;
    end;
    end;

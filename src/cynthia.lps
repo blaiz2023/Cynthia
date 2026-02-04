@@ -112,6 +112,13 @@
   <Loaded Value="True"/>
   <DefaultSyntaxHighlighter Value="Delphi"/>
  </Unit>
+ <Unit>
+  <Filename Value="gossfast.pas"/>
+  <EditorIndex Value="16"/>
+  <UsageCount Value="1"/>
+  <Loaded Value="True"/>
+  <DefaultSyntaxHighlighter Value="Delphi"/>
+ </Unit>
  </Units>
  <RunParams>
   <FormatVersion Value="2"/>

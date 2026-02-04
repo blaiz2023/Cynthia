@@ -8,7 +8,7 @@ interface
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define bmp} {$define ico} {$define gif} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses gosswin2, gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin, gossio, gossimg, gossnet;
+uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin, gosswin2, gossio, gossimg, gossnet, gossfast;
 {$align on}{$O+}{$W-}{$I-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
@@ -30,10 +30,10 @@ uses gosswin2, gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endi
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. app code (main.pas)
-//## Version.................. 1.00.6062 (+160)
+//## Version.................. 1.00.6187 (+218)
 //## Items.................... 6
-//## Last Updated ............ 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
-//## Lines of Code............ 5,200+
+//## Last Updated ............ 01feb2026, 30jan2026, 15jan20256, 13dec2025, 11dec2025, 10dec2025, 08dec2025, 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
+//## Lines of Code............ 5,400+
 //##
 //## main.pas ................ app code
 //## gossroot.pas ............ console/gui app startup and control
@@ -47,18 +47,19 @@ uses gosswin2, gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endi
 //## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
 //## gosszip.pas ............. zip support
 //## gossjpg.pas ............. jpeg support
+//## gossfast.pas ............ fastdraw support
 //## gossgame.pas ............ game support (optional)
 //## gamefiles.pas ........... internal files for game (optional)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | tapp                   | tbasicapp         | 1.00.4802 | 07nov2025   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 16sep2025, 09sep2025, 04sep2025, 15aug2025, 11aug2025, 03jul2025, 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
-//## | ttracks                | tbasiccontrol     | 1.00.184  | 14sep2025   | Indicate midi track activity.  Supports mute/unmute per track.  Supports upto 512 tracks. - 03sep2025, 30aug2025, 03jul2025, 14feb2025
+//## | tapp                   | tbasicapp         | 1.00.4863 | 11dec2025   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 08dec2025, 07nov2025, 16sep2025, 09sep2025, 04sep2025, 15aug2025, 11aug2025, 03jul2025, 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
+//## | ttracks                | tbasiccontrol     | 1.00.185  | 11dec2025   | Indicate midi track activity.  Supports mute/unmute per track.  Supports upto 512 tracks. - 14sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
 //## | toutput                | tbasicscroll      | 1.00.030  | 16sep2025   | Multiple midi out device settings manager
 //## | tchannels              | tbasiccontrol     | 1.00.360  | 16sep2025   | Indicate average volume and peak average volume per channel.  Supports mute/unmute for all 16 channels. - 04sep2025, 30aug2025, 03jul2025, 14feb2025
 //## | tnotes                 | tbasiccontrol     | 1.00.252  | 16sep2025   | Indicate note activity.  Supports mute/unmute for all 128 notes. - 03sep2025, 30aug2025, 03jul2025, 14feb2025
-//## | tpiano                 | tbasiccontrol     | 1.00.274  | 16sep2025   | Animate piano key depress for each note played. - 03sep2025, 30aug2025, 03jul2025, 14feb2025
+//## | tpiano                 | tbasiccontrol     | 1.00.278  | 13dec2025   | Animate piano key depress for each note played. - 16sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
 //## ==========================================================================================================================================================================================================================
 //## Performance Note:
 //##
@@ -92,7 +93,6 @@ const
 type
 
 {toutput}
-//xxxxxxxxxxxxxxxxxxxxxxx//oooooooooooooooooooooooooooooooooo
    toutput=class(tbasicscroll)
    private
 
@@ -156,6 +156,7 @@ type
 
     //options
     oflat:boolean;
+    odelayMS:longint;
 
     //create
     constructor create(xparent:tobject); virtual;
@@ -187,6 +188,7 @@ type
 {ttracks}
    ttracks=class(tbasiccontrol)
    private
+
     iflashtimer2,ipainttimer:comp;
     ilastheight,ilasttrackcount,iitemsperrow,idownindex,idataref:longint;
     iclsref,iinforef:string;
@@ -195,6 +197,7 @@ type
     iflash   :array[0..high(mmsys_mid_mutetrack)] of boolean;
     itime    :array[0..high(mmsys_mid_mutetrack)] of comp;
     iref     :array[0..high(mmsys_mid_mutetrack)] of tint4;
+
     function xrowcount:longint;
     function xrowheight(xclientheight:longint):longint;
     function xfindarea(x,y:longint;var xindex:longint):boolean;
@@ -203,9 +206,13 @@ type
     procedure xclear;
     function xtrackcount:longint;
     function xcalc:boolean;
+
    public
+
     otrackcount:longint;
     oflat:boolean;
+    odelayMS:longint;
+
     //create
     constructor create(xparent:tobject); virtual;
     constructor create2(xparent:tobject;xstart:boolean); virtual;
@@ -214,10 +221,13 @@ type
     function getalignheight(xclientwidth:longint):longint; override;
     procedure _onpaint(sender:tobject); override;
     function _onnotify(sender:tobject):boolean; override;
+
     //settings
     property settings:string read getsettings write setsettings;//settings as a single line of text
+
     //workers
     procedure muteall(xmute:boolean);
+
    end;
 
 {tnotes}
@@ -255,6 +265,7 @@ type
     olabels:boolean;
     ooutline:boolean;
     oflat:boolean;
+    odelayMS:longint;
 
     //create
     constructor create(xparent:tobject); virtual;
@@ -290,7 +301,6 @@ type
       lnoteon :boolean;
       end;
 
-
    tpiano=class(tbasiccontrol)
    private
 
@@ -310,12 +320,14 @@ type
 
    public
 
+    odelayMS:longint;
+
     //create
     constructor create(xparent:tobject); virtual;
     constructor create2(xparent:tobject;xstart:boolean); virtual;
     destructor destroy; override;
     procedure _ontimer(sender:tobject); override;
-    function getalignheight(xclientwidth:longint):longint; override;
+    function getalignheight(xclientwidth:longint):longint; override;//13dec2025
     procedure _onpaint(sender:tobject); override;
 
     //information
@@ -344,8 +356,8 @@ type
     ilist,iinfo:tbasicmenu;
     isettingspanel,ilistroot:tbasicscroll;
     ijumpanimate,ixboxfeedback,ishowpiano,ishowbars,ishownav,ishowsettings,ishowinfo,ishowvis,ishowlistlinks,iwidespeedrange,ianimateicon,ialwayson,ionacceptonce,lshow,lshowsep,ilargejumptitle,ilargejump,iautoplay,iautotrim,imuststop,imustplay,iplaying,ibuildingcontrol,iloaded:boolean;
-    ivollevel,ibarcol,ibarcol2,inavcol,iviscol,ioutcol,iinfcol,ijumpanimateMode,ixboxcontroller:longint;
-    ilasttimeref,iflashref,itimer100,itimer350,itimer500,itimerslow,iinfotimer:comp;
+    irenderrate,ivollevel,ibarcol,ibarcol2,inavcol,iviscol,ioutcol,iinfcol,ijumpanimateMode,ixboxcontroller:longint;
+    ilasttimeref,iflashref,itimer100,itimer350,itimer500,itimerslow,iinfotimer,ifasttimer:comp;
     iplaylistREF,ijumpcap,ilyricref,iinforef,ilasterror,ilastsavefilename,ilastfilename,inavref,isettingsref:string;
     ilastpos,imustpos:longint;
     ilastbeatval,ilastbeatvalBass,ibeatval,ibeatvalBass,imustpertpos:double;
@@ -387,6 +399,12 @@ type
     procedure xupdatebuttons;
     procedure xbox;
     function playlist__canaddfile:boolean;
+    function xdelayMS:longint;
+    function xdelayMS2(const xrenderRate:longint):longint;
+    function xrenderLabel(const xindex:longint;var xlabel:string):boolean;
+    function xrendercount:longint;
+    function xrenderDefault:longint;
+
     //.saveas
     function xlistfilename:string;
     function xcansaveas:boolean;
@@ -458,8 +476,9 @@ else if (xname='width')               then result:='1600'
 else if (xname='height')              then result:='1020'
 else if (xname='language')            then result:='english-australia'//for Clyde - 14sep2025
 else if (xname='codepage')            then result:='1252'//for Clyde
-else if (xname='ver')                 then result:='1.00.6062'
-else if (xname='date')                then result:='09nov2025'
+else if (xname='msix.tags')           then result:='M'//for Clyde - 10dec2025
+else if (xname='ver')                 then result:='1.00.6187'
+else if (xname='date')                then result:='01feb2025'
 else if (xname='name')                then result:='Cynthia'
 else if (xname='web.name')            then result:='cynthia'//used for website name
 else if (xname='des')                 then result:='Reliably play midi music files'
@@ -469,10 +488,6 @@ else if (xname='diskname')            then result:=io__extractfilename(io__exena
 else if (xname='service.name')        then result:=info__app('name')
 else if (xname='service.displayname') then result:=info__app('service.name')
 else if (xname='service.description') then result:=info__app('des')
-else if (xname='new.instance')        then result:='1'//1=allow new instance, else=only one instance of app permitted
-else if (xname='screensizelimit%')    then result:='98'//95% of screen area
-else if (xname='realtimehelp')        then result:='0'//1=show realtime help, 0=don't
-else if (xname='hint')                then result:='1'//1=show hints, 0=don't
 
 //.links and values
 else if (xname='linkname')            then result:=info__app('name')+' by Blaiz Enterprises.lnk'
@@ -668,6 +683,8 @@ var
    end;
 
 begin
+
+
 if system_debug then dbstatus(38,'Debug 010 - 21may2021_528am');//yyyy
 
 
@@ -680,10 +697,8 @@ app__closepaused:=true;
 
 //required graphic support checkers --------------------------------------------
 //needers - 26sep2021
-//need_jpeg;
-//need_gif;
-//need_ico;
 need_mm;//required
+need_xbox;//required
 
 //init midi device range -> enable "all midi devices" -> "broadcast" option - 13sep2025
 mid_setAllowAllDevices(true);
@@ -722,13 +737,15 @@ idisk__tofile21('Spin Me Round.mid',programfile__Spin_Me_Round_mid,true,e);//20a
 
 
 //self
-inherited create(strint32(app__info('width')),strint32(app__info('height')),true);
+inherited create(strint32(app__info('width')),strint32(app__info('height')));
 ibuildingcontrol:=true;
 
 
 //init
 xsubmenu20          :=tepDown;
+irenderrate         :=0;
 ilaststate          :='n';
+ifasttimer          :=slowms64;
 itimer100           :=slowms64;
 itimer350           :=slowms64;
 itimer500           :=slowms64;
@@ -800,18 +817,22 @@ begin
 scroll:=false;
 xhead;
 xgrad;
+
 xhead.add('Nav',tepNav20,0,'nav.toggle','Navigation Panel | Toggle navigation panel (play folder / play list)');
 xhead.add('Play Folder',tepFolder20,0,'show.folder','Play midis in a folder');
 xhead.add('Play List',tepNotes20,0,'show.list','Play midis in a playlist');
-//xhead.addsep;
+
 xhead.add('Prev',tepPrev20,0,'prev','Previous midi');
 xhead.add('Rewind',tepRewind20,0,'rewind','Rewind # seconds');
 xhead.add('Stop',tepStop20,0,'stop','Stop playback');
+
 xhead.benabled2['stop']:=false;
+
 xhead.add('Play',tepPlay20,0,'play','Toggle playback');
 xhead.add('Fast Forward',tepFastForward20,0,'fastforward','Fast forward # seconds');
 xhead.add('Next',tepNext20,0,'next','Next midi');
 xhead.add('Menu',tepMenu20,0,'menu','Show menu');
+
 xhead.xaddMixer;
 xhead.xaddoptions;
 xhead.xaddhelp;
@@ -851,6 +872,7 @@ add('',xsubmenu20,0,'jump.menu','Playback Progress|Show options');
 end;
 
 ijump:=xhigh2.njump('','Click and/or drag to adjust playback position',0,0);
+
 end;
 end;
 
@@ -862,6 +884,7 @@ rootwin.xcols.style:=bcLefttoright;//04feb2025
 
 with rootwin.xcols.makecol(inavcol,100,false) do
 begin
+
 ilistroot:=client as tbasicscroll;
 
 //.play from folder
@@ -961,8 +984,8 @@ end;
 
 
 iinfo:=nlistx('','Midi technnical and playback information',22,22,__oninfo);//11aug2025
-iinfo.otab:=tbL100_L500;
-iinfo.oscaleh:=0.70;
+iinfo.otab     :=tbL100_L500;
+iinfo.oscaleh  :=0.70;
 iinfo.makepanel;//21aug2025
 
 //settings
@@ -1107,19 +1130,21 @@ end;
 //------------------------------------------------------------------------------
 with rootwin.xcols.makecol(ibarcol,10,false) do
 begin
-ibarleft:=client;
 
-normal:=false;
-onpaint:=onpaint__bar;
+ibarleft     :=client;
+oroundstyle  :=corSlight;
+normal       :=false;
+onpaint      :=onpaint__bar;
 
 end;
 
 with rootwin.xcols.makecol(ibarcol2,10,false) do
 begin
-ibarright:=client;
 
-normal:=false;
-onpaint:=onpaint__bar;
+ibarright    :=client;
+oroundstyle  :=corSlight;
+normal       :=false;
+onpaint      :=onpaint__bar;
 
 end;
 
@@ -1194,19 +1219,18 @@ var
 
    vpos :=frcrange32( trunc( (1-xpert) * (s.cs.bottom-s.cs.top+1) ) + s.cs.top, s.cs.top, s.cs.bottom);
 
-   if xerase             then a.lds( area__make(s.cs.left,s.cs.top,s.cs.right,vpos),s.back,false);
+   if xerase             then a.ffillArea( area__make(s.cs.left,s.cs.top,s.cs.right,vpos),s.back,false);
+
    if (vpos<s.cs.bottom) then
       begin
-      a.ldsoSHADE( area__make(s.cs.left,vpos,s.cs.right,s.cs.bottom), s.colhover2.x,s.colhover2.y,clnone,0,xstyle,true,false);
 
-      //.feather tip
-      a.ldsoSHADE( area__make(s.cs.left,vpos-20,s.cs.right,vpos), s.colhover2.x,s.back,clnone,0,'g-0',true,false);
+      a.fshadeArea2( area__make(s.cs.left,vpos,s.cs.right,s.cs.bottom), s.colhover2.x,s.colhover2.y,s.colhover2.y,s.colhover2.x,5,255,false);
 
       end;
 
    end;
 
-   procedure xbar2(const xpert:double;xback,xpeak:longint;const xstyle:string;const xswapcols:boolean);
+   procedure xbar2(const xpert:double;xback,xpeak:longint;const xswapcols:boolean);
    var
       vgap,vpos:longint;
    begin
@@ -1219,7 +1243,7 @@ var
    if (vpos<s.cs.bottom) then
       begin
 
-      a.ldsoSHADE( area__make(s.cs.left+vgap,vpos,s.cs.right-vgap,s.cs.bottom), xback,xpeak,clnone,0,xstyle,true,s.r);
+      a.fshadeArea2( area__make(s.cs.left+vgap,vpos,s.cs.right-vgap,s.cs.bottom), xback,xpeak,xpeak,xback,10,255,true);
 
       end;
 
@@ -1238,10 +1262,7 @@ vb      :=ilastbeatvalBass;
 xbar(v,'g-10',true);
 
 //bass volume indicator
-xbar2(vb*0.7, int__splice24(0.25+vb,s.back,s.colhover2.y), int__splice24(vb,s.info.hover,s.font), 'g-10', false);
-
-//corners
-a.xparentcorners;
+xbar2(vb*0.7, int__splice24(0.25+vb,s.back,s.colhover2.y), int__splice24(vb,s.info.hover,s.font), false);
 
 end;
 
@@ -1372,6 +1393,12 @@ ijump.status:=ijumpstatus;
 ijump.olarge:=ilargejump;
 ijumptitle.olarge:=ilargejumptitle;
 
+//.sync odelayMS - 01feb2026
+itracks.odelayMS       :=xdelayMS;
+ichannels.odelayMS     :=xdelayMS;
+inotes.odelayMS        :=xdelayMS;
+ipiano.odelayMS        :=xdelayMS;
+
 //.widespeedrange
 if (ispeed.min<>low__aorb(50,10,iwidespeedrange)) then
    begin
@@ -1386,6 +1413,58 @@ if (ispeed.min<>low__aorb(50,10,iwidespeedrange)) then
 //.xmustalign
 if xmustalign then gui.fullalignpaint;
 except;end;
+end;
+
+function tapp.xdelayMS:longint;
+begin
+
+result:=xdelayMS2(irenderrate);
+
+end;
+
+function tapp.xdelayMS2(const xrenderRate:longint):longint;
+begin
+
+case xrenderRate of
+0    :result:=10;//100 fps
+1    :result:=17;//60
+2    :result:=33;//30
+3    :result:=50;//20
+4    :result:=100;//10
+else result:=10;
+end;//case
+
+end;
+
+function tapp.xrenderDefault:longint;
+begin
+
+result:=2;
+
+end;
+
+function tapp.xrenderLabel(const xindex:longint;var xlabel:string):boolean;
+var
+   v:longint;
+begin
+
+//get
+v     :=round32(1000/xdelayMS2(xindex));
+
+//clean numbers
+if (v=59) then v:=60;
+
+//set
+xlabel:=intstr32(v)+' fps';
+result:=(xindex>=0) and (xindex<=4);
+
+end;
+
+function tapp.xrendercount:longint;
+begin
+
+result:=5;
+
 end;
 
 function tapp.findlistcmd(n:string;var xcaption,xhelp,xcmd:string;var xtep:longint;var xenabled:boolean;xextendedlables:boolean):boolean;
@@ -1490,6 +1569,7 @@ label
    skipend;
 var
    p,xholdindex,xholdms:longint;
+   str1:string;
 
    procedure ladd(n:string);
    var
@@ -1547,6 +1627,17 @@ if (xstyle='') then
    low__menuitem3(xmenudata,tep__yes(iwidespeedrange),'Extended Speed Range','Extended Speed Range|Toggle speed range between 50-200% and 10-1,000%','widespeedrange',100,aknone,false,true);
    //.save as
    low__menuitem3(xmenudata,tepSave20,'Save Midi As...','Save selected midi to file','saveas',100,aknone,false,xcansaveas);
+
+   //.render rate
+   low__menutitle(xmenudata,tepnone,'Peak Render Rate','Peak render rate options');
+   for p:=0 to (xrendercount-1) do
+   begin
+
+   xrenderLabel(p,str1);
+   low__menuitem3(xmenudata,tep__tick(p=irenderRate),str1,'Peak Render Rate | Set peak render rate for realtime graphic controls','render.rate.'+intstr32(p),100,aknone,false,true);
+
+   end;//p
+
 
    //.xbox controller
    low__menutitle(xmenudata,tepnone,'Xbox Controller','Xbox controller options');
@@ -1830,8 +1921,8 @@ a.i['notelayout']            :=prgsettings.idef('notelayout',1);//layout.1
 a.b['notelabels']            :=prgsettings.bdef('notelabels',true);
 a.b['autoplay']              :=prgsettings.bdef('autoplay',true);
 a.b['autotrim']              :=prgsettings.bdef('autotrim',false);
-a.b['largejump']             :=prgsettings.bdef('largejump',(not vicompact));
-a.b['largejumptitle']        :=prgsettings.bdef('largejumptitle',(not vicompact));
+a.b['largejump']             :=prgsettings.bdef('largejump',true);
+a.b['largejumptitle']        :=prgsettings.bdef('largejumptitle',true);
 a.b['lshow']                 :=prgsettings.bdef('lshow',true);
 a.b['alwayson']              :=prgsettings.bdef('alwayson',false);
 a.b['animateicon']           :=prgsettings.bdef('animateicon',true);//30apr2022
@@ -1865,6 +1956,7 @@ a.i['jumpanimatemode']       :=prgsettings.idef('jumpanimatemode',1);//27aug2025
 a.i['piano.keystyle']        :=prgsettings.idef('piano.keystyle',khsShadeUP);
 a.i['piano.keycount']        :=prgsettings.idef('piano.keycount',88);
 a.i['piano.labelmode']       :=prgsettings.idef('piano.labelmode',1);
+a.i['render.rate']           :=prgsettings.idef2('render.rate',xrenderDefault,0,xrendercount-1);//0=fastest
 
 //tracks
 a.b['tracks.flat']           :=prgsettings.bdef('tracks.flat',false);//28aug2025
@@ -1910,6 +2002,7 @@ ishowvis                     :=a.b['showvis'];
 ijumpstatus                  :=frcrange32(a.i['jumpstatus'],0,2);
 ijumpanimate                 :=a.b['jumpanimate'];
 ijumpanimatemode             :=frcrange32(a.i['jumpanimatemode'],0,2);
+irenderRate                  :=a.i['render.rate'];//01feb2026
 xnav_mask;
 xname:=a.s['name'];
 case (xname<>'') of
@@ -2021,6 +2114,8 @@ a.b['jumpanimate']           :=ijumpanimate;
 a.i['jumpanimatemode']       :=ijumpanimateMode;
 a.i['jumpstatus']            :=ijumpstatus;
 
+a.i['render.rate']           :=frcrange32(irenderrate,0,xrendercount-1);
+
 //tracks
 a.b['tracks.flat']           :=itracks.oflat;
 a.s['tracks.mutelist']       :=itracks.settings;
@@ -2072,7 +2167,7 @@ if not iloaded then exit;
 
 //get
 str1:=
- bolstr(inotes.zerobase)+bolstr(ichannels.zerobase)+bolstr(itracks.oflat)+bolstr(ichannels.oflat)+bolstr(inotes.oflat)+bolstr(inotes.ooutline)+'|'+itracks.settings+'|'+inotes.settings+'|'+ichannels.settings+'|'+intstr32(mmsys_mid_basevol)+'|'+intstr32(iplaylist.id)+'|'+intstr32(iintro)+'|'+intstr32(iff)+'|'+intstr32(ixboxcontroller)+'|'+bolstr(ixboxfeedback)+bolstr(ishowlistlinks)+bolstr(showplaylist)+bolstr(lshow)+bolstr(iwidespeedrange)+bolstr(ianimateicon)+bolstr(ialwayson)+bolstr(lshowsep)+bolstr(ishowbars)+bolstr(ishownav)+bolstr(ishowpiano)+bolstr(ishowinfo)+bolstr(ishowvis)+bolstr(ilargejumptitle)+bolstr(ilargejump)+bolstr(iautoplay)+bolstr(iautotrim)+'|'+intstr32(ipiano.labelmode)+'|'+intstr32(inotes.olayout)+'|'+bolstr(ijumpanimate)+'|'+intstr32(ijumpanimateMode)+'|'+intstr32(ijumpstatus)+'|'+intstr32(ipiano.keycount)+'|'+intstr32(ichannels.hold)+'|'+
+ bolstr(inotes.zerobase)+bolstr(ichannels.zerobase)+bolstr(itracks.oflat)+bolstr(ichannels.oflat)+bolstr(inotes.oflat)+bolstr(inotes.ooutline)+'|'+itracks.settings+'|'+inotes.settings+'|'+ichannels.settings+'|'+intstr32(mmsys_mid_basevol)+'|'+intstr32(iplaylist.id)+'|'+intstr32(iintro)+'|'+intstr32(iff)+'|'+intstr32(irenderRate)+'|'+intstr32(ixboxcontroller)+'|'+bolstr(ixboxfeedback)+bolstr(ishowlistlinks)+bolstr(showplaylist)+bolstr(lshow)+bolstr(iwidespeedrange)+bolstr(ianimateicon)+bolstr(ialwayson)+bolstr(lshowsep)+bolstr(ishowbars)+bolstr(ishownav)+bolstr(ishowpiano)+bolstr(ishowinfo)+bolstr(ishowvis)+bolstr(ilargejumptitle)+bolstr(ilargejump)+bolstr(iautoplay)+bolstr(iautotrim)+'|'+intstr32(ipiano.labelmode)+'|'+intstr32(inotes.olayout)+'|'+bolstr(ijumpanimate)+'|'+intstr32(ijumpanimateMode)+'|'+intstr32(ijumpstatus)+'|'+intstr32(ipiano.keycount)+'|'+intstr32(ichannels.hold)+'|'+
  intstr32(inotes.hold)+'|'+intstr32(ispeed.val)+'|'+intstr32(vimididevice)+'|'+intstr32(istyle.val)+'|'+
  intstr32(mid_itemsid)+'|'+intstr32(imode.val)+'|'+intstr32(inav.sortstyle)+'|'+intstr32(iformats.val)+'|'+inav.folder;
 
@@ -2179,6 +2274,7 @@ else if m('animateicon')      then ianimateicon:=not ianimateicon//30apr2022
 else if m('widespeedrange')   then iwidespeedrange:=not iwidespeedrange//20aug2025
 else if m('xbox.f')           then ixboxfeedback:=not ixboxfeedback
 else if mv('xbox.')           then ixboxcontroller:=frcrange32(v32,0,2)
+else if mv('render.rate.')    then irenderRate:=frcrange32(v32,0,xrenderCount-1)//01feb2026
 else if mv('intro:')          then iintro:=frcrange32(v32,0,4)
 else if mv('ff:')             then iff:=frcrange32(v32,0,4)
 else if m('list.showlinks')   then ishowlistlinks:=not ishowlistlinks
@@ -2521,44 +2617,54 @@ else
 
    end;
 
-//jump bar animation
-if ijumpanimate then
+
+//render.rate - 01feb2026
+if (slowms64>=ifasttimer) then
    begin
 
-   ijump.flashval  :=ibeatval;
-   ijump.flashval9 :=ibeatvalBass;
-
-   case ijumpanimateMode of
-   0:ijump.power    :=0.20;
-   1:ijump.power    :=0.45;
-   else ijump.power :=1.00;
-   end;//case
-
-   end
-else
-   begin
-
-   ijump.flashval  :=0;
-   ijump.flashval9 :=0;
-
-   end;
-
-
-//beat bars / volume bars
-if ishowbars then
-   begin
-
-   if (ilastbeatval<>ibeatval) or (ilastbeatvalBass<>ibeatvalBass)  then
+   //jump bar animation
+   if ijumpanimate then
       begin
-      ilastbeatval      :=ibeatval;
-      ilastbeatvalBass  :=ibeatvalBass;
 
-      ibarleft.paintnow;
-      ibarright.paintnow;
+      ijump.flashval  :=ibeatval;
+      ijump.flashval9 :=ibeatvalBass;
+
+      case ijumpanimateMode of
+      0:ijump.power    :=0.20;
+      1:ijump.power    :=0.45;
+      else ijump.power :=1.00;
+      end;//case
+
+      end
+   else
+      begin
+
+      ijump.flashval  :=0;
+      ijump.flashval9 :=0;
+
       end;
 
-   end;
 
+   //beat bars / volume bars
+   if ishowbars then
+      begin
+
+      if (ilastbeatval<>ibeatval) or (ilastbeatvalBass<>ibeatvalBass)  then
+         begin
+         ilastbeatval      :=ibeatval;
+         ilastbeatvalBass  :=ibeatvalBass;
+
+         ibarleft.paintnow;
+         ibarright.paintnow;
+         end;
+
+      end;
+
+
+   //reset
+   ifasttimer:=slowms64+frcmin32(xdelayMS,1);
+
+   end;
 
 //debug support
 if system_debug then
@@ -2895,11 +3001,10 @@ end;
 
 
 //## toutput ###################################################################
-//xxxxxxxxxxxxxxxxxxxxxx//oooooooooooooooooooooooooooooooo
 constructor toutput.create(xparent:tobject);
 var
    p:longint;
-begin
+begin                 
 
 //self
 inherited create(xparent);
@@ -3100,6 +3205,7 @@ inherited create2(xparent,false);
 oroundstyle        :=corNone;
 oautoheight        :=true;
 oflat              :=false;
+odelayMS           :=50;//01feb2026
 hint               :='Midi Channel | Click to mute/unmute midi channel | Drag up or down to adjust channel volume';
 ipainttimer        :=slowms64;
 iflashtimer        :=slowms64;
@@ -3151,6 +3257,7 @@ xclear;
 
 //start
 if xstart then start;
+
 end;
 
 destructor tchannels.destroy;
@@ -3446,7 +3553,8 @@ if (slowms64>=ipainttimer) then
       end;
 
    //reset
-   ipainttimer:=slowms64+25;//~40fps
+//   ipainttimer:=slowms64+odelayMS;
+   ipainttimer:=slowms64+frcmin32(odelayMS,25);//~40fps
 
    end;
 end;
@@ -3517,7 +3625,7 @@ var
 begin
 
 //init
-xlen  :=low__len(x);
+xlen  :=low__len32(x);
 xpos  :=1;
 lp    :=xpos;
 
@@ -3576,9 +3684,9 @@ var
    result:=round((frcrange32(xvol,0,127)/127)*clientheight);
    end;
 
-   procedure xdraw(xfrom,xto,xmoreheight:longint;const dcolors:tpoint;const xstyle:string);
+   procedure xdraw(xfrom,xto,xmoreheight:longint;const dcolors:tpoint;const xsplice:longint;const xcolorboost:boolean);
    var
-      dback,i,sy,dy:longint;
+      dback,i,sy,dy,dy2:longint;
    begin
 
    //check
@@ -3588,7 +3696,20 @@ var
    sy:=frcrange32(da.bottom-round( (xfrom/127)*ch),da.top,da.bottom);
    dy:=frcrange32(da.bottom-round( (xto  /127)*ch),da.top,da.bottom);
 
-   ldsoSHADE(area__make(da.left,dy,da.right,frcmax32(sy+xmoreheight,da.bottom)),dcolors.x,dcolors.y,clnone,0,insstr(xstyle,not oflat),true,xround);
+   case oflat of
+   true:ffillArea(area__make(da.left,dy,da.right,frcmax32(sy+xmoreheight,da.bottom)),dcolors.y,xround);
+   else
+      begin
+
+      dy2:=frcmax32(sy+xmoreheight,da.bottom);
+
+      fshadeArea2(area__make(da.left,dy,da.right,dy2),dcolors.x,dcolors.y,dcolors.y,dcolors.x,xsplice,255,xround);
+
+      //.color boost for small areas
+      if xcolorboost then ffillArea(area__make(da.left,dy+((dy2-dy+1) div 2),da.right,dy+((dy2-dy+1) div 2)),dcolors.y,xround);
+
+      end;
+   end;//case
 
    end;
 begin
@@ -3607,6 +3728,7 @@ xdownok       :=(xindex=idownindex);
 xhoverok      :=(xindex=ihoverindex);
 xhoverfocus   :=(ihoverfocus>=slowms64);
 fnH1          :=low__fontmaxh1(fn);
+
 ivolstarty    :=da.top;
 ivolbarheight :=round(fnH*1.3);
 ivolheight    :=frcmin32(da.bottom-da.top+1-ivolbarheight,1);
@@ -3623,11 +3745,10 @@ if (mmsys_mid_chvol[xindex]<=0) then
 
    end;
 
-lds(da,xback,xround);
-
+ffillArea(da,xback,false);
 
 //volume indicator
-if (xvol>=1) then xdraw(0,xvol,0,xcolors,'g-5');
+if (xvol>=1) then xdraw(0,xvol,0,xcolors,5,false);
 
 
 //hold volume indicator
@@ -3638,10 +3759,10 @@ if (xholdvol>=1) and (iholdms>=1) then
 
    case xholdvol of
    101..110     :xcolors.y:=int__splice24( xcolmix, xcolors.x, rgba0__int(255,255,0) );
-   111..maxint  :xcolors.y:=low__aorb(int__splice24( xcolmix, xcolors.x, 255), clnone, xmax and iflashon );
+   111..maxint  :xcolors.y:=low__aorb(int__splice24( xcolmix, xcolors.x, 255), xback, xmax and iflashon );
    end;//case
 
-   xdraw(xholdvol-2,xholdvol,insint(1,not oflat),xcolors,'g-50');
+   xdraw(xholdvol-2,xholdvol,insint(1,not oflat),xcolors,50,not oflat);
 
    end;
 
@@ -3657,7 +3778,7 @@ ta.bottom  :=ta.top+fnH-1;
 if (ivoicetime[xindex]>=slowms64) and iflashon then
    begin
 
-   lds(ta,xfontcolor,false);
+   ffillArea(ta,xfontcolor,false);
    int1:=xback;
 
    end
@@ -3749,7 +3870,10 @@ end;//case
 if xhoverfocus then
    begin
 
-   ldsoSHADE( area__make(da.left,int1,da.right,frcmax32(int1+ivolbarheight,da.bottom) ), s.hover, dcol2, clnone,0,insstr('g-50',not oflat),true,false );
+   case oflat of
+   true:ffillArea( area__make(da.left,int1,da.right,frcmax32(int1+ivolbarheight,da.bottom) ), dcol2, false );
+   else fshadeArea2( area__make(da.left,int1,da.right,frcmax32(int1+ivolbarheight,da.bottom) ), s.hover, dcol2, dcol2, s.hover, 50, 255, false );
+   end;//case
 
    end;
 
@@ -3764,8 +3888,8 @@ if xhoverfocus and iflashon and ((idownindex=xindex) or (ihoverindex=xindex)) th
    begin
 
    p2:=aw-1-p;
-   ldh3(da,da.left,da.left+p,vx-p2,dcol,false,false);
-   ldh3(da,da.left,da.left+p,vx+p2,dcol,false,false);
+   ffillArea(area__make(da.left,vx-p2,da.left+p,vx-p2),dcol,false);
+   ffillArea(area__make(da.left,vx+p2,da.left+p,vx+p2),dcol,false);
 
    end;//p
 
@@ -3775,18 +3899,14 @@ if xhoverfocus and iflashon and ((idownindex=xindex) or (ihoverindex=xindex)) th
 if xhoverfocus then
    begin
 
-   ldh3(da,da.left,da.right,int1,s.hover2,false,false);
-   ldh3(da,da.left,da.right,int1+ivolbarheight-1,s.hover2,false,false);
+   ffillArea(area__make(da.left,int1,da.right,int1),s.hover2,false);
+   ffillArea(area__make(da.left,int1+ivolbarheight-1,da.right,int1+ivolbarheight-1),s.hover2,false);
 
    t          :=intstr32(low__posn(mmsys_mid_chvol[xindex]));
    tw         :=low__fonttextwidth2(fn,t);
    ldt1(xback,da,da.left+frcmin32((da.right-da.left+1-tw) div 2,aw),int1+((ivolbarheight-fnH1) div 2),xfontcolor,t,fn,xfeather,false);
 
    end;
-
-
-//paint over background
-if vimaintainhighlight then ldbEXCLUDE(false,da,xround);
 
 end;
 
@@ -3801,15 +3921,15 @@ try
 infovars(s);
 
 //.smaller font
-fn2    :=s.fs2;
-fnH2   :=s.fsH2;
+gui__smallfont2(info^,1.01,fn2,fnH2);
+
 
 //background
-if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then lds(s.cs,s.back,s.r);
+if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then ffillArea(s.cs,s.back,false);
 
 //init
-iw:=frcmin32(s.cw div 16,1);
-sp:=frcmin32(frcmax32(5*s.zoom,iw-low__fontavew(s.fn)),0);
+iw         :=frcmin32(s.cw div 16,1);
+sp         :=frcmin32(frcmax32(5*s.zoom,iw-low__fontavew(s.fn)),0);
 
 //bars
 for p:=0 to high(iavevol) do
@@ -3823,7 +3943,8 @@ da.right   :=frcmax32(da.left+iw-1-sp,s.ci.right);
 xbar(s,da,p,iavevol[p],iholdvol[p],fn2,fnH2,s.f,s.r);
 
 //.store area for mouse clicks
-iarea[p]:=da;
+iarea[p]   :=da;
+
 end;//p
 
 except;end;
@@ -3946,6 +4067,7 @@ inherited create2(xparent,false);
 hint:='Midi Track | Click to mute/unmute midi track | Click and hold for 2 seconds to mute/unmute all midi tracks';
 
 oflat            :=false;
+odelayMS         :=50;//01feb2026
 ilastheight      :=0;
 ilasttrackcount  :=-1;
 iitemsperrow     :=16;
@@ -4075,7 +4197,9 @@ if (slowms64>=ipainttimer) then
       end;
 
    //reset
-   ipainttimer:=slowms64+10;//~100fps
+   //ipainttimer:=slowms64+odelayMS;
+   ipainttimer:=slowms64+frcmin32(odelayMS,17);//~60fps
+
    end;
 
 end;
@@ -4087,14 +4211,23 @@ end;
 
 function ttracks.xrowcount:longint;
 begin
+
 result:=xtrackcount div iitemsperrow;
+
 if ((result*iitemsperrow)<xtrackcount) then inc(result);
+
 result:=frcmin32(result,2);//display 2 or more rows for visual padding
+
 end;
 
-function ttracks.xrowheight(xclientheight:longint):longint;
+function ttracks.xrowheight(xclientheight:longint):longint;//11dec2025
 begin
-if (xclientheight<=0) then result:=(frcmin32(vifontheight,insint(20,not vicompact))+(2*vizoom)) else result:=frcmin32( (xclientheight div xrowcount) ,1);
+
+case (xclientheight<=0) of
+true:result:=virowheight20orLESS;
+else result:=frcmin32( (xclientheight div xrowcount) ,1);
+end;//case
+
 end;
 
 function ttracks.getalignheight(xclientwidth:longint):longint;
@@ -4134,7 +4267,7 @@ if (x<>'') then
    begin
 
    mid_enter1;
-   for p:=0 to frcmax32(high(mmsys_mid_mutetrack),low__len(x)-1) do mmsys_mid_mutetrack[p]:=(x[p+stroffset]='1');//zero-based string access
+   for p:=0 to frcmax32(high(mmsys_mid_mutetrack),low__len32(x)-1) do mmsys_mid_mutetrack[p]:=(x[p+stroffset]='1');//zero-based string access
    mid_leave1;
 
    end;
@@ -4188,10 +4321,13 @@ var
    dtrackon:boolean;
 begin
 try
+
 //init
 infovars(s);
 dtrackcount :=frcrange32(otrackcount,0,1+high(iarea));
 v64         :=slowms64;
+
+gui__smallfont(info^,fn2,fnH2);
 
 dmute0      :=int__splice24(0.35,int__greyscale(s.colhover2.x),255);
 dmute1      :=int__splice24(0.45,int__greyscale(s.colhover2.y),255);
@@ -4204,14 +4340,10 @@ dhover2     :=s.colhover2.y;
 
 dfont2      :=int__splice24(0.15,s.font,255);
 
-//.smaller font
-fn2         :=s.fs2;
-fnH2        :=s.fsH2;
-
 //background
 if low__setstr(iclsref,intstr32(dtrackcount)+'|'+intstr32(s.back)+'|'+intstr32(s.hover)+'|'+intstr32(s.colhover)+'|'+intstr32(s.cw)+'|'+intstr32(s.ch)) then
    begin
-   lds(s.cs,s.back,s.r);
+   ffillArea(s.cs,s.back,false);
    end;
 
 if (dtrackcount<=0) then goto skipend;
@@ -4270,15 +4402,15 @@ else
    end;
 
 //erase "non-outline"
-lds(area__make(da.left,da.bottom-(2*vizoom),da.right,da.bottom),s.back,s.r);
+ffillArea(area__make(da.left,da.bottom-(2*vizoom),da.right,da.bottom),s.back,s.r);
 
 //highlight
-ldsoSHADE(da,dcback,dc,clnone,0,insstr('g-50',not oflat),true,s.r);
-
+case oflat of
+true:ffillArea(da,dc,s.r);
+else fshadeArea2(da,dcback,dc,dc,dcback,50,255,s.r);
+end;//case
 
 tw:=low__fonttextwidth2(fn2,t);
-
-if vimaintainhighlight then ldbEXCLUDE(false,da,s.r);
 
 ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-fnH2) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutetrack[xtrack]),t,fn2,s.f,s.r);
 
@@ -4315,6 +4447,7 @@ hint:='Midi Note | Click to mute/unmute midi note | Click and hold for 2 seconds
 
 //oroundstyle:=corNone;
 ooutline     :=false;
+odelayMS     :=50;//01feb2026
 izerobase    :=true;
 iflashon     :=false;
 oflat        :=false;
@@ -4524,8 +4657,11 @@ if (slowms64>=ipainttimer) then
       end;
 
    //reset
-   ipainttimer:=slowms64+10;//~100fps
+//   ipainttimer:=slowms64+odelayMS;
+   ipainttimer:=slowms64+frcmin32(odelayMS,17);//~60fps
+
    end;
+
 end;
 
 function tnotes.xrowcount:longint;
@@ -4576,7 +4712,7 @@ if (x<>'') then
    begin
 
    mid_enter1;
-   for p:=0 to frcmax32(high(mmsys_mid_mutenote),low__len(x)-1) do mmsys_mid_mutenote[p]:=(x[p+stroffset]='1');//zero-based string access
+   for p:=0 to frcmax32(high(mmsys_mid_mutenote),low__len32(x)-1) do mmsys_mid_mutenote[p]:=(x[p+stroffset]='1');//zero-based string access
    mid_leave1;
 
    iref:=-1;//force paint
@@ -4651,7 +4787,7 @@ bkhover     :=int__splice24(0.75,s.colhover2.x,s.hover);
 dfont2      :=int__splice24(0.15,s.font,255);
 
 //background
-if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then lds(s.cs,s.back,s.r);
+if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then ffillArea(s.cs,s.back,false);
 
 //init
 sp:=2*s.zoom;
@@ -4714,10 +4850,13 @@ else
    end;
 
 //erase "non-outline"
-lds(area__make(da.left,da.bottom-(2*vizoom),da.right,da.bottom),s.back,s.r);
+ffillArea(area__make(da.left,da.bottom-(2*vizoom),da.right,da.bottom),s.back,s.r);
 
 //highlight
-ldsoSHADE(da,dcback,dc,clnone,0,insstr('g-50',not oflat),true,s.r);
+case oflat of
+true:ffillArea(da,dc,s.r);
+else fshadeArea2(da,dcback,dc,dc,dcback,50,255,s.r);
+end;//case
 
 ihold64[xnote]:=frcrange64(ihold64[xnote],0,xmax64);//enforce maximum hold range
 
@@ -4756,8 +4895,6 @@ else                                           t:=intstr32( xnote + xnoteAddOne 
 
 tw:=low__fonttextwidth2(s.fn,t);
 
-if dnoteon and vimaintainhighlight then ldbEXCLUDE(false,da,s.r);
-
 ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-s.fnH) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutenote[xnote]),t,s.fn,s.f,s.r);
 
 //inc
@@ -4794,6 +4931,7 @@ inherited create2(xparent,false);
 hint:='Piano | View realtime piano keystrokes';
 
 oroundstyle   :=corNone;
+odelayMS      :=50;//01feb2026
 ilabelmode    :=1;
 ikeycount     :=88;
 ipainttimer   :=slowms64;
@@ -4961,13 +5099,18 @@ if (slowms64>=ipainttimer) then
       end;
 
    //reset
-   ipainttimer:=slowms64+10;//~100fps
+//   ipainttimer:=slowms64+odelayMS;
+   ipainttimer:=slowms64+frcmin32(odelayMS,17);//~60fps
+
    end;
+   
 end;
 
-function tpiano.getalignheight(xclientwidth:longint):longint;
+function tpiano.getalignheight(xclientwidth:longint):longint;//13dec2025
 begin
-result:=frcmax32( frcmin32(round(xclientwidth*0.09),10), round(gui.height*0.3) );//height scaled to width BUT do not exceed 30% of gui.height
+
+result:=frcmax32( frcmin32(round(xclientwidth*0.09),10), round(gui.height*0.23) );//height scaled to width BUT do not exceed 30% of gui.height
+
 end;
 
 function tpiano.xwhitekey(x:longint;var xlabel:tpianolabel):boolean;
@@ -5122,7 +5265,7 @@ var
    khsShadeDN :lds2(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,c,c0,0,'g-65',false);
    khsEdge,khsEdge2:begin
 
-      lds(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,false);
+      ffillArea(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,false);
 
       if ddown then
          begin
@@ -5135,10 +5278,8 @@ var
          end;
 
       end;
-   else        lds(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c,false);
+   else        ffillArea(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c,false);
    end;//case
-
-   ldbEXCLUDE(false,area__make(da.left,da.top,da.right,da.bottom-dshift),false);
 
    //label
    if (dlabel<>'') then
@@ -5242,12 +5383,12 @@ sx       :=(s.cw-(ww* frcmin32(iwcount,1) )) div 2;
 dy       :=0;
 
 //background
-if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then lds(s.cs,s.back,s.r)
+if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then ffillArea(s.cs,s.back,false)
 else
    begin
    //quick cls -> wipe out key shift areas (upshift)
-   lds(area__make(sx,bh-1-wupshift2,sx+(iwcount*ww)-1,bh-1),s.back,false);//black keys
-   lds(area__make(sx,wh-1-wupshift2,sx+(iwcount*ww)-1,wh-1),s.back,false);//white keys
+   ffillArea(area__make(sx,bh-1-wupshift2,sx+(iwcount*ww)-1,bh-1),s.back,false);//black keys
+   ffillArea(area__make(sx,wh-1-wupshift2,sx+(iwcount*ww)-1,wh-1),s.back,false);//white keys
    end;
 
 //white keys
