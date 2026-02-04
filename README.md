@@ -37,6 +37,7 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Piano: Mark middle C key, C + F keys, or all white keys
 * Volume Bars: Realtime average volume and bass volume levels (left and right vertical)
 * Transpose option: Shift all notes up/down music scale
+* Option: Peak Render Rate: 10, 20, 30 (default), 60 or 100fps
 * Use an Xbox Controller to control Cynthia's main functions: Playback speed, volume, song position, display panels, song file navigation, jump to start of song, toggle fullscreen mode, etc
 * Large list capacity for handling thousands of midi files
 * Switch between up to 10 midi playback devices
@@ -48,8 +49,20 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Simple and easy to use
 * Options Window - Easily change app color, font, and settings
 * Portable
-* Smart Source Code (Borland Delphi 3 and Lazarus 2) 
+* Smart Source Code (Borland Delphi 3 and Lazarus 2.2/4.4)
 
+# Codebase - Technical Changes
+* Optimised for 2K display
+* Functional on 4K display
+* High-speed render procs for general render improvements of 300%+
+* Higher background render rate to 60fps
+* Active GUI Scaling (60% - 200% of OS scaling, realtime adaptive)
+* Automatic MSIX handling (MS Store app/MSIX bundle)
+* Source code supports both 32bit and 64bit
+* 32bit compilation in Delphi 3 (stable)
+* 32bit compilation in Lazarus 2.2 (stable)
+* 64bit compilation in Lazarus 4.4 (functional/work in progress)
+ 
 # Download
 Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above.
 
