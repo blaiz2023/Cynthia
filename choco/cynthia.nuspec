@@ -65,10 +65,7 @@ Codebase - Technical Changes
 * Higher background render rate to 60fps
 * Active GUI Scaling (60% - 200% of OS scaling, realtime adaptive)
 * Automatic MSIX handling (MS Store app/MSIX bundle)
-* Source code supports both 32bit and 64bit
-* 32bit compilation in Delphi 3 (stable)
-* 32bit compilation in Lazarus 2.2 (stable)
-* 64bit compilation in Lazarus 4.4 (functional/work in progress)</description>
+* Source code supports both 32bit and 64bit</description>
     <summary>Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap.</summary>
     <copyright>2026 Blaiz Enterprises</copyright>
     <tags>cynthia play midi music m3u playlist folder mid rmi multiple</tags>
