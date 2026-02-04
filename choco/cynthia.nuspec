@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>cynthia</id>
-    <version>1.0.6062</version>
+    <version>1.0.6187</version>
     <title>Cynthia</title>
     <authors>Blaiz Enterprises</authors>
     <owners>Blaiz Enterprises</owners>
@@ -12,7 +12,7 @@
     <iconUrl>https://rawcdn.githack.com/blaiz2023/Cynthia/af7690d957506104a5e945cd5c1f890583fa839b/images/cynthia-256.png</iconUrl>
     <description>Reliably play midi music files from a folder or ".m3u" play list. Adjust playback speed, volume and output device on-the-fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap. Supports ".mid", ".midi" and ".rmi" files in format 0 (single track) and format 1 (multi-track). Comes complete with 25 sample midis ready to play.
 
-![Cynthia v1.0.6062 Screenshot](https://rawcdn.githack.com/blaiz2023/Cynthia/d9c207bba7939fd6ef1e29673de1e8c6b9dd8bfc/images/cynthia-screenshot.jpg)
+![Cynthia v1.0.6187 Screenshot](https://rawcdn.githack.com/blaiz2023/Cynthia/d9c207bba7939fd6ef1e29673de1e8c6b9dd8bfc/images/cynthia-screenshot.jpg)
 
 Features
 * Dual play systems - Play Folder and Play List
@@ -46,6 +46,7 @@ Features
 * Piano: Mark middle C key, C + F keys, or all white keys
 * Volume Bars: Realtime average volume and bass volume levels (left and right vertical)
 * Transpose option: Shift all notes up/down music scale
+* Option: Peak Render Rate: 10, 20, 30 (default), 60 or 100fps
 * Use an Xbox Controller to control Cynthia's main functions: Playback speed, volume, song position, display panels, song file navigation, jump to start of song, toggle fullscreen mode, etc
 * Large list capacity for handling thousands of midi files
 * Switch between up to 10 midi playback devices
@@ -53,12 +54,23 @@ Features
 * Multi-Device Options (per midi device): Time Shift - adjust playback timing to compensate for midi device lag from -500 ms to +500 ms, Device Volume - adjust output volume from 0% to 200%, Output Channels - select which midi channels to play through the device
 * Automatic Midi Device(s) Resync - detects OS changes in midi device ordering/names and corrects in realtime
 * Custom built midi playback engine for high playback stability
-* Automatic compact mode for display on small/low resolution screens
 * Simple and easy to use
 * Options Window - Easily change app color, font, and settings
-* Portable</description>
+* Portable
+
+Codebase - Technical Changes
+* Optimised for 2K display
+* Functional on 4K display
+* High-speed render procs for general render improvements of 300%+
+* Higher background render rate to 60fps
+* Active GUI Scaling (60% - 200% of OS scaling, realtime adaptive)
+* Automatic MSIX handling (MS Store app/MSIX bundle)
+* Source code supports both 32bit and 64bit
+* 32bit compilation in Delphi 3 (stable)
+* 32bit compilation in Lazarus 2.2 (stable)
+* 64bit compilation in Lazarus 4.4 (functional/work in progress)</description>
     <summary>Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap.</summary>
-    <copyright>2025 Blaiz Enterprises</copyright>
+    <copyright>2026 Blaiz Enterprises</copyright>
     <tags>cynthia play midi music m3u playlist folder mid rmi multiple</tags>
     <projectSourceUrl>https://github.com/blaiz2023/Cynthia</projectSourceUrl>
     <packageSourceUrl>https://github.com/blaiz2023/Cynthia/tree/main/choco</packageSourceUrl>
