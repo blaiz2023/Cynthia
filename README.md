@@ -64,3 +64,6 @@ Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">b
 <br>
 
 <img src="images/cynthia-screenshot5.jpg">
+<br>
+
+<img src="images/cynthia-screenshot6.jpg">
