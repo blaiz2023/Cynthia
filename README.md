@@ -51,7 +51,7 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Smart Source Code (Borland Delphi 3 and Lazarus 2.2/4.4/4.6)
 
 # App Changes
-* Start playback at beginning for play options "Once" and "All Once" if song has previously finished playing
+* Start playback at beginning of midi for "Once" and "All Once" options if previously finished playing
 * Updated codebase
 
 # Codebase Changes
