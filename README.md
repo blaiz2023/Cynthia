@@ -1,4 +1,4 @@
-# Cynthia v1.0.6187 / 01feb2026 / MIT License
+# Cynthia v1.0.6226 / 17apr2026 / MIT License
 Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback speed, volume and output device on the fly during playback. A large playback progress bar makes jumping forward and backward in time a breeze with just a single click or tap. Supports ".mid", ".midi" and ".rmi" files in format 0 (single track) and format 1 (multi-track). Comes complete with 24 sample midis ready to play.
 
 <img src="images/cynthia-screenshot.jpg">
@@ -48,22 +48,32 @@ Reliably play midi music files from a folder or ".m3u" playlist. Adjust playback
 * Simple and easy to use
 * Options Window - Easily change app color, font, and settings
 * Portable
-* Smart Source Code (Borland Delphi 3 and Lazarus 2.2/4.4)
+* Smart Source Code (Borland Delphi 3 and Lazarus 2.2/4.4/4.6)
 
-# Codebase - Technical Changes
-* Optimised for 2K display
+# App Changes
+* Start playback at beginning for play options "Once" and "All Once" if song has previously finished playing
+* Updated codebase
+
+# Codebase Changes
+* Optimised for 2K display (60fps+)
 * Functional on 4K display
-* High-speed render procs for general render improvements of 300%+
-* Higher background render rate to 60fps
+* General render improvements of ~300%
+* Text render improvements of ~200%
+* Smart font character caching with twin feather support
+* Increased background animation render rate to 60fps
 * Active GUI Scaling (60% - 200% of OS scaling, realtime adaptive)
-* Automatic MSIX handling (MS Store app/MSIX bundle)
+* TextCore (upgraded) - non-GUI and GUI text box engine (txt, bwd, bwp, rtf)
+* FastDraw (new) - GUI / general graphics work via high-level and low-level rapid-render procs for the CPU
+* Dynamic scaling and loading of System, Folder, and App images
+* New color-based animated background schemes / engine upgrade
+* Automatic MSIX handling (MS Store app/MSIX bundle) with seamless adaptive settings and temp file storage and management for restrictive access compliance
 * Source code supports both 32bit and 64bit
-* 32bit compilation in Delphi 3 (stable)
+* 32bit compilation in Borland Delphi 3 (stable)
 * 32bit compilation in Lazarus 2.2 (stable)
-* 64bit compilation in Lazarus 4.4 (functional/work in progress)
- 
+* 64bit compilation in Lazarus 4.4+ (functional/work in progress) 
+
 # Download
-Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above.
+Download <a href="src/cynthia.exe">cynthia.exe</a> or from the "<a href="bin/">bin</a>" or "<a href="src/">src</a>" folders above - for Microsoft Windows, and Linux/MacOS via Wine.
 
 # Images
 <img src="images/cynthia-screenshot2.jpg">
