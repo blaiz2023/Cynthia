@@ -9,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses gosswin2, gossroot, gosswin;
+uses gosswin2, gossroot, gosswin, gossteps;
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
@@ -31,26 +31,29 @@ uses gosswin2, gossroot, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. sound/audio/midi/chimes (gosssnd.pas)
-//## Version.................. 4.00.9400 (+123)
+//## Version.................. 4.00.9405 (+128)
 //## Items.................... 11
-//## Last Updated ............ 12dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 16sep2025, 09sep2025, 07sep2025, 21aug2025, 11aug2025, 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
-//## Lines of Code............ 10,300+
+//## Last Updated ............ 04apr2026, 12dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 16sep2025, 09sep2025, 07sep2025, 21aug2025, 11aug2025, 29apr2025, 15mar2025, 18feb2025, 18dec2024, 22nov2024, 20jul2024
+//## Lines of Code............ 10,400+
+//## Origin .................. Human generated and maintained
 //##
-//## main.pas ................ app code
-//## gossroot.pas ............ console/gui app startup and control
-//## gossio.pas .............. file io
-//## gossimg.pas ............. image/graphics
-//## gossnet.pas ............. network
-//## gosswin.pas ............. static Win32 api calls
-//## gosswin2.pas ............ dynamic Win32 api calls
-//## gosssnd.pas ............. sound/audio/midi/chimes
-//## gossgui.pas ............. gui management/controls
-//## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
-//## gosszip.pas ............. zip support
-//## gossjpg.pas ............. jpeg support
-//## gossfast.pas ............ fastdraw support
-//## gossgame.pas ............ game support (optional)
-//## gamefiles.pas ........... internal files for game (optional)
+//## main.pas ................ App specific code
+//## gossdat.pas ............. App specific icons and help documents
+//## gossfast.pas ............ FastDraw - rapid render graphic procs
+//## gossgame.pas ............ GameCore - 2D game engine with integrated menu handler, xbox controller + mouse + keyboard support and window integration
+//## gamefiles.pas ........... Built-in file(s) for GameCore (optional)
+//## gossgui.pas ............. GUI management and controls
+//## gossimg.pas ............. Multi-format graphic procs for 8, 24 and 32 bit images with IO support
+//## gossio.pas .............. File IO and low level file/folder/disk/data format procs
+//## gossjpg.pas ............. JPEG IO (read/write jpeg image data via third party libraries)
+//## gossnet.pas ............. Networking - ip filtering, socket management etc
+//## gossroot.pas ............ App startup and control (GUI, console and service)
+//## gosssnd.pas ............. Sound, audio, midi and midi based chimes
+//## gossteps.pas ............ System, Folder and App images
+//## gosstext.pas ............ TextCore - non-GUI and GUI text engine for text boxes
+//## gosswin.pas ............. Win32 api calls for 32 and 64 bit (static / api references disabled by default)
+//## gosswin2.pas ............ Win32 api calls for 32 and 64 bit (dynamic - load as required with fallback failure handling and default value(s) support)
+//## gosszip.pas ............. ZIP IO (read/write zip data via third party libraries)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
@@ -686,9 +689,10 @@ procedure mm_shut;
 function mm_ok:boolean;
 function mm_inited:boolean;
 
-//.use with "tbasicnav" and optional "tbasicjump" for a complete play management setup - 22feb2022
+//.use with "tbasicnav" and optional "tbasicjump" for a complete play management setup - 04apr2026, 22feb2022
 function mm_playmanagement_init(var xmuststop,xmustplay,xplaying:boolean;var xmustpertpos:double;var xmustpos,xlastpos:longint;var xlastfilename:string):boolean;
-function mm_playmanagement(xstyle:string;xmode,xintroms:longint;var xmuststop,xmustplay,xplaying,xhostupdate:boolean;var xmustpertpos:double;var xmustpos,xlastpos:longint;var xlastfilename:string;xxnav:tobject;xxplaylist:tobject;xplaylistmask:string;xxjump:tobject):boolean;
+function mm_playmanagement(xstyle:string;xmode,xintroms:longint;var xmuststop,xmustplay,xplaying,xhostupdate:boolean;var xmustpertpos:double;var xmustpos,xlastpos:longint;var xlastfilename:string;xxnav:tobject;xxplaylist:tobject;xplaylistmask:string;xxjump:tobject):boolean;//04apr2026
+
 
 //.wave support
 function wav_ok:boolean;
@@ -1011,8 +1015,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosssnd.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.9400'
-else if (xname='date')       then result:='12dec2025'
+if      (xname='ver')        then result:='4.00.9405'
+else if (xname='date')       then result:='04apr2026'
 else if (xname='name')       then result:='Sound'
 else
    begin
@@ -1022,7 +1026,7 @@ else
 except;end;
 end;
 
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//rrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+
 //-- "mm" multimedia support ---------------------------------------------------
 function mm_safetohalt:boolean;
 begin
@@ -1138,7 +1142,7 @@ xlastfilename   :='';
 
 end;
 
-function mm_playmanagement(xstyle:string;xmode,xintroms:longint;var xmuststop,xmustplay,xplaying,xhostupdate:boolean;var xmustpertpos:double;var xmustpos,xlastpos:longint;var xlastfilename:string;xxnav:tobject;xxplaylist:tobject;xplaylistmask:string;xxjump:tobject):boolean;
+function mm_playmanagement(xstyle:string;xmode,xintroms:longint;var xmuststop,xmustplay,xplaying,xhostupdate:boolean;var xmustpertpos:double;var xmustpos,xlastpos:longint;var xlastfilename:string;xxnav:tobject;xxplaylist:tobject;xplaylistmask:string;xxjump:tobject):boolean;//04apr2026
 label
    skipend;
 var
@@ -1234,8 +1238,8 @@ var
 begin
 
 //defaults
-result       :=true;//pass-thru
-xhostupdate  :=false;
+result                :=true;//pass-thru
+xhostupdate           :=false;
 
 
 try
@@ -1248,7 +1252,8 @@ if (xxjump<>nil) and (xxjump is tbasicjump)          then xjump:=(xxjump as tbas
 if (xnav=nil) and (xplaylist=nil) then exit;
 
 //style
-xstyle:=strlow(xstyle);
+xstyle                :=strlow(xstyle);
+
 if (xstyle='mid') then dstyle:=1 //mid
 else                   dstyle:=0;//mm
 
@@ -1259,9 +1264,9 @@ if (not xcanplay) or m_seeking then exit;
 xintroms:=frcmin32(xintroms,0);
 
 //init
-xlen:=frcrange32(m_len,0,low__aorb(max32,xintroms,xintroms>0));
-xmode:=frcrange32(xmode,0,mmMax);//playback mode (once, repeat all, random etc)
-xselectidle:=(xidletime>=2000) and (not xmustplay);//list idleness detector - 21feb2022
+xlen                  :=frcrange32(m_len,0,low__aorb(max32,xintroms,xintroms>0));
+xmode                 :=frcrange32(xmode,0,mmMax);//playback mode (once, repeat all, random etc)
+xselectidle           :=(xidletime>=2000) and (not xmustplay);//list idleness detector - 21feb2022
 
 //file - manual list
 if xplaying and (not strmatch(xlastfilename,xnavvalue)) then xmustplay:=true;
@@ -1271,12 +1276,12 @@ if xplaying and (not strmatch(xlastfilename,xnavvalue)) then xmustplay:=true;
 if xmuststop then
    begin
 
-   xlastpos      :=m_pos;
-   xplaying      :=false;
-   xmustplay     :=false;
-   xmuststop     :=false;
-   xmustpos      :=-1;//off
-   xmustpertpos  :=-1;//off
+   xlastpos           :=m_pos;
+   xplaying           :=false;
+   xmustplay          :=false;
+   xmuststop          :=false;
+   xmustpos           :=-1;//off
+   xmustpertpos       :=-1;//off
 
    if m_playing then m_stop;
 
@@ -1288,11 +1293,17 @@ if xmuststop then
 if xmustplay then
    begin
 
+   //restart a stopped "Once Only" midi or the last midi for "All Once" at the beginning - 04apr2026
+   case xmode of
+   mmOnce,mmAllOnce:if (not xplaying) and (m_pos>=xlen) then xmustpos:=0;
+   end;//case
+
+   //range
    if (not xplaying) and (xmustpos<0) and (xmustpertpos<0) then xmustpos:=xlastpos;
 
-   xplaying      :=true;
-   xmustplay     :=false;
-   xmuststop     :=false;
+   xplaying           :=true;
+   xmustplay          :=false;
+   xmuststop          :=false;
 
    if m_playing then m_stop;
 
@@ -1300,18 +1311,22 @@ if xmustplay then
       begin
 
       if not m_canpertpos then xmustpertpos:=-1;//reset if system DOES NOT support pert pos - 06mar2022
-      xmustpos   :=-1;
+
+      xmustpos        :=-1;
 
       end;
 
    m_playfile(xlastfilename);
 
-   if (xmustpertpos>=0) then m_setpertpos(xmustpertpos) else m_setpos(xmustpos);
-   if (xjump<>nil) then xjump.setparams(m_pos,m_len,m_speed);//update immediately - 20feb2022
+   if (xmustpertpos>=0) then m_setpertpos(xmustpertpos)
+   else                      m_setpos(xmustpos);
 
-   xmustpos      :=-1;//off
-   xmustpertpos  :=-1;//off
-   xhostupdate   :=true;//now playing -> host should update any information panels etc - 22feb2022
+   if (xjump<>nil)      then xjump.setparams(m_pos,m_len,m_speed);//update immediately - 20feb2022
+
+   xmustpos           :=-1;//off
+   xmustpertpos       :=-1;//off
+   xhostupdate        :=true;//now playing -> host should update any information panels etc - 22feb2022
+
    goto skipend;
 
    end;
@@ -1319,62 +1334,100 @@ if xmustplay then
 //pos
 if (xmustpos>=0) or (xmustpertpos>=0) then
    begin
+
    case xplaying of
    true:begin
-      if (xmustpertpos>=0) then m_setpertpos(xmustpertpos) else m_setpos(xmustpos);
-      xmustpertpos:=-1;
-      xmustpos:=-1;
+
+      if (xmustpertpos>=0) then m_setpertpos(xmustpertpos)
+      else                      m_setpos(xmustpos);
+
+      xmustpertpos    :=-1;
+      xmustpos        :=-1;
+
       end;
-   else xmustplay:=true;
-   end;
+   else xmustplay     :=true;
+   end;//case
+
    goto skipend;
+
    end;
 
 //repeat
 if xplaying and (m_pos>=xlen) then
    begin
+
    //get
    case xmode of
    mmOnce:begin
-      xmuststop:=true;
+
+      xmuststop       :=true;
+
       goto skipend;
+
       end;
    mmRepeatOne:begin
+
       m_check24hr;//23oct2025
-      xmustpos:=0;
+
+      xmustpos        :=0;
+
       goto skipend;
+
       end;
+
    mmRepeatAll:;//do below
+
    mmAllOnce  :;//do below
+
    mmRandom:begin
+
       if xselectidle then
          begin
-         xnavlist.itemindex:=random(xnavlist.count);
-         xmustplay:=true;
+
+         xnavlist.itemindex  :=random(xnavlist.count);
+         xmustplay           :=true;
+
          end;
+
       end;
+
    else goto skipend;
+
    end;//case
+
    //set
    if xselectidle then
       begin
+
       if (xnavlist.itemindex>=(xnavlist.count-1)) then
          begin
+
          case xmode of
+
          mmRepeatAll:begin
-            xnavlist.itemindex:=0;
-            xmustplay:=true;
+
+            xnavlist.itemindex  :=0;
+            xmustplay           :=true;
+
             end;
-         mmAllOnce:xmuststop:=true;
+
+         mmAllOnce:xmuststop    :=true;
+
          end;//case
+
          end
       else
          begin
-         xnavlist.itemindex:=xnavlist.itemindex+1;
-         xmustplay:=true;
+
+         xnavlist.itemindex     :=xnavlist.itemindex+1;
+         xmustplay              :=true;
+
          end;
+
       end;
+
    goto skipend;
+
    end;
 
 skipend:

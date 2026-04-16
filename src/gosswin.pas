@@ -30,33 +30,36 @@ interface
 //## CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //##
 //## ==========================================================================================================================================================================================================================
-//## Library.................. 32bit Windows api's (gosswin.pas)
-//## Version.................. 4.00.2085 (+158)
+//## Library.................. 32 and 64 bit Windows api's (gosswin.pas)
+//## Version.................. 4.00.2099 (+160)
 //## Items.................... 6
-//## Last Updated ............ 17dec2025, 16dec2025, 14dec2025, 08oct2025, 05oct2025, 26sep2025, 05sep2025, 31aug2025, 20aug2025, 11aug2025, 09aug2025, 29jul2025, 26jul2025, 04may2025, 17feb2024
-//## Lines of Code............ 7,600+
+//## Last Updated ............ 11apr2026, 02apr2026, 17dec2025, 16dec2025, 14dec2025, 08oct2025, 05oct2025, 26sep2025, 05sep2025, 31aug2025, 20aug2025, 11aug2025, 09aug2025, 29jul2025, 26jul2025, 04may2025, 17feb2024
+//## Lines of Code............ 7,800+
+//## Origin .................. Human generated and maintained
 //##
-//## main.pas ................ app code
-//## gossroot.pas ............ console/gui app startup and control
-//## gossio.pas .............. file io
-//## gossimg.pas ............. image/graphics
-//## gossnet.pas ............. network
-//## gosswin.pas ............. static Win32 api calls
-//## gosswin2.pas ............ dynamic Win32 api calls
-//## gosssnd.pas ............. sound/audio/midi/chimes
-//## gossgui.pas ............. gui management/controls
-//## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
-//## gosszip.pas ............. zip support
-//## gossjpg.pas ............. jpeg support
-//## gossfast.pas ............ fastdraw support
-//## gossgame.pas ............ game support (optional)
-//## gamefiles.pas ........... internal files for game (optional)
+//## main.pas ................ App specific code
+//## gossdat.pas ............. App specific icons and help documents
+//## gossfast.pas ............ FastDraw - rapid render graphic procs
+//## gossgame.pas ............ GameCore - 2D game engine with integrated menu handler, xbox controller + mouse + keyboard support and window integration
+//## gamefiles.pas ........... Built-in file(s) for GameCore (optional)
+//## gossgui.pas ............. GUI management and controls
+//## gossimg.pas ............. Multi-format graphic procs for 8, 24 and 32 bit images with IO support
+//## gossio.pas .............. File IO and low level file/folder/disk/data format procs
+//## gossjpg.pas ............. JPEG IO (read/write jpeg image data via third party libraries)
+//## gossnet.pas ............. Networking - ip filtering, socket management etc
+//## gossroot.pas ............ App startup and control (GUI, console and service)
+//## gosssnd.pas ............. Sound, audio, midi and midi based chimes
+//## gossteps.pas ............ System, Folder and App images
+//## gosstext.pas ............ TextCore - non-GUI and GUI text engine for text boxes
+//## gosswin.pas ............. Win32 api calls for 32 and 64 bit (static / api references disabled by default)
+//## gosswin2.pas ............ Win32 api calls for 32 and 64 bit (dynamic - load as required with fallback failure handling and default value(s) support)
+//## gosszip.pas ............. ZIP IO (read/write zip data via third party libraries)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
 //## | xbox__*                | Xbox Controller   | 1.00.741  | 10aug2025   | Xbox Controller support with ease-of-access support, complete with persistent button clicks and variable inputs/outputs scaled to floats between 0..1 and -1..1 - 29jul2025, 25jan2025
-//## | win__*                 | Win32 support     | 1.00.858  | 03dec2025   | Dynamic load and management procs for Win32 api calls - 02oct2025, 26sep2025, 05sep2025, 31aug2025
+//## | win__*                 | Win32 support     | 1.00.870  | 11apr2026   | Dynamic load and management procs for Win32 api calls - 03dec2025, 02oct2025, 26sep2025, 05sep2025, 31aug2025
 //## | win____*/win2____      | Win32 general     | 1.00.367  | 05oct2025   | Win32 general api procs for Windows specific features and functionality.  The leading "win____" denotes a Window's API call - 11aug2025, 26jul2025, 29apr2025, 01dec2024, 26nov2024, 04mar2024
 //## | net____*               | Win32 network     | 1.00.110  | 04mar2024   | Win32 network api procs for low level network IO.  The leading "net____" denotes a Window's network API call
 //## | reg__*                 | family of procs   | 1.00.032  | 24jun2024   | Registry access procs (requires admin terminal for write/delete) - 03mar2024
@@ -92,25 +95,35 @@ resourcestring
 
 
 type
+
    {$ifdef 64bit}
+
    longint3264       =comp;//64bit
    longint32         =longint;
    longint64         =comp;
    pointer32         =^longint32;
    pointer64         =pointer;//native
+
    {$else}
+
    longint3264       =longint;//32bit
    longint32         =longint;
    longint64         =comp;
    pointer32         =pointer;//native
    pointer64         =^longint64;
+
    {$endif}
+
 
    tpointer          =^pointer;
    tpointer3264      =^pointer;
    pointer3264       =pointer;
    tpointer32        =^pointer32;
    tpointer64        =^pointer64;
+
+   plongint32        =^longint32;//02apr2026
+   plongint64        =^longint64;//02apr2026
+
 
    //.short form for "thandle" and "phandle"
    fauto             =longint3264;//for "flags" usually dword32
@@ -307,22 +320,25 @@ const
   SEE_MASK_NOASYNC        = $00000001;
 
   { RedrawWindow() flags }
-  RDW_INVALIDATE = 1;
-  RDW_INTERNALPAINT = 2;
-  RDW_ERASE = 4;
-  RDW_VALIDATE = 8;
-  RDW_NOINTERNALPAINT = $10;
-  RDW_NOERASE = $20;
-  RDW_NOCHILDREN = $40;
-  RDW_ALLCHILDREN = $80;
-  RDW_UPDATENOW = $100;
-  RDW_ERASENOW = $200;
-  RDW_FRAME = $400;
-  RDW_NOFRAME = $800;
+  RDW_INVALIDATE          = 1;
+  RDW_INTERNALPAINT       = 2;
+  RDW_ERASE               = 4;
+  RDW_VALIDATE            = 8;
+  RDW_NOINTERNALPAINT     = $10;
+  RDW_NOERASE             = $20;
+  RDW_NOCHILDREN          = $40;
+  RDW_ALLCHILDREN         = $80;
+  RDW_UPDATENOW           = $100;
+  RDW_ERASENOW            = $200;
+  RDW_FRAME               = $400;
+  RDW_NOFRAME             = $800;
 
    //DIB color table identifiers
-   DIB_RGB_COLORS = 0;//color table in RGBs
-   DIB_PAL_COLORS = 1;//color table in palette indices
+   DIB_RGB_COLORS         = 0;//color table in RGBs
+   DIB_PAL_COLORS         = 1;//color table in palette indices
+
+
+   E_FAIL                 =$80004005;//10apr2026
 
 type
 
@@ -3305,7 +3321,7 @@ function win__usebol(var xdefresult:bool;const xslot:longint;var xptr:pointer):b
 function win__usewrd(var xdefresult:word;const xslot:longint;var xptr:pointer):boolean;//26sep2025
 function win__useint(var xdefresult:longint;const xslot:longint;var xptr:pointer):boolean;//26sep2025
 function win__useptr(var xdefresult:pauto;const xslot:longint;var xptr:pauto):boolean;
-function win__usehnd(var xdefresult:hauto;const xslot:longint;var xptr:pauto):boolean;
+function win__usehnd(var xdefresult:longint3264;const xslot:longint;var xptr:pointer):boolean;//11apr2026
 function win__use(const xslot:longint;var xptr:pauto):boolean;
 
 procedure win__errbol(var xresult:bool;const xreturn:bool);
@@ -3510,8 +3526,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosswin.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.2085'
-else if (xname='date')       then result:='17dec2025'
+if      (xname='ver')        then result:='4.00.2099'
+else if (xname='date')       then result:='11apr2026'
 else if (xname='name')       then result:='Win32'
 else
    begin
@@ -5967,7 +5983,7 @@ if result then
    begin
 
    xdefresult   :=nil;
-   result       :=system_wincore.u[xslot] or win__loaded(xslot);
+   result       :=win__ok(xslot);//10apr2026
    xptr         :=system_wincore.p[xslot];
    win__inc(xslot);
 
@@ -5982,16 +5998,16 @@ else
 
 end;
 
-function win__usehnd(var xdefresult:longint3264;const xslot:longint;var xptr:pointer):boolean;
-begin
+function win__usehnd(var xdefresult:longint3264;const xslot:longint;var xptr:pointer):boolean;//11apr2026
+begin//Note: cannot assume that on error return "xdefresult" value is 0, as with "win2____GetDpiForMonitor" which returns an error code "<0" when it fails - 11apr2026
 
 result:=(xslot>=0) and (xslot<=high(system_wincore.u));
 
 if result then
    begin
 
-   xdefresult   :=0;
-   result       :=system_wincore.u[xslot] or win__loaded(xslot);
+   result       :=win__ok(xslot);//10apr2026
+   xdefresult   :=system_wincore.r[xslot];//10apr2026 -> some values are error codes
    xptr         :=system_wincore.p[xslot];
    win__inc(xslot);
 
@@ -6014,7 +6030,7 @@ result:=(xslot>=0) and (xslot<=high(system_wincore.u));
 if result then
    begin
 
-   result       :=system_wincore.u[xslot] or win__loaded(xslot);
+   result       :=win__ok(xslot);//10apr2026
    xptr         :=system_wincore.p[xslot];
    win__inc(xslot);
 
@@ -6135,19 +6151,24 @@ if not system_xbox_init then
 
 //get
 result:=win__ok(vwin2____XInputGetState) and win__ok(vwin2____XInputSetState);
+
 end;
 
 function xbox__info(xindex:longint):pxboxcontrollerinfo;//use "xindex=-1" for defaultindex
 begin
+
 xindex:=xbox__index(xindex);
 
 if system_xbox_init then result:=@system_xbox_statelist[xindex]
 else
    begin
+
    result:=@system_xbox_statelist[-1];
    low__cls(result,sizeof(result^));
    result.index:=xindex;
+
    end;
+
 end;
 
 function xbox__state(xindex:longint):boolean;//xindex=0..3 = max of 4 controllers, return=true=connected and we might have new data, check "xbox__info[].newdata" - 22jul2025

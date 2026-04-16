@@ -9,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses gosswin2, gossroot, gosswin;
+uses gosswin2, gossroot, gosswin, gossteps;
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
@@ -31,33 +31,36 @@ uses gosswin2, gossroot, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. disk/folder/file support (gossio.pas)
-//## Version.................. 4.00.5134 (+334)
+//## Version.................. 4.00.5159 (+337)
 //## Items.................... 7
-//## Last Updated ............ 09nov2025, 05oct2025, 28sep2025, 18sep2025, 28aug2025, 17aug2025, 11aug2025, 12jun2025, 01jun2025, 28may2025, 01may2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 11jan2025, 18dec2024, 18nov2024, 15nov2024, 22aug2024, 20jul2024, 23jun2024, 30apr2024
-//## Lines of Code............ 5,800+
+//## Last Updated ............ 07mar2026, 25feb2026, 17feb2026, 09nov2025, 05oct2025, 28sep2025, 18sep2025, 28aug2025, 17aug2025, 11aug2025, 12jun2025, 01jun2025, 28may2025, 01may2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 11jan2025, 18dec2024, 18nov2024, 15nov2024, 22aug2024, 20jul2024, 23jun2024, 30apr2024
+//## Lines of Code............ 6,200+
+//## Origin .................. Human generated and maintained
 //##
-//## main.pas ................ app code
-//## gossroot.pas ............ console/gui app startup and control
-//## gossio.pas .............. file io
-//## gossimg.pas ............. image/graphics
-//## gossnet.pas ............. network
-//## gosswin.pas ............. static Win32 api calls
-//## gosswin2.pas ............ dynamic Win32 api calls
-//## gosssnd.pas ............. sound/audio/midi/chimes
-//## gossgui.pas ............. gui management/controls
-//## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
-//## gosszip.pas ............. zip support
-//## gossjpg.pas ............. jpeg support
-//## gossfast.pas ............ fastdraw support
-//## gossgame.pas ............ game support (optional)
-//## gamefiles.pas ........... internal files for game (optional)
+//## main.pas ................ App specific code
+//## gossdat.pas ............. App specific icons and help documents
+//## gossfast.pas ............ FastDraw - rapid render graphic procs
+//## gossgame.pas ............ GameCore - 2D game engine with integrated menu handler, xbox controller + mouse + keyboard support and window integration
+//## gamefiles.pas ........... Built-in file(s) for GameCore (optional)
+//## gossgui.pas ............. GUI management and controls
+//## gossimg.pas ............. Multi-format graphic procs for 8, 24 and 32 bit images with IO support
+//## gossio.pas .............. File IO and low level file/folder/disk/data format procs
+//## gossjpg.pas ............. JPEG IO (read/write jpeg image data via third party libraries)
+//## gossnet.pas ............. Networking - ip filtering, socket management etc
+//## gossroot.pas ............ App startup and control (GUI, console and service)
+//## gosssnd.pas ............. Sound, audio, midi and midi based chimes
+//## gossteps.pas ............ System, Folder and App images
+//## gosstext.pas ............ TextCore - non-GUI and GUI text engine for text boxes
+//## gosswin.pas ............. Win32 api calls for 32 and 64 bit (static / api references disabled by default)
+//## gosswin2.pas ............ Win32 api calls for 32 and 64 bit (dynamic - load as required with fallback failure handling and default value(s) support)
+//## gosszip.pas ............. ZIP IO (read/write zip data via third party libraries)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
 //## | filecache__*           | family of procs   | 1.00.157  | 28sep2025   | Cache open file handles for faster repeat file IO operations, 17aug2025, 29apr2024, 12apr2024: created
 //## | key__*                 | family of procs   | 1.00.022  | 26aug2025   | Key generation for security work
-//## | io__*                  | family of procs   | 1.00.3757 | 09nov2025   | Disk, folder and file procs + 64bit file support, 05oct2025, 28sep2025, 18sep2025, 28aug2025, 12jun2025, 11jun2025, 18may2025, 14may2025, 11apr2025, 20feb2025, 25jan2025, 11jan2025: fixed "io__fromfile64c()" for "!:\" files, 20dec2024, 16dec2024: io__copyfile upgraded, 18nov2024: tea3 format detection, 22aug2024: io__folderlist procs added, 19jul2024: io__filelist1/21() subfolder support added, 30apr2024: fixed io__ double ptr ref, 30apr2024: io__tofileex64() updated to flush buffer for correct nav__* filesize reporting, 17apr2024: procs renamed
+//## | io__*                  | family of procs   | 1.00.3773 | 06mar2026   | Disk, folder and file procs + 64bit file support, 17feb2026, 09nov2025, 05oct2025, 28sep2025, 18sep2025, 28aug2025, 12jun2025, 11jun2025, 18may2025, 14may2025, 11apr2025, 20feb2025, 25jan2025, 11jan2025: fixed "io__fromfile64c()" for "!:\" files, 20dec2024, 16dec2024: io__copyfile upgraded, 18nov2024: tea3 format detection, 22aug2024: io__folderlist procs added, 19jul2024: io__filelist1/21() subfolder support added, 30apr2024: fixed io__ double ptr ref, 30apr2024: io__tofileex64() updated to flush buffer for correct nav__* filesize reporting, 17apr2024: procs renamed
 //## | nav__*                 | family of procs   | 1.00.300  | 26feb2024   | Worker procs for file/folder/navigation lists
 //## | idisk__*               | family of procs   | 1.00.132  | 15mar2025   | Internal disk support "!:\" - 20jul2024: reintegrated into Gossamer
 //## | s12__*                 | family of procs   | 1.00.045  | 08mar2025   | Read/write 12bit io streams
@@ -223,6 +226,12 @@ function io__winstartmenu:string;
 
 
 //disk, folder and file procs --------------------------------------------------
+function io__settingsfolder:string;//17frb2026
+function io__tempfolder:string;
+function io__tempfile__static(dpre,dpost,dpost2,dext:string):string;//static temp filenames - 30nov2023
+function io__tempfile__new(dpre,dext:string):string;//temp filenames - 25jun2022
+function io__tempfile__newNameID(dpre,dext:string):string;//for use with temp filenames etc - 25jun2022
+
 function io__runwait(const xcmd,xparams:string):boolean;//24aug2025
 function io__runwait2(const xcmd,xparams:string;xwaitms:longint;xadmin:boolean;var xexitcode:longint):boolean;//24aug2025
 procedure io__createlink(const df,sf,dswitches,iconfilename:string);//10apr2019, 14NOV2010
@@ -325,8 +334,17 @@ function io__findimagewh(xdata:pobject;var xformat:string;var xw,xh:longint):boo
 function io__anyformatb(xdata:pobject):string;
 function io__anyformat2b(xdata:pobject;xfrompos:longint):string;
 function io__anyformat(xdata:pobject;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 14may2025, 20dec2024, 18nov2024, 30jan2021
-function io__anyformat2(xdata:pobject;xfrompos:longint;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 24aug2025, 11jun2025, 14may2025, 20dec2024, 18nov2024, 30jan2021
-function io__anyformata(const xdata:array of byte):string;//19feb2025, 25jan2025
+function io__anyformat2(xdata:pobject;xfrompos:longint;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 17feb2026, 05oct2025, 24aug2025, 11jun2025, 14may2025, 20dec2024, 18nov2024, 30jan2021
+function io__anyformata(const xdata:array of byte):string;//07mar2026, 19feb2025, 25jan2025
+
+//.support procs
+function io__slow__findFormat(const x:pobject;var xformat:string):boolean;//17feb2026
+
+//image exts -> image formats the system supports - 16feb2026 ------------------
+function io__imageExtSupported(const xext:string):boolean;
+function io__imageExtSupported2(const xext:string;var xcanwrite:boolean):boolean;
+function io__imageExt(const xindex:longint;var xext:string;var xcanwrite:boolean):boolean;//16feb2026
+function io__imageExtb(const xindex:longint):string;//16feb2026
 
 
 //filecache procs --------------------------------------------------------------
@@ -374,8 +392,7 @@ function nav__get(x:tstr8;xindex:longint;var xstyle,xtep:longint;var xsize:comp;
 function nav__get2(x:tstr8;xindex:longint;var xstyle,xtep:longint;var xsize:comp;var xyear,xmonth,xday,xhr,xmin,xsec:longint;var xname,xlabel:string):boolean;
 function nav__date(sdate:comp;var xyear,xmonth,xday,xhr,xmin,xsec:longint):boolean;//01feb2024
 function nav__list(x:tstr8;xsortstyle:longint;const xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean):boolean;//04oct2020
-function nav__list2(xownerid:longint;x:tstr8;xsortstyle:longint;const xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean):boolean;//supports custom folder images when "xownerid>=1" - 06apr2021, 04oct2020
-function nav__list3(xownerid:longint;x:tstr8;xsortstyle:longint;xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean;xminsize,xmaxsize:comp;xminmax_emasklist:string):boolean;//26feb2024: Upgraded 32bit filesize to 64bit, 04oct2020
+function nav__list2(x:tstr8;xsortstyle:longint;xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean;xminsize,xmaxsize:comp;xminmax_emasklist:string):boolean;//26feb2024: Upgraded 32bit filesize to 64bit, 04oct2020
 function nav__proc(x:tstr8;xcmd:string;xindex:longint;var xstyle,xtep,xval1,xval2,xval3:longint;var xsize,xdate:comp;var xname,xlabel:string):boolean;//04apr2021, 25mar2021, 20feb2021
 
 
@@ -406,7 +423,7 @@ function s12__pullval(var sinfo:ts12_info;var xval:longint):boolean;
 
 implementation
 
-uses gossimg {$ifdef gui},gossgui{$endif};
+uses gossimg, gossfast {$ifdef gui},gossgui{$endif};
 
 
 //start-stop procs -------------------------------------------------------------
@@ -480,8 +497,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,7)='gossio.') then strdel1(xname,1,7) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.5134'
-else if (xname='date')       then result:='09nov2025'
+if      (xname='ver')        then result:='4.00.5159'
+else if (xname='date')       then result:='07mar2026'
 else if (xname='name')       then result:='IO'
 else
    begin
@@ -701,7 +718,7 @@ var
       begin
       {$ifdef gui}
       str__remchar(@idata[xindex],13);//use #10 return codes
-      low__wordcore__filtertext(idata[xindex]);
+      text__filterText(idata[xindex]);
       {$endif}
       end;
    end;
@@ -2078,6 +2095,40 @@ for p:=0 to 25 do if (p in xdrivelist) then result[p]:=true;
 except;end;
 end;
 
+function io__settingsfolder:string;//17frb2026
+begin
+
+result:=app__subfolder('settings');
+
+end;
+
+function io__tempfolder:string;
+begin
+
+result:=app__subfolder('temp');
+
+end;
+
+function io__tempfile__static(dpre,dpost,dpost2,dext:string):string;//static temp filenames - 30nov2023
+begin//no incremeting id -> same each time for the same program instance
+
+result:=io__tempfolder + dpre+insstr('-',dpre<>'')+low__digpad11(system_instanceid,10)+insstr('-'+dpost,dpost<>'')+insstr('-'+dpost2,dpost2<>'')+insstr('.',dext<>'')+dext;
+
+end;
+
+function io__tempfile__new(dpre,dext:string):string;//temp filenames - 25jun2022
+begin
+result:=io__tempfolder + io__tempfile__newnameID(dpre,dext);
+end;
+
+function io__tempfile__newNameID(dpre,dext:string):string;//for use with temp filenames etc - 25jun2022
+begin
+
+result:=dpre+insstr('-',dpre<>'')+low__digpad11(system_instanceid,10)+'-'+low__digpad11(system_newnameid,10)+insstr('.',dext<>'')+dext;
+low__iroll(system_newnameid,1);
+
+end;
+
 function io__runwait(const xcmd,xparams:string):boolean;//24aug2025
 var
    int1:longint;
@@ -2327,122 +2378,147 @@ end;//p
 except;end;
 end;
 
-function io__findext(s:string;var xoutlabel,xoutext,xoutmask:string):boolean;//09nov2025
+function io__findext(s:string;var xoutlabel,xoutext,xoutmask:string):boolean;//17feb2026, 09nov2025
 //Note: s is "txt" or "bat" or "bmp" or "tea" etc
+
    procedure xcap(const x:string);
    var
       lp,p:longint;
       str1,d,dl,dm:string;
       c:char;
    begin
+
    //init
-   d:=s+fesepX;//usually a plus sign "+"
-   lp:=1;
+   d        :=s+fesepX;//usually a plus sign "+"
+   lp       :=1;
+
    //get
    for p:=1 to low__len32(d) do
    begin
-   c:=d[p-1+stroffset];
+
+   c        :=d[p-1+stroffset];
+
    if (c=fesepX) then
       begin
-      str1:=strcopy1(d,lp,p-lp);
+
+      str1  :=strcopy1(d,lp,p-lp);
+
       if (str1<>'') then
          begin
-         dl:=dl+insstr(fesep,dl<>'')+str1;
-         dm:=dm+insstr(fesep,dm<>'')+insstr('*.',str1<>'*')+str1;
-         end;
-      lp:=p+1;
-      end;
-   end;//p
-   //set
-   xoutlabel:=x+' ('+dl+')';
-   xoutext:=s;//leave exactly as is (maintain original format even if it's "txt+bwd+bwp") - 03mar2021
-   xoutmask:=dm;
-   result:=true;
-   end;
-begin
-//defaults
-result:=false;
 
-try
-xoutlabel:='';
-xoutext:='';
-xoutmask:='';
+         dl :=dl+insstr(fesep,dl<>'')+str1;
+         dm :=dm+insstr(fesep,dm<>'')+insstr('*.',str1<>'*')+str1;
+
+         end;
+
+      lp    :=p+1;
+
+      end;
+
+   end;//p
+
+   //set
+   xoutlabel          :=x+' ('+dl+')';
+   xoutext            :=s;//leave exactly as is (maintain original format even if it's "txt+bwd+bwp") - 03mar2021
+   xoutmask           :=dm;
+   result             :=true;
+
+   end;
+
+begin
+
+//defaults
+result      :=false;
+xoutlabel   :='';
+xoutext     :='';
+xoutmask    :='';
+
+
 //init
-s:=strlow(io__lastext2(s,true));
+s           :=strlow(io__lastext2(s,true));
+
 //get
-if      (s=feany) then xcap('All Files')
-else if (s=fec3)  then xcap('Claude 3 Code')
-else if (s=feref3)then xcap('Claude 3 Ref')
-else if (s=fec2p) then xcap('Claude 2 Product')
-else if (s=fec2v) then xcap('Claude 2 Values')
-else if (s=feini) then xcap('INI Document')
-else if (s=fetxt) then xcap('Text Document')
-else if (s=febwd) then xcap('Blaiz Writer Document')//26sep2022
-else if (s=febwp) then xcap('Blaiz Word Processor Document')
-else if (s=fesfef) then xcap('Small File Encrypter File')//27sep2022
-else if (s=fexml) then xcap('XML (Pad) Document')
-else if (s=fehtml) then xcap('HTML Document')
-else if (s=febat) then xcap('Batch File')
-else if (s=febmp) then xcap('Bitmap')
-else if (s=fedib) then xcap('Device Independent Bitmap')//14may2025
-else if (s=fegif) then xcap('GIF Picture')
-else if (s=fetga) then xcap('TarGA Picture')
-else if (s=feppm) then xcap('Portable Pixelmap')
-else if (s=fepgm) then xcap('Portable Greymap')
-else if (s=fepbm) then xcap('Portable Bitmap')
-else if (s=fepnm) then xcap('PNM Picture')
-else if (s=fexbm) then xcap('X Bitmap')//18sep2025
-else if (s=fejpg) then xcap('JPEG Picture')
-else if (s=fejif) then xcap('JIF Picture')
-else if (s=fejpeg) then xcap('JPEG Picture')
-else if (s=feimg32) then xcap('Image 32bit')
-else if (s=fepic8) then xcap('Game Sprite')//16sep2025
-else if (s=fesan) then xcap('Simple Animation')//16sep2025
-else if (s=fetj32) then xcap('Transparent Jpeg 32bit')
-else if (s=fepng) then xcap('Portable Network Graphic')
-else if (s=feico) then xcap('Icon')//15feb2022
-else if (s=fecur) then xcap('Static Cursor')//22may2022, 29aug2021
-else if (s=feani) then xcap('Animated Cursor')//29aug2021
-else if (s=fetep) then xcap('Text Picture')
-else if (s=fetea) then xcap('TEA Picture')
-else if (s=febvid) then xcap('Basic Video')//20jun2021
-else if (s=feAU22) then xcap('Raw Audio - 22,050 Hz')//17jul2021
-else if (s=feAU44) then xcap('Raw Audio - 44,100 Hz')//17jul2021
-else if (s=feAU48) then xcap('Raw Audio - 48,000 Hz')//17jul2021
-else if (s=fevmp) then xcap('Video Magic Project')//06jul2021
-else if (s=fevmt) then xcap('Video Magic Track')//06jul2021
-else if (s=feabr) then xcap('Abra Cadabra Project')//01aug2021
-else if (s=feaccp) then xcap('Animated Cursor Creator Project')//07feb2022
-else if (s=femjpeg) then xcap('Motion JPEG Video')//20jun2021
-else if (s=fealarms) then xcap('Alarms List')//12nov2022, 08mar2022
-else if (s=feReminders) then xcap('Reminders List')//09mar2022
-else if (s=feM3U) then xcap('Playlist')//20mar2022
-else if (s=feFootnote) then xcap('Footnote')//21mar2022
-else if (s=feCursorScript) then xcap('Cursor Script')//17may2022
-else if (s=feQuoter) then xcap('Quoter Document')//24dec2022
-else if (s=feQuoter2) then xcap('Quoter 2 Document')
-else if (s=feallfiles) then xcap('All Files')
-else if (s=fealldocs) then xcap('All Documents')
-else if (s=feallimgs) then xcap('All Images')
-else if (s=felosslessimgs) then xcap('Lossless Images')//09apr2025
-else if (s=feres) then xcap('Resource')//05may2025
-else if (s=feallcurs) and (feallcurs<>'') then xcap('All Cursors')
-else if (s=feallcurs2) and (feallcurs2<>'') then xcap('All Cursors')//22may2022
-else if (s=fealljpgs) and (fealljpgs<>'') then xcap('All JPEG Pictures')//02aug2024: updated, 03sep2021
-else if (s=febrowserimgs) and (febrowserimgs<>'') then xcap('Browser Pictures')//18mar2025
-else if (s=febcs) then xcap('Blaiz Color Scheme')
-else if (s=fezip) then xcap('ZIP Archive')//10feb2023
-else if (s=feexe) then xcap('Application')//14nov2023
-else if (s=fepas) then xcap('Pascal Unit')//23jul2024
-else if (s=fedpr) then xcap('Borland Delphi Project')//09nov2025, 17mar2025
-else if (s=fec3)  then xcap('Claude 3 Code')//20aug2024
-else if (s=feref3)then xcap('Claude 3 Ref')//20aug2024
-else if (s=fenupkg)then xcap('Chocolatey Package')//31mar2025
-else if (s=femap) then xcap('Map File')//24may2025
+if      (s=feany)     then xcap('All Files')
+else if (s=fec3)      then xcap('Claude 3 Code')
+else if (s=feref3)    then xcap('Claude 3 Ref')
+else if (s=fec2p)     then xcap('Claude 2 Product')
+else if (s=fec2v)     then xcap('Claude 2 Values')
+else if (s=feini)     then xcap('INI Document')
+else if (s=fetxt)     then xcap('Text Document')
+else if (s=fedic)     then xcap('Dictionary')//17feb2026
+else if (s=fertf)     then xcap('Rich Text Format')//17feb2026
+else if (s=febwd)     then xcap('Enhanced Text Document')//was: Blaiz Writer Document - 17feb2026, 26sep2022
+else if (s=febwp)     then xcap('Advanced Text Document')//was: Blaiz Word Processor Document - 17feb2026
+else if (s=fesfef)    then xcap('Small File Encrypter File')//27sep2022
+else if (s=fexml)     then xcap('XML (Pad) Document')
+else if (s=fehtm)     then xcap('HTM Document')
+else if (s=fehtml)    then xcap('HTML Document')
+else if (s=febat)     then xcap('Batch File')
+else if (s=febmp)     then xcap('Bitmap')
+else if (s=fedib)     then xcap('Device Independent Bitmap')//14may2025
+else if (s=fegif)     then xcap('GIF Picture')
+else if (s=fetga)     then xcap('TarGA Picture')
+else if (s=feppm)     then xcap('Portable Pixelmap')
+else if (s=fepgm)     then xcap('Portable Greymap')
+else if (s=fepbm)     then xcap('Portable Bitmap')
+else if (s=fepnm)     then xcap('PNM Picture')
+else if (s=fexbm)     then xcap('X Bitmap')//18sep2025
+else if (s=fejpg)     then xcap('JPEG Picture')
+else if (s=fejif)     then xcap('JIF Picture')
+else if (s=fejpeg)    then xcap('JPEG Picture')
+else if (s=feimg32)   then xcap('Image 32bit')
+else if (s=fepic8)    then xcap('Game Sprite')//16sep2025
+else if (s=ferle6)    then xcap('8bit 4 Channel Image')//06mar2026
+else if (s=ferle8)    then xcap('8bit 1 Channel Image')//06mar2026
+else if (s=ferle32)   then xcap('32bit 4 Channel Image')//06mar2026
+else if (s=fesan)     then xcap('Simple Animation')//16sep2025
+else if (s=fetj32)    then xcap('Transparent Jpeg 32bit')
+else if (s=fepng)     then xcap('Portable Network Graphic')
+else if (s=feico)     then xcap('Icon')//15feb2022
+else if (s=fecur)     then xcap('Static Cursor')//22may2022, 29aug2021
+else if (s=feani)     then xcap('Animated Cursor')//29aug2021
+else if (s=fetep)     then xcap('Text Picture')
+else if (s=fetea)     then xcap('TEA Picture')
+else if (s=febvid)    then xcap('Basic Video')//20jun2021
+else if (s=feAU22)    then xcap('Raw Audio - 22,050 Hz')//17jul2021
+else if (s=feAU44)    then xcap('Raw Audio - 44,100 Hz')//17jul2021
+else if (s=feAU48)    then xcap('Raw Audio - 48,000 Hz')//17jul2021
+else if (s=fevmp)     then xcap('Video Magic Project')//06jul2021
+else if (s=fevmt)     then xcap('Video Magic Track')//06jul2021
+else if (s=feabr)     then xcap('Abra Cadabra Project')//01aug2021
+else if (s=feaccp)    then xcap('Animated Cursor Creator Project')//07feb2022
+else if (s=femjpeg)   then xcap('Motion JPEG Video')//20jun2021
+else if (s=fealarms)            then xcap('Alarms List')//12nov2022, 08mar2022
+else if (s=feReminders)         then xcap('Reminders List')//09mar2022
+else if (s=feM3U)               then xcap('Playlist')//20mar2022
+else if (s=feFootnote)          then xcap('Footnote')//21mar2022
+else if (s=feCursorScript)      then xcap('Cursor Script')//17may2022
+else if (s=feQuoter)            then xcap('Quoter Document')//24dec2022
+else if (s=feQuoter2)           then xcap('Quoter 2 Document')
+else if (s=feallfiles)          then xcap('All Files')
+else if (s=fealldocs)           then xcap('All Documents')
+else if (s=feallimgs)           then xcap('All Images')
+else if (s=felosslessimgs)      then xcap('Lossless Images')//09apr2025
+else if (s=feres)               then xcap('Resource')//05may2025
+
+else if (s=feallcurs)     and (feallcurs<>'')       then xcap('All Cursors')
+else if (s=feallcurs2)    and (feallcurs2<>'')      then xcap('All Cursors')//22may2022
+else if (s=fealljpgs)     and (fealljpgs<>'')       then xcap('All JPEG Pictures')//02aug2024: updated, 03sep2021
+else if (s=febrowserimgs) and (febrowserimgs<>'')   then xcap('Browser Pictures')//18mar2025
+
+else if (s=febcs)     then xcap('Blaiz Color Scheme')
+else if (s=fezip)     then xcap('ZIP Archive')//10feb2023
+else if (s=feexe)     then xcap('Application')//14nov2023
+else if (s=fepas)     then xcap('Pascal Unit')//23jul2024
+else if (s=fedpr)     then xcap('Borland Delphi Project')//09nov2025, 17mar2025
+else if (s=fec3)      then xcap('Claude 3 Code')//20aug2024
+else if (s=feref3)    then xcap('Claude 3 Ref')//20aug2024
+else if (s=fenupkg)   then xcap('Chocolatey Package')//31mar2025
+else if (s=femap)     then xcap('Map File')//24may2025
 
 //.midi formats
-else if (s=femid) or (s=femidi) or (s=fermi) then xcap('Midi Music');
-except;end;
+else if (s=femid) or (s=femidi) or (s=fermi)        then xcap('Midi Music');
+
 end;
 
 function io__readfileext(const x:string;fu:boolean):string;{Date: 24-DEC-2004, Superceeds "ExtractFileExt"}
@@ -3439,6 +3515,150 @@ if xfindopen then win__findclose(xrec);
 except;end;
 end;
 
+function io__imageExtSupported(const xext:string):boolean;
+var
+   bol1:boolean;
+begin
+result:=io__imageExtSupported2(xext,bol1);
+end;
+
+function io__imageExtSupported2(const xext:string;var xcanwrite:boolean):boolean;
+var
+   p:longint;
+   str1:string;
+   bol1:boolean;
+begin
+
+//defaults
+result    :=false;
+xcanwrite :=false;
+
+//scan
+for p:=0 to max32 do
+begin
+
+case io__imageExt(p,str1,bol1) of
+true:begin
+
+   if strmatch(str1,xext) then
+      begin
+
+      result    :=true;
+      xcanwrite :=bol1;
+      break;
+
+      end;
+
+   end;
+else break;
+end;//case
+
+end;//p
+
+end;
+
+function io__imageExt(const xindex:longint;var xext:string;var xcanwrite:boolean):boolean;//16feb2026
+var
+   xpos:longint;
+
+   function xcan:boolean;
+   begin
+
+   result:=(xpos=xindex);
+   inc(xpos);
+
+   end;
+
+   procedure a2(const v:string;const vwrite:boolean);
+   begin
+
+   result    :=true;
+   xext      :=strlow(v);
+   xcanwrite :=vwrite;
+
+   end;
+
+   procedure a(const v:string);
+   begin
+   a2(v,true);
+   end;
+
+begin
+
+//defaults
+result     :=false;
+xext       :='';
+xcanwrite  :=false;
+xpos       :=0;
+
+//search
+
+//.a
+if xcan then a(feani);
+
+//.b
+if xcan then a(febmp);
+
+//.c
+if xcan then a(fecur);
+
+//.d
+if xcan then a(fedib);
+
+//.g
+if xcan then a(fegif);
+
+//.i
+if xcan then a(feico);
+if xcan then a(feimg32);
+
+{$ifdef jpeg}
+//.j
+if xcan then a(fejif);
+if xcan then a(fejpeg);
+if xcan then a(fejpg);
+{$endif}
+
+//.p
+if xcan then a(fepbm);
+if xcan then a(fepgm);
+if xcan then a(fepng);
+if xcan then a(fepnm);
+if xcan then a(feppm);
+
+{$ifdef gamecore}
+if xcan then a(fepic8);
+{$endif}
+
+//.r
+if xcan then a(ferle6);//06mar2026
+if xcan then a(ferle8);//25feb2026
+if xcan then a(ferle32);//05mar2026
+
+//.s
+if xcan then a(fesan);
+
+//.t
+if xcan then a(fetea);
+if xcan then a2(fetep,false);//no write - 16feb2026
+if xcan then a(fetga);
+
+{$ifdef jpeg}
+if xcan then a(fetj32);
+{$endif}
+
+//.x
+if xcan then a(fexbm);
+
+end;
+
+function io__imageExtb(const xindex:longint):string;//16feb2026
+var
+   bol1:boolean;
+begin
+io__imageExt(xindex,result,bol1);
+end;
+
 function io__findimagewh(xdata:pobject;var xformat:string;var xw,xh:longint):boolean;//19feb2025: works for image formats BMP, JPG, PNG, GIF, TEA and TGA
 label
    jpg;
@@ -3527,7 +3747,7 @@ jpg:
    //.tea
    else if (xformat='TEA') then
       begin
-      if not tea__info3(xdata,false,xw,xh,aSOD,aversion,aval1,aval2,atransparent,asyscolors) then
+      if not tea__info3(xdata,xw,xh,aSOD,aversion,aval1,aval2,atransparent,asyscolors) then
          begin
          xw:=0;
          xh:=0;
@@ -3570,16 +3790,28 @@ begin
 io__anyformat2(xdata,xfrompos,result);
 end;
 
-function io__anyformata(const xdata:array of byte):string;//19feb2025, 25jan2025
+function io__anyformata(const xdata:array of byte):string;//07mar2026, 19feb2025, 25jan2025
 var
    b:tstr8;
 begin
+
+//defaults
+b           :=nil;
+
 try
-b:=str__new8;
+
+//get
+b           :=rescache__newStr8;
+
 b.aadd1(xdata,1,100);
-result:=io__anyformatb(@b);
+
+result      :=io__anyformatb(@b);
+
 except;end;
-str__free(@b);
+
+//free
+rescache__delStr8(@b);
+
 end;
 
 function io__anyformat(xdata:pobject;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 14may2025, 20dec2024, 18nov2024, 30jan2021
@@ -3587,7 +3819,7 @@ begin
 result:=io__anyformat2(xdata,0,xformat);
 end;
 
-function io__anyformat2(xdata:pobject;xfrompos:longint;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 05oct2025, 24aug2025, 11jun2025, 14may2025, 20dec2024, 18nov2024, 30jan2021
+function io__anyformat2(xdata:pobject;xfrompos:longint;var xformat:string):boolean;//returns EXT of any known format, image, sound, frame, etc - 17feb2026, 05oct2025, 24aug2025, 11jun2025, 14may2025, 20dec2024, 18nov2024, 30jan2021
 label
    skipend;
 var
@@ -3728,6 +3960,12 @@ else if asame3(0,[uuR,uuI,uuF,uuF],false) and
 else if asame3(0,[uuT,uuP,uuF,nn0, 4 ,uuT,uuS,uuA,uuN],true)            then xformat:='SAN'
 //.pic8
 else if asame3(0,[uuP,uuI,uuC,nn8],false)                               then xformat:='PIC8'//16sep2025
+//.rle32
+else if asame3(0,[uuR,uuL,uuE,nn3,nn2],false)                           then xformat:='RLE32'//05mar2026
+//.rle8
+else if asame3(0,[uuR,uuL,uuE,nn8],false)                               then xformat:='RLE8'//25feb2026
+//.rle6
+else if asame3(0,[uuR,uuL,uuE,nn6],false)                               then xformat:='RLE6'//06mar2026
 //.omi
 else if asame3(0,[uuO,uuM,uuI],false)                                   then xformat:='OMI'
 //.gif
@@ -3857,9 +4095,22 @@ else if asame3(0,[uuB,uuW,uuD,nn1],false)                               then xfo
 //.rtf
 else if asame3(0,[ssLCurlyBracket,ssbackslash,uuR,uuT,uuF,nn1,ssBackSlash],false) then xformat:='RTF'//22jun2022
 
+
 //other ------------------------------------------------------------------------
 else if asame3(0,[ssLSquarebracket,uuA,uuL,uuA,uuR,uuM,ssRSquarebracket],false) then xformat:='ALARMS'//08mar2022
 
+
+//slow format checker ----------------------------------------------------------
+
+//note: do this multi-format check last due to its time/data requirements - 17feb2026
+
+else if io__slow__findFormat( xdata, xformat ) then
+   begin
+   //ok
+   end
+
+
+//format not found => unknown --------------------------------------------------
 else
    begin
    //nil
@@ -3868,9 +4119,70 @@ else
 //successful
 result:=(xformat<>'');
 skipend:
+
 except;end;
 //free
 str__uaf(xdata);
+end;
+
+function io__slow__findFormat(const x:pobject;var xformat:string):boolean;//17feb2026
+label
+   skipend;
+var
+   v:string;
+   l32,p:longint;
+
+   function m(const dformat,n:string):boolean;
+   begin
+
+   result:=( strcopy1(v,p,low__len32(n)) = n );
+
+   if result then xformat:=dformat;
+
+   end;
+
+begin
+
+//defaults
+result   :=false;
+xformat  :='';
+
+//check
+if not str__lock(x) then exit;
+
+try
+
+//init
+v        :=strlow( utf8__to7bitTextb(str__str1(x,1,4000),false,false) );//remove UTF8 encoding for faster, cleaner comparision
+l32      :=low__len32(v);
+
+
+//html class of formats --------------------------------------------------------
+for p:=1 to l32 do if (strcopy1(v,p,1)='<') then
+   begin
+
+   //html
+   if      m('htm','<!doctype html')      then goto skipend
+   else if m('htm','<html>')              then goto skipend
+   else if m('htm','<html ')              then goto skipend
+
+   //xml
+   else if m('xml','<?xml ')              then goto skipend
+   else if m('xml','<xml>')               then goto skipend;
+
+   end;
+
+
+skipend:
+
+//successful
+result:=(xformat<>'');
+
+except;end;
+
+//free
+str__uaf(x);
+
 end;
 
 
@@ -4580,19 +4892,16 @@ end;
 
 function nav__list(x:tstr8;xsortstyle:longint;const xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean):boolean;//04oct2020
 begin
-result:=nav__list2(0,x,xsortstyle,xfolder,xmasklist,xemasklist,xnav,xfolders,xfiles);
+result:=nav__list2(x,xsortstyle,xfolder,xmasklist,xemasklist,xnav,xfolders,xfiles,min64,max64,'');
 end;
 
-function nav__list2(xownerid:longint;x:tstr8;xsortstyle:longint;const xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean):boolean;//04oct2020
-begin
-result:=nav__list3(xownerid,x,xsortstyle,xfolder,xmasklist,xemasklist,xnav,xfolders,xfiles,min64,max64,'');
-end;
-
-function nav__list3(xownerid:longint;x:tstr8;xsortstyle:longint;xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean;xminsize,xmaxsize:comp;xminmax_emasklist:string):boolean;//26feb2024: Upgraded 32bit filesize to 64bit, 04oct2020
+function nav__list2(x:tstr8;xsortstyle:longint;xfolder,xmasklist,xemasklist:string;xnav,xfolders,xfiles:boolean;xminsize,xmaxsize:comp;xminmax_emasklist:string):boolean;//26feb2024: Upgraded 32bit filesize to 64bit, 04oct2020
 label
    skipend;
+
 const
    xallfiles='*';
+
 var
    p,i,xyear,xmonth,xday,xhr,xmin,xsec:longint;
    xoutdate:tdatetime;
@@ -4610,33 +4919,46 @@ var
 
       function xadd(xtep:longint;n,nlabel:string):boolean;
       begin
+
       result:=nav__add2(x,nltSysfolder,xtep,0,0,0,0,0,0,0,n,nlabel);
+
       end;
 
       function xaddfolder(n,nlabel:string):boolean;
       var
          xtep:longint;
       begin
-      xtep:=low__foldertep2(xownerid,n);
+
+      xtep  :=tep__folderimage20(n,true);
       result:=nav__add2(x,nltSysfolder,xtep,0,0,0,0,0,0,0,n,nlabel);
+
       end;
+
    begin
+
    //disk drives
    nav__add2(x,nltTitle,tepNone,0,0,0,0,0,0,0,'Drives','');
-   a:=io__drivelist;
+
+   a        :=io__drivelist;
+
    for p:=0 to high(a) do if a[p] and (not xaddfolder(char(65+p)+':\',io__drivelabel(char(65+p),true))) then goto skipend;
+
    //.internal disk
    if intdisk_inuse then xaddfolder(intdisk_char+':\',io__drivelabel(intdisk_char,true));//20jul2024, 04apr2021
+
    //system folders
    nav__add2(x,nltTitle,tepNone,0,0,0,0,0,0,0,'Special Folders','');
    xaddfolder(app__folder,'');
    xaddfolder(app__subfolder('Settings'),'');
+
    if io__folderexists(app__folder2('Backups',false)) then xaddfolder(app__subfolder('Backups'),'');//10feb2023
+
    xaddfolder(io__windesktop,'');
    xaddfolder(io__winstartmenu,'');
    xaddfolder(io__winprograms,'');
    xaddfolder(app__subfolder('temp'),'Portable Temp');//17may2022
    xaddfolder(io__wintemp,'Temp');
+
    //xaddfolder(wincommontemp,'Common Temp');//05apr2021
    skipend:
    end;
@@ -4645,53 +4967,69 @@ var
    var
       c:tcmp8;
    begin
-   result:=true;
+
+   result   :=true;
    c.ints[0]:=xrec.finddata.nFileSizeLow;
    c.ints[1]:=xrec.finddata.nFileSizeHigh;
-   xsize:=c.val;
+   xsize    :=c.val;
+
    end;
 
    procedure xfinddate2(a:tdatetime);
    var
       y,m,d,h,min,s,ms:word;
    begin
+
    low__decodedate2(a,y,m,d);
    low__decodetime2(a,h,min,s,ms);
+
    //set
-   xyear   :=y;
-   xmonth  :=m;
-   xday    :=d;
-   xhr     :=h;
-   xmin    :=min;
-   xsec    :=s;
+   xyear    :=y;
+   xmonth   :=m;
+   xday     :=d;
+   xhr      :=h;
+   xmin     :=min;
+   xsec     :=s;
+
    end;
 
    procedure xfinddate;
    begin
+
    xfinddate2(io__fromfiletime(xrec.finddata.ftLastWriteTime));
+
    end;
+
 begin
+
 //defaults
-result:=false;
-i:=0;
-xfindopen:=false;
+result      :=false;
+i           :=0;
+xfindopen   :=false;
+
 low__cls(@xrec,sizeof(xrec));//28sep2020
+str__lock(@x);
 
 try
-str__lock(@x);
+
 //check
-if zznil(x,2183) then goto skipend;
+if zznil(x,2183)                   then goto skipend;
+
 //init
-if not nav__init(x) then goto skipend;
+if not nav__init(x)                then goto skipend;
 if (not xfolders) and (not xfiles) then goto skipend;
-if (xmasklist='') then xmasklist:=xallfiles;
+if (xmasklist='')                  then xmasklist:=xallfiles;
+
 //low__reloadfastvars;
 //if (xownerid>=1) then tep__delall20(xownerid);//delete any previous images done by us - 06apr2021
+
 if (xfolder='') then
    begin
+
    xrootnav;
    result:=true;
    goto skipend;
+
    end
 else xfolder:=io__asfolder(xfolder);//28sep2020
 
@@ -4702,56 +5040,83 @@ if io__hack_dangerous_filepath_allow_mask(xfolder) then goto skipend;
 //.top title -> leave empty -> host can fill it with information in realtime - 04oct2020
 if xnav and xfolders and xfiles then
    begin
+
    nav__add2(x,nltTitle,tepNone,0,0,0,0,0,0,0,'','');
+
    end;
 
 //.add nav ---------------------------------------------------------------------
 if xnav then
    begin
+
    //.home
    if not nav__add2(x,nltNav,tepNone,0,0,0,0,0,0,0,'','') then goto skipend;//"Home"
+
    //.nav sets
    bol1:=true;
+
    for p:=1 to low__len32(xfolder) do if (xfolder[p-1+stroffset]='\') or (xfolder[p-1+stroffset]='/') then
       begin
+
       str1:=strcopy1(xfolder,1,p);
+
       if bol1 then
          begin
+
          bol1:=false;
          str2:=io__drivelabel(str1,true);//show drive label for first item in nav list
+
          end
+
       else str2:='';
-      if (str1<>'') and (not nav__add2(x,nltNav,low__foldertep2(xownerid,str1),0,0,0,0,0,0,0,str1,str2)) then goto skipend;
+
+      if (str1<>'') and (not nav__add2(x,nltNav,tep__folderimage20(str1,true),0,0,0,0,0,0,0,str1,str2)) then goto skipend;
+
       end;
+
    end;
 
 //.internal disk support
 if idisk__havescope(xfolder) then
    begin
+
    //get
    p:=0;
+
    while true do
    begin
+
    if idisk__findnext(p,xfolder,xfolders,xfiles,xoutname,xoutnameonly,xoutfolder,xoutfile,xoutdate,xoutsize,xoutreadonly) then
       begin
+
       //folder
       if xfolders and xoutfolder then
          begin
+
          xfinddate2(xoutdate);
-         if not nav__add2(x,nltFolder,low__foldertep2(xownerid,xoutname),xoutsize,xyear,xmonth,xday,xhr,xmin,xsec,xoutnameonly,'') then goto skipend;
+         if not nav__add2(x,nltFolder,tep__folderimage20(xoutname,true),xoutsize,xyear,xmonth,xday,xhr,xmin,xsec,xoutnameonly,'') then goto skipend;
+
          end
+
       //file
       else if xfiles and xoutfile and ( filter__matchlist(xoutnameonly,xmasklist) and ((xemasklist='') or (not filter__matchlist(xoutnameonly,xemasklist))) ) then
          begin
+
          xfinddate2(xoutdate);
-         if not nav__add2(x,nltFile,tepext(xoutnameonly),xoutsize,xyear,xmonth,xday,xhr,xmin,xsec,xoutnameonly,'') then goto skipend;
+         if not nav__add2(x,nltFile,tep__filetype20(xoutnameonly),xoutsize,xyear,xmonth,xday,xhr,xmin,xsec,xoutnameonly,'') then goto skipend;
+
          end;
+
       end
+
    else break;//stop
+
    end;//loop
+
    //successful
    result:=true;
    goto skipend;
+
    end;
 
 
@@ -4760,50 +5125,71 @@ case xfolders of
 true:i:=win__findfirst(xfolder+xallfiles,faReadOnly or faHidden or faSysFile or faDirectory or faArchive or faAnyFile,xrec);
 else i:=win__findfirst(xfolder+xallfiles,faReadOnly or faHidden or faSysFile or faArchive or faAnyFile,xrec);
 end;
+
 xfindopen:=(i=0);
+
 while i=0 do
 begin
+
 //.skip system folders
 if (xrec.name='.') or (xrec.name='..') then
    begin
    //nil
    end
+
 //.add folder ------------------------------------------------------------------
 else if io__faISfolder(xrec.attr) then
    begin
+
    if xfolders then
       begin
+
       //init
       xfindsize;
       xfinddate;
+
       //get
-      if not nav__add2(x,nltFolder,low__foldertep2(xownerid,io__asfoldernil(xfolder+xrec.name)),xsize,xyear,xmonth,xday,xhr,xmin,xsec,xrec.name,'') then goto skipend;
+      if not nav__add2(x,nltFolder,tep__folderimage20(io__asfoldernil(xfolder+xrec.name),true),xsize,xyear,xmonth,xday,xhr,xmin,xsec,xrec.name,'') then goto skipend;
+
       end;
+
    end
+
 //.add file --------------------------------------------------------------------
 else
    begin
+
    if xfiles and xfindsize and (((xsize>=xminsize) and (xsize<=xmaxsize)) or filter__matchlist(xrec.name,xminmax_emasklist)) and ( filter__matchlist(xrec.name,xmasklist) and ((xemasklist='') or (not filter__matchlist(xrec.name,xemasklist))) ) then
       begin
+
       //init
       xfindsize;
       xfinddate;
+
       //get
-      if not nav__add2(x,nltFile,tepext(xrec.name),xsize,xyear,xmonth,xday,xhr,xmin,xsec,xrec.name,'') then goto skipend;
+      if not nav__add2(x,nltFile,tep__filetype20(xrec.name),xsize,xyear,xmonth,xday,xhr,xmin,xsec,xrec.name,'') then goto skipend;
+
       end;
+
    end;
+
 //.inc
 i:=win__findnext(xrec);
+
 end;//while
+
 //successful
 result:=true;
 skipend:
 except;end;
+
 try;if xfindopen then win__findclose(xrec);except;end;
+
 try
 nav__end(x,xsortstyle);//finalise
 str__uaf(@x);
 except;end;
+
 end;
 
 function nav__proc(x:tstr8;xcmd:string;xindex:longint;var xstyle,xtep,xval1,xval2,xval3:longint;var xsize,xdate:comp;var xname,xlabel:string):boolean;//29may2025, 04apr2021, 25mar2021, 20feb2021

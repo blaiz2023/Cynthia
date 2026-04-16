@@ -8,13 +8,13 @@ interface
 {$ifdef con3} {$define con2} {$define net} {$define ipsec} {$endif}
 {$ifdef con2} {$define bmp} {$define ico} {$define gif} {$define jpeg} {$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin, gosswin2, gossio, gossimg, gossnet, gossfast;
+uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin, gosswin2, gossio, gossimg, gossnet, gossfast, gossteps;
 {$align on}{$O+}{$W-}{$I-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
 //##
 //## MIT License
 //##
-//## Copyright 2025 Blaiz Enterprises ( http://www.blaizenterprises.com )
+//## Copyright 2026 Blaiz Enterprises ( http://www.blaizenterprises.com )
 //##
 //## Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 //## files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
@@ -30,36 +30,39 @@ uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. app code (main.pas)
-//## Version.................. 1.00.6187 (+218)
+//## Version.................. 1.00.6226 (+218)
 //## Items.................... 6
-//## Last Updated ............ 01feb2026, 30jan2026, 15jan20256, 13dec2025, 11dec2025, 10dec2025, 08dec2025, 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
-//## Lines of Code............ 5,400+
+//## Last Updated ............ 17apr2026, 07apr2026, 01apr2026, 29mar2026, 01feb2026, 30jan2026, 15jan20256, 13dec2025, 11dec2025, 10dec2025, 08dec2025, 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
+//## Lines of Code............ 5,500+
+//## Code Origin ............. Written and maintained by a human being, not AI-generated
 //##
-//## main.pas ................ app code
-//## gossroot.pas ............ console/gui app startup and control
-//## gossio.pas .............. file io
-//## gossimg.pas ............. image/graphics
-//## gossnet.pas ............. network
-//## gosswin.pas ............. static Win32 api calls
-//## gosswin2.pas ............ dynamic Win32 api calls
-//## gosssnd.pas ............. sound/audio/midi/chimes
-//## gossgui.pas ............. gui management/controls
-//## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
-//## gosszip.pas ............. zip support
-//## gossjpg.pas ............. jpeg support
-//## gossfast.pas ............ fastdraw support
-//## gossgame.pas ............ game support (optional)
-//## gamefiles.pas ........... internal files for game (optional)
+//## main.pas ................ App specific code
+//## gossdat.pas ............. App specific icons and help documents
+//## gossfast.pas ............ FastDraw - rapid render graphic procs
+//## gossgame.pas ............ GameCore - 2D game engine with integrated menu handler, xbox controller + mouse + keyboard support and window integration
+//## gamefiles.pas ........... Built-in file(s) for GameCore (optional)
+//## gossgui.pas ............. GUI management and controls
+//## gossimg.pas ............. Multi-format graphic procs for 8, 24 and 32 bit images with IO support
+//## gossio.pas .............. File IO and low level file/folder/disk/data format procs
+//## gossjpg.pas ............. JPEG IO (read/write jpeg image data via third party libraries)
+//## gossnet.pas ............. Networking - ip filtering, socket management etc
+//## gossroot.pas ............ App startup and control (GUI, console and service)
+//## gosssnd.pas ............. Sound, audio, midi and midi based chimes
+//## gossteps.pas ............ System, Folder and App images
+//## gosstext.pas ............ TextCore - non-GUI and GUI text engine for text boxes
+//## gosswin.pas ............. Win32 api calls for 32 and 64 bit (static / api references disabled by default)
+//## gosswin2.pas ............ Win32 api calls for 32 and 64 bit (dynamic - load as required with fallback failure handling and default value(s) support)
+//## gosszip.pas ............. ZIP IO (read/write zip data via third party libraries)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | tapp                   | tbasicapp         | 1.00.4863 | 11dec2025   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 08dec2025, 07nov2025, 16sep2025, 09sep2025, 04sep2025, 15aug2025, 11aug2025, 03jul2025, 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
+//## | tapp                   | tbasicapp         | 1.00.4866 | 07apr2026   | Play "*.mid/mid/rmi" files swiftly and with ease and reliability - 01apr2026, 11dec2025, 08dec2025, 07nov2025, 16sep2025, 09sep2025, 04sep2025, 15aug2025, 11aug2025, 03jul2025, 18feb2025, 14feb2025, 05apr2021, 22mar2021, 20feb2021
 //## | ttracks                | tbasiccontrol     | 1.00.185  | 11dec2025   | Indicate midi track activity.  Supports mute/unmute per track.  Supports upto 512 tracks. - 14sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
 //## | toutput                | tbasicscroll      | 1.00.030  | 16sep2025   | Multiple midi out device settings manager
-//## | tchannels              | tbasiccontrol     | 1.00.360  | 16sep2025   | Indicate average volume and peak average volume per channel.  Supports mute/unmute for all 16 channels. - 04sep2025, 30aug2025, 03jul2025, 14feb2025
-//## | tnotes                 | tbasiccontrol     | 1.00.252  | 16sep2025   | Indicate note activity.  Supports mute/unmute for all 128 notes. - 03sep2025, 30aug2025, 03jul2025, 14feb2025
-//## | tpiano                 | tbasiccontrol     | 1.00.278  | 13dec2025   | Animate piano key depress for each note played. - 16sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
+//## | tchannels              | tbasiccontrol     | 1.00.376  | 17apr2026   | Indicate average volume and peak average volume per channel.  Supports mute/unmute for all 16 channels. - 01apr2026, 29mar2026, 16sep2025, 04sep2025, 30aug2025, 03jul2025, 14feb2025
+//## | tnotes                 | tbasiccontrol     | 1.00.262  | 29mar2026   | Indicate note activity.  Supports mute/unmute for all 128 notes. - 16sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
+//## | tpiano                 | tbasiccontrol     | 1.00.288  | 29mar2026   | Animate piano key depress for each note played. - 13dec2025, 16sep2025, 03sep2025, 30aug2025, 03jul2025, 14feb2025
 //## ==========================================================================================================================================================================================================================
 //## Performance Note:
 //##
@@ -123,11 +126,13 @@ type
 {tchannels}
    tchannels=class(tbasiccontrol)
    private
+
+    ifd:tresslot;
     ihoverfocus,iflashtimer,iflashtimer2,ipainttimer:comp;
-    itemp:tstr8;
     idowny,ivolstarty,ivolbarheight,ivolheight,ihold,iholdms,ialign,ilasthoverindex,ihoverindex,idownindex,idataref:longint;
     izerobase,iflashon2,iflashon,ishowlabels,iup:boolean;
     iclsref:string;
+    itemp:tbasicimage;
 
     iarea      :array[0..15] of twinrect;
     iavevol    :array[0..15] of longint;
@@ -136,7 +141,7 @@ type
     ivoice     :array[0..15] of longint;
     ivoiceref  :array[0..15] of longint;
     ivoicetime :array[0..15] of comp;//detect change in voice index and show highlight on screen for short period of time
-    ilabel     :array[0..15] of tbasicimage;
+    ilabel     :array[0..15] of tbasicrle8;
     ilabelref  :array[0..15] of string;
     ichangeref :array[0..15] of string;
 
@@ -304,6 +309,7 @@ type
    tpiano=class(tbasiccontrol)
    private
 
+    icustomFont:tresslot;
     ipainttimer:comp;
     ikeystyle,ilabelmode,ikeycount,iwcount,ibcount,idataref,iref:longint;
     iclsref    :string;
@@ -442,7 +448,7 @@ procedure app__ontimer;
 
 //.support procs
 function app__netmore:tnetmore;//optional - return a custom "tnetmore" object for a custom helper object for each network record -> once assigned to a network record, the object remains active and ".clear()" proc is used to reduce memory/clear state info when record is reset/reused
-function app__findcustomtep(xindex:longint;var xdata:tlistptr):boolean;
+procedure app__customTEP(const xindex:longint);
 function app__syncandsavesettings:boolean;
 
 
@@ -474,15 +480,18 @@ xname:=strlow(xname);
 if      (xname='slogan')              then result:=info__app('name')+' by Blaiz Enterprises'
 else if (xname='width')               then result:='1600'
 else if (xname='height')              then result:='1020'
+
 else if (xname='language')            then result:='english-australia'//for Clyde - 14sep2025
 else if (xname='codepage')            then result:='1252'//for Clyde
-else if (xname='msix.tags')           then result:='M'//for Clyde - 10dec2025
-else if (xname='ver')                 then result:='1.00.6187'
-else if (xname='date')                then result:='01feb2025'
+else if (xname='msix.tags')           then result:='M'//for Clyde -> auto-enables midi support under MSIX - 10dec2025
+else if (xname='msstore.name')        then result:=''//optional - overrides default name for Clyde - 11apr2026
+
+else if (xname='ver')                 then result:='1.00.6226'
+else if (xname='date')                then result:='17apr2026'
 else if (xname='name')                then result:='Cynthia'
 else if (xname='web.name')            then result:='cynthia'//used for website name
 else if (xname='des')                 then result:='Reliably play midi music files'
-else if (xname='infoline')            then result:=info__app('name')+#32+info__app('des')+' v'+app__info('ver')+' (c) 1997-'+low__yearstr(2025)+' Blaiz Enterprises'
+else if (xname='infoline')            then result:=info__app('name')+#32+info__app('des')+' v'+app__info('ver')+' (c) 1997-'+low__yearstr(2026)+' Blaiz Enterprises'
 else if (xname='size')                then result:=low__b(io__filesize64(io__exename),true)
 else if (xname='diskname')            then result:=io__extractfilename(io__exename)
 else if (xname='service.name')        then result:=info__app('name')
@@ -561,29 +570,30 @@ freeobj(@iapp);
 except;end;
 end;
 
-function app__findcustomtep(xindex:longint;var xdata:tlistptr):boolean;
+procedure app__customTEP(const xindex:longint);
 
-  procedure m(const x:array of byte);//map array to pointer record
-  begin
-  {$ifdef gui}
-  xdata:=low__maplist(x);
-  {$else}
-  xdata.count:=0;
-  xdata.bytes:=nil;
-  {$endif}
-  end;
-begin//Provide the program with a set of optional custom "tep" images, supports images in the TEA format (binary text image)
-//defaults
-//result:=false;
+   procedure mc(const sm ,sc:array of byte);//mono + color
+   begin
 
-//sample custom image support
-{
+   tep__20( xindex ,sm ,sc ,it_rle8 ,it_img32 );
+
+   end;
+
+   procedure m(const sm:array of byte);//mono only
+   begin
+
+   tep__20( xindex ,sm ,[0] ,it_rle8 ,it_img32 );
+
+   end;
+
+begin
+
+//examples:
 case xindex of
-tepHand20:m(_tephand20);
-end;
-}
-//successful
-result:=(xdata.count>=1);
+tepCustomBASE20 + 0 :mc( mtep_copy20 ,tep_copy20 );
+tepCustomBASE20 + 1 :m( mtep_copy20              );
+end;//case
+
 end;
 
 function app__syncandsavesettings:boolean;
@@ -660,7 +670,8 @@ end;
 
 constructor tapp.create;
 const
-   vsep=5;
+   vsep     =5;
+   vclsArea =false;//don't paint background of columns -> child controls take up entire area and thus handle painting - 29mar2026
 var
    e:string;
    xsubmenu20:longint;
@@ -885,39 +896,49 @@ rootwin.xcols.style:=bcLefttoright;//04feb2025
 with rootwin.xcols.makecol(inavcol,100,false) do
 begin
 
-ilistroot:=client as tbasicscroll;
+oclsarea    :=vclsArea;
+ilistroot   :=client as tbasicscroll;
 
 //.play from folder
-inavcap:=ntoolbar('Navigate files and folders on disk');
+inavcap     :=ntoolbar('Navigate files and folders on disk');
+
 with inavcap do
 begin
+
 maketitle3('Play Folder',false,false);
-opagename:='folder';
-normal:=false;
+
+opagename   :='folder';
+normal      :=false;
+
 add('Refresh',tepRefresh20,0,'refresh','Navigation|Refresh list');
 add('Fav',tepFav20,0,'nav.fav','Navigation|Show favourites list');
 add('Back',tepBack20,0,'nav.prev','Navigation|Previous folder');
 add('Forward',tepForw20,0,'nav.next','Navigation|Next folder');
 add('Add',tepEdit20,0,'list.addfile','Playlist|Add selected file to playlist');
-onclick:=__onclick;
+
+onclick     :=__onclick;
+
 end;
 
-inav:=nnav.makenavlist;
-inav.hisname:='cynthia';//24may2021
-inav.omasklist:=xfull_mask;
-inav.oautoheight:=true;
-inav.sortstyle:=nlName;//nlSize;
-inav.style:=bnNavlist;
-inav.ofindname:=true;//21feb2022
-inav.opagename:='folder';
+inav                  :=nnav.makenavlist;
+inav.hisname          :='cynthia';//24may2021
+inav.omasklist        :=xfull_mask;
+inav.oautoheight      :=true;
+inav.sortstyle        :=nlName;//nlSize;
+inav.style            :=bnNavlist;
+inav.ofindname        :=true;//21feb2022
+inav.opagename        :='folder';
 
 //.play from list
-ilistcap:=ntoolbar('Navigate files and folders on disk');
+ilistcap              :=ntoolbar('Navigate files and folders on disk');
+
 with ilistcap do
 begin
+
 maketitle3('Play List',false,false);
-opagename:='list';
-normal:=false;
+opagename             :='list';
+normal                :=false;
+
 ladd('edit');
 ladd('new');
 ladd('open');
@@ -933,31 +954,39 @@ ladd('undo');
 
 with xhigh2 do
 begin
-imode:=nsel('Playback Mode','Playback mode',0);
+
+imode                 :=nsel('Playback Mode','Playback mode',0);
+
 with imode do
 begin
+
 xadd('Once','once','Playback Mode|Play selected midi once');
 xadd('Repeat One','repeat1','Playback Mode|Play selected midi repeatedly');
 xadd('Repeat All','repeat1','Playback Mode|Play all midis repeatedly');
 xadd('All Once','once','Playback Mode|Play all midis once');
 xadd('Random','repeat1','Playback Mode|Play midis randomly');
+
 end;
+
 end;
 
 //.event
-onclick:=__onclick;
+onclick               :=__onclick;
+
 end;
 
-ilist:=nlist('','',nil,0);
-ilist.opagename:='list';
-ilist.oretainpos:=true;
-ilist.onumberfrom:=0;
-ilist.help:='Select file to play';
-ilist.ocanshowmenu:=true;
+ilist                 :=nlist('','',nil,0);
+ilist.opagename       :='list';
+ilist.oretainpos      :=true;
+ilist.onumberfrom     :=0;
+ilist.help            :='Select file to play';
+ilist.ocanshowmenu    :=true;
 
 //default playback list style
-page:='folder';
+page                  :='folder';
+
 end;
+
 
 //------------------------------------------------------------------------------
 //information column - right ---------------------------------------------------
@@ -966,7 +995,9 @@ end;
 with rootwin.xcols.makecol(iinfcol,100,false) do
 begin
 
-ititlebar:=ntitlebar(false,'Midi Information','Midi information');
+oclsarea    :=vclsArea;
+ititlebar   :=ntitlebar(false,'Midi Information','Midi information');
+
 with ititlebar do
 begin
 
@@ -1000,18 +1031,21 @@ with xhigh2.ncols do
 begin
 makeautoheight;
 
-iformats:=makecol(0,30,false).nset('File Types','File Types | Select midi file types to list in the Navigation panel (left) | Selecting no file type lists all midi file types',7,7);
+iformats    :=makecol(0,30,false).nset('File Types','File Types | Select midi file types to list in the Navigation panel (left) | Selecting no file type lists all midi file types',7,7);
+
 with iformats do
 begin
-osepv:=vsep;
+
+osepv       :=vsep;
 itemsperline:=3;
 xset(0,'mid', 'mid','File Types|Include ".mid" file type in play list',true);
 xset(1,'midi','midi','File Types|Include ".midi" file type in play list',true);
 xset(2,'rmi', 'rmi','File Types|Include ".rmi" file type in play list',true);
+
 end;
 
 //.device
-imiddevice:=makecol(1,70,false).nmidi('','');
+imiddevice  :=makecol(1,70,false).nmidi('','');
 imiddevice.osepv:=vsep;
 
 end;
@@ -1063,29 +1097,41 @@ isettingspanel.pageindex:=0;
 with rootwin.xcols.makecol(iviscol,100,false) do
 begin
 
+oclsarea    :=vclsArea;
+
 //.tracks
 with xhigh do
 begin
-itrackbar:=ntitlebar(false,'Tracks','Realtime midi data track usage');
+
+itrackbar   :=ntitlebar(false,'Tracks','Realtime midi data track usage');
+
 with itrackbar do
 begin
-halign:=2;
+
+halign      :=2;
 add('',tepMute20,0,'tracks.muteall','Tracks|Mute all tracks');
 add('',tepUnmute20,0,'tracks.unmuteall','Tracks|Unmute all tracks');
 add('',xsubmenu20,0,'tracks.menu','Tracks|Show options');
+
 end;
-itracks:=ttracks.create(client);
+
+itracks     :=ttracks.create(client);
+
 end;
 
 //.channels
 xcols.style:=bcToptobottom;
 with xcols.makecol(0,35,false) do
 begin
-ichbar:=ntitlebar(false,'Channels','Realtime midi data channel usage');
+
+oclsarea    :=vclsArea;
+ichbar      :=ntitlebar(false,'Channels','Realtime midi data channel usage');
+
 with ichbar do
 begin
-osepv:=vsep;
-halign:=2;
+
+osepv       :=vsep;
+halign      :=2;
 
 add('Labels',tepEdit20,0,'ch.showlabels','Channels|Toggle channel labels');
 
@@ -1096,19 +1142,25 @@ add('',tepMore20,0,'ch.morevols','Channels|Increase all channel volumes by 10%')
 add('',tepMute20,0,'ch.muteall','Channels|Mute all channels');
 add('',tepUnmute20,0,'ch.unmuteall','Channels|Unmute all channels');
 add('',xsubmenu20,0,'ch.menu','Channels|Show options');
+
 end;
-ichannels:=tchannels.create(client);
+
+ichannels   :=tchannels.create(client);
+
 end;
 
 //.notes
 with xcols.makecol(1,65,false) do
 begin
 
-inotesbar:=ntitlebar(false,'Notes','Realtime midi note usage');
+oclsarea    :=vclsArea;
+inotesbar   :=ntitlebar(false,'Notes','Realtime midi note usage');
+
 with inotesbar do
 begin
-osepv:=vsep;
-halign:=2;
+
+osepv       :=vsep;
+halign      :=2;
 
 add('Notes',tepNew20,0,'notes.asnotes','Notes|Show as notes');
 add('Numbers',tepNew20,0,'notes.asnumbers','Notes|Show as numbers');
@@ -1118,8 +1170,9 @@ add('',tepUnmute20,0,'notes.unmuteall','Notes|Unmute all notes');
 add('',xsubmenu20,0,'notes.menu','Notes|Show options');
 end;
 
-inotes:=tnotes.create(client);
+inotes      :=tnotes.create(client);
 inotes.oautoheight:=true;
+
 end;
 
 end;
@@ -1131,20 +1184,20 @@ end;
 with rootwin.xcols.makecol(ibarcol,10,false) do
 begin
 
-ibarleft     :=client;
-oroundstyle  :=corSlight;
-normal       :=false;
-onpaint      :=onpaint__bar;
+ibarleft    :=client;
+oroundstyle :=corSlight;
+normal      :=false;
+onpaint     :=onpaint__bar;
 
 end;
 
 with rootwin.xcols.makecol(ibarcol2,10,false) do
 begin
 
-ibarright    :=client;
-oroundstyle  :=corSlight;
-normal       :=false;
-onpaint      :=onpaint__bar;
+ibarright   :=client;
+oroundstyle :=corSlight;
+normal      :=false;
+onpaint     :=onpaint__bar;
 
 end;
 
@@ -2444,9 +2497,9 @@ if (slowms64>=itimer100) and iloaded then
 
    //play management
    case showplaylist of
-   false:if mm_playmanagement('mid',imode.val,xintroms,imuststop,imustplay,iplaying,bol1,imustpertpos,imustpos,ilastpos,ilastfilename,inav,nil,'',ijump) and bol1 then xfillinfo;
    true:if mm_playmanagement('mid',imode.val,xintroms,imuststop,imustplay,iplaying,bol1,imustpertpos,imustpos,ilastpos,ilastfilename,nil,ilist,'',ijump) and bol1 then xfillinfo;
-   end;
+   else if mm_playmanagement('mid',imode.val,xintroms,imuststop,imustplay,iplaying,bol1,imustpertpos,imustpos,ilastpos,ilastfilename,inav,nil,'',ijump) and bol1 then xfillinfo;
+   end;//case
 
    //speed
    if (not gui.mousedown) and (mid_speed<>ispeed.val) then mid_setspeed(ispeed.val);
@@ -3020,9 +3073,11 @@ xcols.style   :=bcLefttoright;//04feb2025
 with xcolsh.makecol(0,100,false) do
 begin
 
-isel:=tbasicsel.create(client);
+isel        :=tbasicsel.create(client);
+
 with isel do
 begin
+
 caption     :='Playback Device';
 help        :='Midi Device|Select a midi device to edit its playback settings';
 for p:=0 to high(tmidilist) do xadd(k64(1+p),intstr32(p),'Device #'+k64(1+p));
@@ -3030,7 +3085,8 @@ for p:=0 to high(tmidilist) do xadd(k64(1+p),intstr32(p),'Device #'+k64(1+p));
 end;
 
 
-ims:=tsimpleint.create(client);
+ims         :=tsimpleint.create(client);
+
 with ims do
 begin
 
@@ -3044,7 +3100,8 @@ setparams(-500,500,0,0);
 end;
 
 
-ivol:=tsimpleint.create(client);
+ivol        :=tsimpleint.create(client);
+
 with ivol do
 begin
 
@@ -3057,7 +3114,8 @@ setparams(0,200,100,100);
 end;
 
 
-ichs:=tbasicset.create(client);
+ichs        :=tbasicset.create(client);
+
 with ichs do
 begin
 
@@ -3218,8 +3276,6 @@ ihoverindex        :=-1;
 ilasthoverindex    :=-2;
 idataref           :=0;
 iclsref            :='';
-itemp              :=str__new8;
-itemp.floatsize    :=500;//keeps internal buffer static
 iup                :=true;
 izerobase          :=true;
 ialign             :=2;
@@ -3228,6 +3284,8 @@ idowny             :=0;
 ivolstarty         :=0;
 ivolheight         :=0;
 ivolbarheight      :=0;
+ifd                :=fd__new;
+itemp              :=misimg32(1,1);
 
 findhold(-1,ihold,iholdms);//default hold
 
@@ -3247,7 +3305,7 @@ begin
 
 ivoice[p]     :=min32;
 iarea[p]      :=nilarea;
-ilabel[p]     :=misimg32(1,1);
+ilabel[p]     :=tbasicrle8.create;
 ilabelref[p]  :='';
 ichangeref[p] :='';
 
@@ -3268,7 +3326,10 @@ try
 
 //controls
 for p:=0 to high(iavevol) do freeobj(@ilabel[p]);
-str__free(@itemp);
+
+freeobj(@itemp);
+
+res__del( ifd );
 
 //self
 inherited destroy;
@@ -3673,6 +3734,7 @@ procedure tchannels.xbar(const s:tclientinfo;const da:twinrect;xindex,xvol,xhold
 const
    xcolmix=0.70;
 var
+   xold:pfastdraw;
    xtmp,vx,p,p2,fnH1,xsp,aw,xfontcolor,dcol2,dcol,ch,int1,dalign,dx,dy,xback,tw:longint;
    xhoverfocus,xdownok,xhoverok,xmax:boolean;
    ta:twinrect;
@@ -3718,16 +3780,18 @@ begin
 xvol          :=frcrange32(xvol     ,0,127);
 xholdvol      :=frcrange32(xholdvol ,0,127);
 
-
 //init
 xback         :=s.hover;
 xcolors       :=s.colhover2;
+
 xfontcolor    :=s.font;
+if (xfontcolor=0) then xfontcolor:=1;//0,0,0 = transparent color
+
 ch            :=da.bottom-da.top+1;
 xdownok       :=(xindex=idownindex);
 xhoverok      :=(xindex=ihoverindex);
 xhoverfocus   :=(ihoverfocus>=slowms64);
-fnH1          :=low__fontmaxh1(fn);
+fnH1          :=resfont__height1(fn);
 
 ivolstarty    :=da.top;
 ivolbarheight :=round(fnH*1.3);
@@ -3769,7 +3833,7 @@ if (xholdvol>=1) and (iholdms>=1) then
 //label
 if (mmsys_mid_chvol[xindex]<=0) and iflashon2 then t:='m' else t:=intstr32( xindex + insint(1,not izerobase) );
 
-tw         :=low__fonttextwidth2(fn,t);
+tw         :=resfont__textwidth(fn,t);
 ta.left    :=da.left+((da.right-da.left+1-tw) div 2)-2;
 ta.right   :=ta.left+tw-1+4;
 ta.top     :=da.bottom-fnH;
@@ -3792,8 +3856,8 @@ else
 
    end;
 
-ldtTAB2(xback,tbnone,da,da.left+((da.right-da.left+1-tw) div 2),da.bottom-fnH,int1,t,fn,xfeather,false,false,false,false,false);
-
+//ldtTAB2(xback,tbnone,da,da.left+((da.right-da.left+1-tw) div 2),da.bottom-fnH,int1,t,fn,xfeather,false,false,false,false,false);
+ftext( xback ,da ,da.left+((da.right-da.left+1-tw) div 2) ,da.bottom-fnH ,int1 ,'' ,t ,fn ,true );
 
 //name of voice/instrument
 dy:=da.top+1;
@@ -3803,15 +3867,13 @@ if low__setstr(ilabelref[xindex],bolstr(iup)+'|'+intstr32(xfontcolor)+'|'+intstr
    begin
 
    //reset image
-   missize(ilabel[xindex],da.bottom-da.top+1-fnH-3,da.right-da.left+1);
-   mis__cls(ilabel[xindex],0,0,0,0);
-
+   missize( itemp ,da.bottom-da.top+1-fnH-3 ,da.right-da.left+1 );
+   mis__cls( itemp ,0,0,0,0 );
 
    //init
    t           :=strdefb( mid_voicename(ivoice[xindex]), '-');
-   itemp.text  :=t;
-   ta          :=misarea(ilabel[xindex]);
-   tw          :=low__fonttextwidth2(fn,t);;
+   ta          :=misarea( itemp );
+   tw          :=resfont__textwidth(fn,t);;
 
    //.align
    dalign:=frcrange32(ialign,0,2);
@@ -3833,21 +3895,31 @@ if low__setstr(ilabelref[xindex],bolstr(iup)+'|'+intstr32(xfontcolor)+'|'+intstr
    else dx:=4*vizoom;
    end;//case
 
-   dy          :=(ilabel[xindex].height-fnH) div 2;
+   dy          :=(itemp.height-fnH) div 2;
 
    //text -> do not use feather
-   low__draw2b(clnone,true,'',misb(ilabel[xindex]),ilabel[xindex].width,ilabel[xindex].height,ilabel[xindex].rows,nil,nil,0,'t',ta,ta,ta,xfontcolor,xfontcolor,clnone,dx,dy,0,0,0,0,0,sysfont_data[fn],itemp,corRound,xround,false,false,false,false);
+   fd__selStore( xold );
+
+   fd__select( ifd );
+   fd__setbuffer( fd_buffer ,itemp );
+   fast__drawText2( clnone ,ta ,ta ,dx ,dy ,clwhite ,255 ,'' ,t ,fn ,cdNone ,0 ,0 ,xfeather ,false );//white text on black background for RLE8 scanning below - 17apr2026, 01apr2026
+
+   fd__selRestore( xold );
 
    //rotate 90
-   mis__rotate82432(ilabel[xindex],low__aorb(90,-90,iup));
+   mis__rotate82432( itemp ,low__aorb(90,-90,iup) );
+
+   //scan image to RLE8 + system feather using RED channel only for speed
+   ilabel[xindex].fast__makefromR( itemp );
 
    end;
 
 
+//RLE8 images of rotated labels with system feather - 01apr2026
 if ishowlabels then
    begin
 
-   ldc32(da,da.left,da.top,misw(ilabel[xindex]),mish(ilabel[xindex]),misarea(ilabel[xindex]),ilabel[xindex],low__aorb(255,100,xhoverfocus),true);
+   fdraw( ilabel[xindex] ,da.left ,da.top ,xfontcolor ,power_enabled ,true );
 
    end;
 
@@ -3903,8 +3975,9 @@ if xhoverfocus then
    ffillArea(area__make(da.left,int1+ivolbarheight-1,da.right,int1+ivolbarheight-1),s.hover2,false);
 
    t          :=intstr32(low__posn(mmsys_mid_chvol[xindex]));
-   tw         :=low__fonttextwidth2(fn,t);
-   ldt1(xback,da,da.left+frcmin32((da.right-da.left+1-tw) div 2,aw),int1+((ivolbarheight-fnH1) div 2),xfontcolor,t,fn,xfeather,false);
+   tw         :=resfont__textwidth(fn,t);
+   //was: ldt1(xback,da,da.left+frcmin32((da.right-da.left+1-tw) div 2,aw),int1+((ivolbarheight-fnH1) div 2),xfontcolor,t,fn,xfeather,false);
+   ftext2(xback,da,da.left+frcmin32((da.right-da.left+1-tw) div 2,aw),int1+((ivolbarheight-fnH1) div 2),xfontcolor,255,'',t,fn,xfeather,true,false);//17apr2026
 
    end;
 
@@ -3923,13 +3996,12 @@ infovars(s);
 //.smaller font
 gui__smallfont2(info^,1.01,fn2,fnH2);
 
-
 //background
 if low__setstr(iclsref,intstr32(s.back)+'|'+intstr32(s.cs.right-s.cs.left+1)+'|'+intstr32(s.cs.bottom-s.cs.top+1)) then ffillArea(s.cs,s.back,false);
 
 //init
 iw         :=frcmin32(s.cw div 16,1);
-sp         :=frcmin32(frcmax32(5*s.zoom,iw-low__fontavew(s.fn)),0);
+sp         :=frcmin32(frcmax32(5*s.zoom,iw-resfont__wave(s.fn)),0);
 
 //bars
 for p:=0 to high(iavevol) do
@@ -4410,9 +4482,11 @@ true:ffillArea(da,dc,s.r);
 else fshadeArea2(da,dcback,dc,dc,dcback,50,255,s.r);
 end;//case
 
-tw:=low__fonttextwidth2(fn2,t);
+tw:=resfont__textwidth(fn2,t);
 
-ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-fnH2) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutetrack[xtrack]),t,fn2,s.f,s.r);
+//was: ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-fnH2) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutetrack[xtrack]),t,fn2,s.f,s.r);
+ftext(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-fnH2) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutetrack[xtrack]),'',t,fn2,true);
+
 
 //inc
 inc(dcount);
@@ -4755,6 +4829,7 @@ end;
 procedure tnotes._onpaint(sender:tobject);
 const
    xby=8;
+
 var
    s:tclientinfo;
    da:twinrect;
@@ -4763,6 +4838,7 @@ var
    dnoteon:boolean;
    bkhover,bkmute,dcback,xnoteAddOne,xchannel,dfont2,dmute0,dmute1,dmute2,dhover0,dhover1,dhover2,i,sp,tw,dcount,dperrow,dx,dy,dw,dh,vout,dc,xnote,p2:longint;
    xinfo:tmidinote;
+
 begin
 try
 //init
@@ -4877,14 +4953,27 @@ if (not dnoteon) and (ihold64[xnote]>=v64) then
       dcback   :=bkhover;
 
       end;
+
+
+
+   case ooutline of
+   true:begin
+
+      case oflat of
+      true:fframeSimple(da,2*s.zoom,dc,255,false,s.r);//29mar2026
+      else for p2:=0 to ((2*s.zoom)-1) do fshadeOutlineArea( area__grow(da,-p2) ,dcback ,dc ,dc ,dcback ,50 ,255 ,false ,s.r );//29mar2026
+      end;
       
-   if ooutline then
-      begin
-
-      for p2:=0 to 1 do ldsoSHADE(area__grow(da,-p2),dcback,dc,clnone,0,insstr('g-50',not oflat),false,s.r);
-
       end
-   else lds2(area__make(da.left,da.bottom-(2*vizoom),da.right,da.bottom),dcback,dc,clnone,0,insstr('g-50',not oflat),s.r);
+   else begin
+
+      case oflat of
+      true:ffillarea(area__make(da.left,da.bottom-(2*s.zoom),da.right,da.bottom),dc,s.r);
+      else fshadeArea2( area__make(da.left,da.bottom-(3*s.zoom),da.right,da.bottom) ,dcback ,dc ,dc ,dcback ,50 ,255 ,s.r );
+      end;//case
+
+      end;
+   end;//case
 
    end;
 
@@ -4893,9 +4982,10 @@ if mmsys_mid_mutenote[xnote] and iflashon then t:='m'
 else if olabels                           then t:=ilabels[xnote]
 else                                           t:=intstr32( xnote + xnoteAddOne );
 
-tw:=low__fonttextwidth2(s.fn,t);
+tw:=resfont__textwidth(s.fn,t);
 
-ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-s.fnH) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutenote[xnote]),t,s.fn,s.f,s.r);
+//was: ldt1(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-s.fnH) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutenote[xnote]),t,s.fn,s.f,s.r);
+ftext(s.back,da,da.left+((da.right-da.left+1-tw) div 2),da.top+((da.bottom-da.top+1-s.fnH) div 2),low__aorb(s.font,dfont2,mmsys_mid_mutenote[xnote]),'',t,s.fn,true);
 
 //inc
 inc(dcount);
@@ -4940,6 +5030,7 @@ iref          :=-1;
 iclsref       :='';
 iwcount       :=0;
 ibcount       :=0;
+icustomFont   :=res__newfont;
 
 //.white keys
 wbottom       :=ggga0__int(180);
@@ -4964,8 +5055,14 @@ end;
 destructor tpiano.destroy;
 begin
 try
+
+//controls
+res__del( icustomFont );
+
+//self
 inherited destroy;
 if classnameis('tpiano') then track__inc(satOther,-1);
+
 except;end;
 end;
 
@@ -5185,7 +5282,8 @@ var
       procedure dl(xcolor:longint);//draw left
       begin
 
-      ldv(d.left,d.top,d.bottom-1-dshift,xcolor,false);
+      //was: ldv(d.left,d.top,d.bottom-1-dshift,xcolor,false);
+      ffillArea( area__make( d.left,d.top,d.left,d.bottom-1-dshift ) ,xcolor ,false );
 
       //inc
       inc(d.left);
@@ -5196,7 +5294,8 @@ var
       procedure dr(xcolor:longint);//draw right
       begin
 
-      ldv(d.right,d.top,d.bottom-1-dshift,xcolor,false);
+      //was: ldv(d.right,d.top,d.bottom-1-dshift,xcolor,false);
+      ffillArea( area__make( d.right,d.top,d.right,d.bottom-1-dshift ) ,xcolor ,false );
 
       //inc
       dec(d.right);
@@ -5207,8 +5306,10 @@ var
       procedure db(xcolor:longint);//draw bottom
       begin
 
-      if dwhitekey then ldh(d.left+1,d.right-1,d.bottom-dshift,xcolor,false)
-      else              ldh(d.left+0,d.right-0,d.bottom-dshift,xcolor,false);
+//was:  if dwhitekey then ldh(d.left+1,d.right-1,d.bottom-dshift,xcolor,false)
+//      else              ldh(d.left+0,d.right-0,d.bottom-dshift,xcolor,false);
+      if dwhitekey then ffillArea( area__make( d.left+1,d.bottom-dshift,d.right-1,d.bottom-dshift ) ,xcolor ,false )
+      else              ffillArea( area__make( d.left+0,d.bottom-dshift,d.right-0,d.bottom-dshift ) ,xcolor ,false );
 
       //inc
       inc(d.left);
@@ -5220,7 +5321,8 @@ var
       procedure dt(xcolor:longint);//draw top
       begin
 
-      ldh(d.left+1,d.right-1,d.top,xcolor,false);
+      //was: ldh(d.left+1,d.right-1,d.top,xcolor,false);
+      ffillArea( area__make( d.left+1,d.top,d.right-1,d.top ) ,xcolor ,false );
 
       //inc
       inc(d.left);
@@ -5261,8 +5363,11 @@ var
 
    //top of key -> color as normal or in down state
    case ikeystyle of
-   khsShadeUP :lds2(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,c,c0,0,'g-15',false);
-   khsShadeDN :lds2(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,c,c0,0,'g-65',false);
+
+   khsShadeUP :fshadeArea2( area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift) ,c0,c,c,c0 ,15 ,255 ,false);
+
+   khsShadeDN :fshadeArea2( area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift) ,c0,c,c,c0 ,65 ,255 ,false);
+
    khsEdge,khsEdge2:begin
 
       ffillArea(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c0,false);
@@ -5271,21 +5376,26 @@ var
          begin
 
          case dwhitekey of
-         true:lds2( area__make(da.left+bs,da.bottom-bs-dshift-6, da.right-bs,da.bottom-bs-dshift)  ,c0 ,cwhiteEdge,clnone,0,'g-100',false);
-         else lds2( area__make(da.left+bs,da.bottom-bs-dshift-5,  da.right-bs,da.bottom-bs-dshift) ,c0 ,cblackEdge,clnone,0,'g-100',false);
+         true:fshadeArea2( area__make(da.left+bs,da.bottom-bs-dshift-6, da.right-bs,da.bottom-bs-dshift)  ,c0 ,cwhiteEdge,clnone,0 ,100 ,255 ,false );
+         else fshadeArea2( area__make(da.left+bs,da.bottom-bs-dshift-5,  da.right-bs,da.bottom-bs-dshift) ,c0 ,cblackEdge,clnone,0 ,100 ,255 ,false );
          end;//case
 
          end;
 
       end;
+
    else        ffillArea(area__make(da.left+bs,da.top,da.right-bs,da.bottom-bs-dshift),c,false);
+
    end;//case
 
    //label
    if (dlabel<>'') then
       begin
-      tw:=low__fonttextwidth2(fn2,dlabel);
-      ldt1(dtop,da,da.left+((da.right-da.left+1-tw) div 2),da.top+bh+((wh-bh-fnH2) div 2)-bupshift2,dbottom,dlabel,fn2,s.f,false);
+
+      tw:=resfont__textwidth(fn2,dlabel);
+      //was: ldt1(dtop,da,da.left+((da.right-da.left+1-tw) div 2),da.top+bh+((wh-bh-fnH2) div 2)-bupshift2,dbottom,dlabel,fn2,s.f,false);
+      ftext(dtop,da,da.left+((da.right-da.left+1-tw) div 2),da.top+bh+((wh-bh-fnH2) div 2)-bupshift2,dbottom,'',dlabel,fn2,true);
+
       end;
 
    //swap edge colors for downstroke
@@ -5374,8 +5484,10 @@ bupshift2:=3*s.zoom;//standard shift
 bupshift1:=1*s.zoom;//smaller flash based shift
 
 //.smaller font
-fn2      :=low__font0(s.info.fontname,-frcmin32(round(ww*0.60),5));
-fnH2     :=low__fontmaxh(fn2);
+res__font( icustomFont ).setparams( s.info.fontname ,-frcmin32(round(ww*0.60),5) ,true ,false ,false );
+
+fn2      :=icustomfont;
+fnH2     :=resfont__height(icustomfont);
 
 //.other
 xflash   :=false;

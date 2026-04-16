@@ -9,7 +9,7 @@ interface
 {$ifdef con2} {$define jpeg} {$endif}
 {$ifdef WIN64}{$define 64bit}{$endif}
 {$ifdef fpc} {$mode delphi}{$define laz} {$define d3laz} {$undef d3} {$else} {$define d3} {$define d3laz} {$undef laz} {$endif}
-uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin;
+uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin, gossteps;
 {$ifdef d3laz} const stroffset=1; {$else} const stroffset=0; {$endif}  {0 or 1 based string index handling}
 {$align on}{$iochecks on}{$O+}{$W-}{$U+}{$V+}{$B-}{$X+}{$T-}{$P+}{$H+}{$J-} { set critical compiler conditionals for proper compilation - 10aug2025 }
 //## ==========================================================================================================================================================================================================================
@@ -31,46 +31,48 @@ uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin;
 //## CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //##
 //## ==========================================================================================================================================================================================================================
-//## Library.................. root (gossroot.pas)
-//## Version.................. 4.00.6761 (+820)
-//## Items.................... 49
-//## Last Updated ............ 01feb2026, 31jan2026, 05jan2026, 23dec2025, 19dec2025, 18dec2025, 15dec2025, 13dec2025, 10dec2025, 08dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
-//## Lines of Code............ 33,600+
+//## Library.................. Root (gossroot.pas)
+//## Version.................. 4.00.6840 (+870)
+//## Items.................... 48
+//## Last Updated ............ 11apr2026, 09apr2026, 02apr2026, 26mar2026, 18mar2026, 10mar2026, 07mar2026, 20feb2026, 17feb2026, 05feb2026, 01feb2026, 31jan2026, 05jan2026, 23dec2025, 19dec2025, 18dec2025, 15dec2025, 13dec2025, 10dec2025, 08dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
+//## Lines of Code............ 33,900+
+//## Origin .................. Human generated and maintained
 //##
-//## main.pas ................ app code
-//## gossroot.pas ............ console/gui app startup and control
-//## gossio.pas .............. file io
-//## gossimg.pas ............. image/graphics
-//## gossnet.pas ............. network
-//## gosswin.pas ............. static Win32 api calls
-//## gosswin2.pas ............ dynamic Win32 api calls
-//## gosssnd.pas ............. sound/audio/midi/chimes
-//## gossgui.pas ............. gui management/controls
-//## gossdat.pas ............. app icons (24px and 20px) and help documents (gui only) in txt, bwd or bwp format
-//## gosszip.pas ............. zip support
-//## gossjpg.pas ............. jpeg support
-//## gossfast.pas ............ fastdraw support
-//## gossgame.pas ............ game support (optional)
-//## gamefiles.pas ........... internal files for game (optional)
+//## main.pas ................ App specific code
+//## gossdat.pas ............. App specific icons and help documents
+//## gossfast.pas ............ FastDraw - rapid render graphic procs
+//## gossgame.pas ............ GameCore - 2D game engine with integrated menu handler, xbox controller + mouse + keyboard support and window integration
+//## gamefiles.pas ........... Built-in file(s) for GameCore (optional)
+//## gossgui.pas ............. GUI management and controls
+//## gossimg.pas ............. Multi-format graphic procs for 8, 24 and 32 bit images with IO support
+//## gossio.pas .............. File IO and low level file/folder/disk/data format procs
+//## gossjpg.pas ............. JPEG IO (read/write jpeg image data via third party libraries)
+//## gossnet.pas ............. Networking - ip filtering, socket management etc
+//## gossroot.pas ............ App startup and control (GUI, console and service)
+//## gosssnd.pas ............. Sound, audio, midi and midi based chimes
+//## gossteps.pas ............ System, Folder and App images
+//## gosstext.pas ............ TextCore - non-GUI and GUI text engine for text boxes
+//## gosswin.pas ............. Win32 api calls for 32 and 64 bit (static / api references disabled by default)
+//## gosswin2.pas ............ Win32 api calls for 32 and 64 bit (dynamic - load as required with fallback failure handling and default value(s) support)
+//## gosszip.pas ............. ZIP IO (read/write zip data via third party libraries)
 //##
 //## ==========================================================================================================================================================================================================================
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
-//## | app__*                 | family of procs   | 1.00.475  | 13dec2025   | App related procs - 23oct2025, 28sep2025, 07sep2025, 19aug2025, 15jul2025, 19jun2025, 18feb2025, 29jan2025, 27nov2024
+//## | app__*                 | family of procs   | 1.00.490  | 02apr2026   | App related procs - 10mar2026, 05mar2026, 13dec2025, 23oct2025, 28sep2025, 07sep2025, 19aug2025, 15jul2025, 19jun2025, 18feb2025, 29jan2025, 27nov2024
 //## | dialog__*              | family of procs   | 1.00.070  | 10oct2025   | MS Dialogs
 //## | printer__*             | family of procs   | 1.00.050  | 26apr2025   | Printer related procs
 //## | font__*                | family of procs   | 1.00.070  | 26apr2025   | Font related procs
 //## | mail__*                | family of procs   | 1.00.172  | 07apr2025   | Mail related procs (email) - 21nov2024
 //## | new__*                 | family of procs   | 1.00.010  | 30apr2024   | Creation procs -> create objects using less source code
-//## | track__*               | family of procs   | 1.00.023  | 07sep2025   | Type instance tracking - 28aug2025, 17apr2024
+//## | track__*               | family of procs   | 1.00.025  | 20feb2026   | Type instance tracking - 07sep2025, 28aug2025, 17apr2024
 //## | monitors__*            | family of procs   | 1.00.432  | 26sep2025   | Multi-monitor support - 18feb2025, 06jan2025, 05dec2024
 //## | low__*                 | low level procs   | 1.00.186  | 04dec2025   | Support procs - 29sep2025, 03sep2025, 25jul2025, 01apr2025, 06jan2025, 01may2024
-//## | low__b64*              | family of procs   | 1.00.030  | 17apr2024   | Base64 encoding/decoding
 //## | float__*, int__*       | family of procs   | 1.00.052  | 12dec2024   | Float and longint32 string-to-number and number-to-string conversion routines - 12dec2024: float__tostr_divby(),  01nov2024
 //## | block__*               | family of procs   | 1.00.095  | 17apr2024   | Block based memory management procs
-//## | str__*                 | family of procs   | 1.00.240  | 30aug2025   | Procs for working with both tstr8 and tstr9 objects, 04may2025, 17apr2025, 16mar2025, 22nov2024, 11aug2024: str__pbytes0 and str__setpbytes0, 25jul2024: str__tob64/fromb64, 17apr2024
+//## | str__*                 | family of procs   | 1.00.280  | 18mar2026   | Procs for working with both tstr8 and tstr9 objects - 30aug2025, 04may2025, 17apr2025, 16mar2025, 22nov2024, 11aug2024: str__pbytes0 and str__setpbytes0, 25jul2024: str__tob64/fromb64, 17apr2024
 //## | mem__*                 | family of procs   | 1.00.052  | 01sep2025   | Heap based management procs - 27aug2025, 27aug2025, 17apr2024
-//## | utf8__*                | family of procs   | 1.00.115  | 21apr2025   | UTF-8 decoding support, 16mar2025, 15apr2024: created
+//## | utf8__*                | family of procs   | 1.00.117  | 16feb2026   | UTF-8 decoding support, 21apr2025, 16mar2025, 15apr2024: created
 //## | mundo__*               | family of procs   | 1.00.075  | 28jun2024   | Data stream based multi-undo redo/undo slot tracking and management for simple and reliable multi-undo implementation
 //## | res__*                 | family of procs   | 1.00.020  | 14sep2025   | resource support procs - 26aug2026
 //## | zip__*                 | family of procs   | 1.00.072  | 24aug2025   | ZIP archive creation procs - 18apr2025, 19jul2024
@@ -220,6 +222,8 @@ const
 
 
    //.nurmerical support
+   power_enabled        =255;
+   power_disabled       =128;//0=not visible, 128=half visible, 255=fully visible
    rcode                =#13#10;
    r10                  =#10;
    maxcore              =999;//number of GUI controls the tbasicsystem can handle - 28jun2022
@@ -282,6 +286,13 @@ const
    maxslot3264          = maxslot32;//4b for 32bit
    {$endif}
 
+   //page sizes -> basicbwp and low__wordcore
+   psA4                 =0;
+   psA3                 =1;
+   psA5                 =2;
+   psLetter             =3;
+   psLegal              =4;
+   psMax                =4;
 
    //message box ---------------------------------------------------------------
    mbCustom             =$0;
@@ -341,241 +352,9 @@ const
 
 
    //.msix dependency tags
+   msixNULL             ='-';//15apr2026
    msixMIDI             ='M';//31jan2026
 
-   //system teps ---------------------------------------------------------------
-   //text images / small images
-
-   //.static height teps - 20px
-   tepNone                 =0;
-   tepUnknown20            =1;
-   tepNew20                =2;
-   tepHome20               =3;
-   tepYesBLANK20           =4;
-   tepYes20                =5;
-   tepOK20                 =6;
-   tepOpen20               =7;
-   tepSave20               =8;
-   tepDisk20               =9;
-   tepCut20                =10;
-   tepCopy20               =11;
-   tepPaste20              =12;
-   tepDelete20             =13;
-   tepClose20              =14;
-   tepEdit20               =15;
-   tepUndo20               =16;
-   tepRedo20               =17;
-   tepOptions20            =18;//14aug2020
-   tepNav20                =19;//06oct2020
-   tepInvert20             =20;
-   tepUpper20              =21;
-   tepLower20              =22;
-   tepName20               =23;//name case
-   tepLess20               =24;
-   tepMore20               =25;
-   tepBW20                 =26;
-   tepHelp20               =30;
-   tepUM20                 =31;
-   tepMax20                =32;
-   tepSettings20           =33;
-   tepAbout20              =34;
-   tepBE20                 =35;
-   tepRefresh20            =36;
-   tepFolder20             =37;
-   tepColor20              =38;
-   tepFont20               =39;
-   tepDesktop20            =40;
-   tepPrograms20           =41;
-   tepMenu20               =42;
-   tepPlay20               =43;
-   tepColors20             =44;
-   tepColormatrix20        =45;
-   tepColorPal20           =46;//wide (20px H x 40px W) and replaces black pixels with custom color
-   tepPrev20               =47;
-   tepNext20               =48;
-   tepUpone20              =49;
-   tepFav20                =50;
-   tepNewfolder20          =51;
-   tepAdd20                =52;
-   tepStop20               =53;
-   tepVol20                =54;
-   tepRewind20             =55;
-   tepFastforward20        =56;
-   tepSelectAll20          =57;
-   tepFavEdit20            =58;
-   tepFavAdd20             =59;
-   tepColorHistory20       =60;
-   tepTick20               =61;
-   tepUntick20             =62;
-   tepEye20                =63;
-   tepHelpdoc20            =64;
-   tepVisual20             =65;//03jul2025
-   tepUp20                 =66;
-   tepCD20                 =67;
-   tepRemovable20          =68;
-   tepFolderimage20        =69;
-   tepStartmenu20          =70;
-   tepSchemes20            =71;
-   tepSub20                =72;
-   tepZoom20               =73;
-   tepSizeto20             =74;
-   tepTicktwo20            =75;
-   tepUnticktwo20          =76;
-   tepTickthree20          =77;
-   tepUntickthree20        =78;
-   tepRec20                =79;
-   tepScreen20             =80;
-   tepOntop20              =81;
-   tepHide20               =82;
-   tepWrap20               =83;
-   tepWine20               =84;
-   tepFrame20              =85;
-   tepLeft20               =86;
-   tepRight20              =87;
-   tepTop20                =88;
-   tepBottom20             =89;
-   tepBlank20              =90;
-   tepClock20              =91;
-   tepAlert20              =92;
-   tepBell20               =93;
-   tepSonnerie20           =94;
-   tepNotes20              =95;
-   tepFNew20               =96;//uses font color - 23mar2022
-   tepBack20               =97;
-   tepForw20               =98;
-   tepPower20              =99;//14jun2022
-   tepAddL20               =100;//14jun2022
-   tepSubL20               =101;//14jun2022
-   tepPanel20              =102;//05jul2022
-   tepClosed20             =103;//black - uses system font color - 21nov2023
-   tepUpward20             =104;//black
-   tepDownward20           =105;//black
-   tepInstagram20          =106;
-   tepFacebook20           =107;
-   tepMastodon20           =108;
-   tepTwitter20            =109;
-   tepSourceForge20        =110;//02dec2023
-   tepGitHub20             =111;
-   tepGo20                 =112;//20jul2024
-   tepCapture20            =113;//02aug2024
-   tepMute20               =114;//11jan2025
-   tepUnmute20             =115;//11jan2025
-   tepBulletSquare20       =116;//15mar2025         
-
-   tepRotate20             =117;
-   tepRotateLeft20         =118;
-   tepMirror20             =119;
-   tepFlip20               =120;
-   tepSaveAs20             =121;
-   tepPrint20              =122;
-   tepBackground20         =123;
-   tepSquircle20           =124;
-   tepCircle20             =125;
-   tepSquare20             =126;
-   tepSolid20              =127;
-   tepTransparent20        =128;
-   tepAsis20               =129;
-   tepDiamond20            =130;//04jun2025
-   tepOutline20            =131;
-   tepChecker20            =132;
-   tepList20               =133;//05jun2025
-   tepInfo20               =134;//03jul2025
-   tepColorPal20n          =135;//13jul2025 - narrower version (20px H x 20px W) and replaces black pixels with custom color
-   tepSwap20               =136;//14jul2025
-   tepDither20             =137;//19jul2025
-   tepRect20               =138;
-   tepLine20               =139;
-   tepPen20                =140;
-   tepDrag20               =141;
-   tepPot20                =142;
-   tepGPot20               =143;
-   tepCls20                =144;
-   tepMove20               =145;
-   tepEyedropper20         =146;
-   tepWraphorz20           =147;
-   tepNotepad20            =148;//18sep2025
-   tepPaint20              =149;//18sep2025
-   tepPause20              =150;//29sep2025
-   tepImage20              =151;//09nov2025
-   tepCode20               =152;//09nov2025
-   tepUnit20               =153;
-   tepCompress20           =154;
-   tepColorPals20          =155;//wide (20px H x 40px W) and supports dual color (xtepcolor/xtepcolor2) - 04dec2025
-
-   //.file format teps
-   tepXXX20                =170;
-   tepBMP20                =171;
-   tepWMA20                =172;
-   tepTXT20                =173;
-   tepEXE20                =174;
-   tepBWD20                =175;
-   tepBWP20                =176;
-   tepMID20                =177;//20feb2021
-   tepBCS20                =178;//10mar2021
-   tepR20                  =179;//30dec2021
-   tepXML20                =180;//30dec2021
-   tepHTM20                =181;//30dec2021
-   tepC2P20                =182;//12jan2022
-   tepC2V20                =183;//24jan2022
-   tepZIP20                =184;
-   tep7Z20                 =185;
-   tepINI20                =186;
-   tepCUR20                =187;//23may2022, 17may2022
-   tepRTF20                =188;//22jun2022
-   tepSFEF20               =189;//05oct2022
-   tepQuoter20             =190;//26dec2022
-   tepPAS20                =191;//23jul2024
-   tepC320                 =192;//claude 3 code - 20aug2024
-   tepREF320               =193;
-   tepDPR20                =194;//20mar2025
-   tepnupkg20              =195;//31mar2025
-
-   //.duplicates
-   tepRun20                =tepEXE20;
-
-   //.variable height teps
-   tepmin                  =200;
-   tepmax                  =201;
-   tepnor                  =202;
-   tepclo                  =203;
-   tepNormal               =204;
-   tepMaximise             =205;
-   tepinf                  =206;
-   tepUp                   =210;
-   tepDown                 =211;
-   tepLeft                 =212;
-   tepRight                =213;
-   tepOn                   =220;
-   tepOff                  =221;
-   tepHelpHint             =222;
-   tepBullet               =223;
-   tepSep                  =224;
-   tepHelpBanner           =225;//medium sized banner
-   tepFull                 =226;//full screen mode - 28dec2024
-   tepFullExit             =227;//exit full screen
-
-   //.custom teps - program specific/defined - 200 permitted -> use "app__findcustomtep()" proc under "main.pas"
-   tepCustomStart          =300;
-   tepCustomEnd            =499;
-
-   //.large 24x24 teps
-   tepIcon24               =500;//actual program icon -> program specific - 11oct2020
-   tepIcon24B              =501;//optional cell 2 - 30apr2022
-   tepIcon24C              =502;//optional cell 3
-   tepIcon24D              =504;//optional cell 4
-   tepInfo24               =505;
-   tepQuery24              =506;
-   tepError24              =507;
-   tepColor24              =508;
-   tepFolderimage24        =509;
-   tepNewfolder24          =510;
-   tepIcon20               =511;//actual program icon at 20h - 26sep2022
-
-   systepHeight20          =20;//standard tep height - 19mar2021
-   teaMaxsize20x20         =2027;//400 colors at 20w x 20h = 2,027 (32bit) 12apr2025, was: 1,612 bytes - 06apr2021
-
-   tepSysstart20           =100000;//start of dynamically allocated TEA's (max dimensions 20w x 20h) - 06apr2021
-   tepSysstop20            =199999;//end of dynamically allocated TEA's  -> total of 100,000 images allowed
 
    //.colors
    clTopLeft      =-1;
@@ -625,13 +404,13 @@ const
    track_limit           =200;
 
    track_Overview_start   =1;
-   track_Overview_finish  =29+track_Overview_start;//10dec2025
+   track_Overview_finish  =30+track_Overview_start;//10dec2025
 
    track_Core_start       =track_Overview_finish+3;//allow for blank line and title
-   track_Core_finish      =56+track_Core_start;
+   track_Core_finish      =59+track_Core_start;
 
    track_GUI_start        =track_Core_finish+3;//allow for blank line and title
-   track_GUI_finish       =31+track_GUI_start;
+   track_GUI_finish       =32+track_GUI_start;
 
    track_endof_overview  =track_Overview_finish;
    track_endof_core      =track_Core_finish;
@@ -649,26 +428,28 @@ const
    satDLLload          =8+track_Overview_start;
    satAPIload          =9+track_Overview_start;
    satAPIcalls         =10+track_Overview_start;
-   satRenderRate       =11+track_Overview_start;
-   satMemory           =12+track_Overview_start;
-   satMemoryCount      =13+track_Overview_start;
-   satMemoryCreateCount=14+track_Overview_start;
-   satMemoryFreeCount  =15+track_Overview_start;
+   satResourceLoad     =11+track_Overview_start;//20feb2026
+   satRenderRate       =12+track_Overview_start;
+   satFrameRate        =13+track_Overview_start;
+   satMemory           =14+track_Overview_start;
+   satMemoryCount      =15+track_Overview_start;
+   satMemoryCreateCount=16+track_Overview_start;
+   satMemoryFreeCount  =17+track_Overview_start;
 
-   satErrors           =16+track_Overview_start;
-   satThreadFixes      =17+track_Overview_start;//02nov2025
-   satMaskcapture      =18+track_Overview_start;
-   satPartpaint        =19+track_Overview_start;
-   satFullpaint        =20+track_Overview_start;
-   satPartalign        =21+track_Overview_start;
-   satFullalign        =22+track_Overview_start;
-   satDragcount        =23+track_Overview_start;
-   satDragcapture      =24+track_Overview_start;
-   satDragpaint        =25+track_Overview_start;
-   satSizecount        =26+track_Overview_start;
-   satSysFont          =27+track_Overview_start;
-   satTotalCore        =28+track_Overview_start;//sources value from "satCoreTotal"
-   satTotalGUI         =29+track_Overview_start;//sources value from "satGUITotal"
+   satErrors           =18+track_Overview_start;
+   satThreadFixes      =19+track_Overview_start;//02nov2025
+   satMaskcapture      =20+track_Overview_start;
+   satPartpaint        =21+track_Overview_start;
+   satFullpaint        =22+track_Overview_start;
+   satPartalign        =23+track_Overview_start;
+   satFullalign        =24+track_Overview_start;
+   satDragcount        =25+track_Overview_start;
+   satDragcapture      =26+track_Overview_start;
+   satDragpaint        =27+track_Overview_start;
+   satSizecount        =28+track_Overview_start;
+   satSysFont          =29+track_Overview_start;
+   satTotalCore        =30+track_Overview_start;//sources value from "satCoreTotal"
+   satTotalGUI         =31+track_Overview_start;//sources value from "satGUITotal"
 
    //.core
    satCoreTotal        =0+track_Core_start;
@@ -728,6 +509,9 @@ const
    satTBT              =54+track_Core_start;
    satBasicapp         =55+track_Core_start;
    satImageexts        =56+track_Core_start;
+   satRLE6             =57+track_Core_start;
+   satRLE8             =58+track_Core_start;
+   satRLE32            =59+track_Core_start;
 
    //.gui
    satGuiTotal         =0+track_GUI_start;
@@ -1038,6 +822,8 @@ const
    fec2v          ='c2v';//Claude 2 values - 24jan2022
    feini          ='ini';//24jan2022
    fetxt          ='txt';
+   fertf          ='rtf';//17feb2026
+   fedic          ='dic';//17feb2026
    febwd          ='bwd';
    febwp          ='bwp';
    fesfef         ='sfef';//small file encrypter file
@@ -1051,6 +837,9 @@ const
    feimg32        ='img32';//26jul2024
    fesan          ='san';//16sep2025
    fepic8         ='pic8';//16sep2025
+   ferle6         ='rle6';//06mar2026
+   ferle8         ='rle8';//25feb2026
+   ferle32        ='rle32';//05mar2026
    fetj32         ='tj32';//27jul2024
    fegif          ='gif';
    fetga          ='tga';//20dec2024
@@ -1103,7 +892,7 @@ const
 
    //.combinations
    feallfiles     =feany;
-   fealldocs      =fetxt+fesepX+febwd+fesepX+febwp;
+   fealldocs      =fetxt+fesepX+febwd+fesepX+febwp+fesepX+fertf+fesepX+fedic;
    feallimgs      =fepng+fesepX+
                    fegif+fesepX+
                    {$ifdef jpeg}fejpg+fesepX+fejif+fesepX+fejpeg+fesepX+{$endif}
@@ -1120,6 +909,9 @@ const
                    feimg32+fesepX+
                    fesan+fesepX+//16sep2025
                    {$ifdef gamecore}fepic8+fesepX+{$endif}//16sep2025
+                   ferle6+fesepX+
+                   ferle8+fesepX+
+                   ferle32+fesepX+
                    {$ifdef jpeg}fetj32+{$endif} '';
    feallcurs      =fecur+fesepX+feani;
    feallcurs2     =fecur+fesepX+feani+fesepX+feico+fesepX+fepng+fesepX+fegif+fesepX+fesan+fesepX+fetea+fesepX+feimg32{$ifdef gamecore}+fesepX+fepic8{$endif};//29may2025, 22may2022
@@ -1141,6 +933,9 @@ const
                    feimg32+fesepX+
                    fesan+fesepX+
                    {$ifdef gamecore}fepic8+fesepX+{$endif}//16sep2025
+                   ferle6+fesepX+//06mar2026
+                   ferle8+fesepX+//25feb2026
+                   ferle32+fesepX+//05mar2026
                    '';
 
    //Preformatted File Extension Codes
@@ -1150,6 +945,8 @@ const
    pec2v          =fec2v+fesep;
    peini          =feini+fesep;
    petxt          =fetxt+fesep;
+   pedic          =fedic+fesep;
+   pertf          =fertf+fesep;
    pebwd          =febwd+fesep;
    pebwp          =febwp+fesep;
    pesfef         =fesfef+fesep;
@@ -1162,6 +959,9 @@ const
    peimg32        =feimg32+fesep;
    pesan          =fesan+fesep;
    pepic8         =fepic8+fesep;
+   perle6         =ferle6+fesep;
+   perle8         =ferle8+fesep;
+   perle32        =ferle32+fesep;
    petj32         =fetj32+fesep;
    pegif          =fegif+fesep;
    petga          =fetga+fesep;
@@ -3444,6 +3244,7 @@ var
    p8CMP256              :array[0..256] of comp;
 
    //.system values
+   system_newnameid    :longint=0;//unique system wide -> general purpose NAME BASED id -> range: 0..N -> used with "io__tempfile__nameid()" proc - 25jun2022
    vizoom              :longint=1;
    vizoom_setonce      :boolean=false;//19aug2024
    system_eventdriven  :boolean=false;//true=Windows event list driven, false=internally driven
@@ -3594,7 +3395,7 @@ function app__info(xname:string):string;
 function app__bol(xname:string):boolean;
 function app____netmore:tobject;//optional - return a custom "tnetmore" object for a custom helper object for each network record -> once assigned to a network record, the object remains active and ".clear()" proc is used to reduce memory/clear state info when record is reset/reused
 function info__root(xname:string):string;//information specific to this unit of code
-function info__rootfind(xname:string):string;//central point from which to find the requested information - 08aug2025, 09apr2024
+function info__rootfind(xname:string):string;//central point from which to find the requested information - 05feb2026, 08aug2025, 09apr2024
 function info__mode:longint;
 function splash__findvalue(const x:longint;var xname,xvalue:string):boolean;//14jul2025
 function splash__findvalue2(const x:longint;const xnameORvalue:boolean):string;//17dec2025
@@ -3716,10 +3517,15 @@ function utf8__charlen(x:byte):longint;
 function utf8__charpoint0(x:pobject;var xpos:longint):longint;
 function utf8__encodetohtml(s,d:pobject;dappend,dasfilename,dnoslashes:boolean):boolean;
 function utf8__encodetohtmlstr(x:string;xasfilename,xnoslashes:boolean):string;
-function utf8__toascii(s,d:pobject;xhaltonunsupportedchar:boolean):boolean;
-function utf8__toasciib(const xtext:string;xhaltonunsupportedchar:boolean):string;//31mar2025
-function utf8__toplaintext7bitb(const x:string):string;//22apr2025
-procedure utf8__toplaintext7bit(var x:string);
+
+function utf8__toascii(s,d:pobject;const xhaltonunsupportedchar:boolean):boolean;
+function utf8__toascii2(s,d:pobject;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):boolean;//16feb2026
+function utf8__toasciib(const xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):string;//31mar2025
+
+function utf8__to7bitText(s,d:pobject;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):boolean;//16feb2026
+function utf8__to7bitTextb(const xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):string;//16feb2026
+procedure utf8__to7bitTextb2(var xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean);//16feb2026
+procedure utf8__to7bitTextb3(var xtext:string);//16feb2026
 
 //mail procs -------------------------------------------------------------------
 function mail__date(x:tdatetime):string;
@@ -3962,13 +3768,20 @@ procedure str__setc32(x:pobject;xpos:longint;xval:tcolor32);
 function str__c40(x:pobject;xpos:longint):tcolor40;
 procedure str__setc40(x:pobject;xpos:longint;xval:tcolor40);
 
-//.base64 conversion procs
+
+//.conversion procs ------------------------------------------------------------
+//.base64
 function str__tob64(s,d:pobject;linelength:longint):boolean;//to base64
 function str__tob642(s,d:pobject;xpos1,linelength:longint):boolean;//25jul2024: support for tstr8 and tstr9, 13jan2024: uses #10 return codes
 function str__tob643(s,d:pobject;xpos1,linelength:longint;r13,r10,xincludetrailingrcode:boolean):boolean;//03apr2024: r13 and r10, 25jul2024: support for tstr8 and tstr9, 13jan2024: uses #10 return codes
 function str__fromb64(s,d:pobject):boolean;//25jul2024: support for tstr8 and tstr9
 function str__fromb642(s,d:pobject;xpos1:longint):boolean;
-//.other / older procs
+
+//.pascal array
+function str__toarrayBYTE(const s,d:pobject):boolean;//18mar2026
+
+
+//.other / older procs ----------------------------------------------------------
 function bgetstr1(x:tobject;xpos1,xlen:longint):string;
 function _blen(const x:tobject):longint64;//does NOT destroy "x", keeps "x"
 function _blen32(const x:tobject):longint32;
@@ -4053,6 +3866,7 @@ function low__makeetag2(x:tdatetime;xboundary:string):string;//high speed versio
 function low__datetimename(x:tdatetime):string;//12feb2023
 function low__datename(x:tdatetime):string;
 function low__datetimename2(x:tdatetime):string;//10feb2023
+function low__datetimename3_clearVals(x:tdatetime):string;//05feb2026
 function low__safedate(x:tdatetime):tdatetime;
 procedure low__decodedate2(x:tdatetime;var y,m,d:word);//safe range
 procedure low__decodetime2(x:tdatetime;var h,min,s,ms:word);//safe range
@@ -4151,6 +3965,11 @@ function low__fromb641(s,d:tstr8;xpos1:longint;var e:string):boolean;//from base
 function low__fromb64b(s:tstr8):tstr8;
 function low__fromb64str(x:string):string;
 
+//.hex procs
+function low__tohex(s,d:tstr8;xlinelength:longint):boolean;//16feb2026
+function low__fromhex(s,d:tstr8):boolean;//19feb2026
+
+
 //general procs ----------------------------------------------------------------
 function debugging:boolean;
 function vnew:tvars8;
@@ -4162,6 +3981,7 @@ function low__comparearray(const a,b:array of byte):boolean;//27jan2021
 function low__cls(const x:pointer;const xsize:longint64):boolean;
 function low__cls2(const x:pointer;const xsize:longint64;const xval:byte):boolean;//23dec2025
 function low__intr(x:longint):longint;//reverse longint
+function int32__make(const a,b,c,d:byte):longint;//09apr2026
 function low__wrdr(x:word):word;//reverse word
 function low__sign(x:longint):longint;//returns 0, 1 or -1 - 22jul2024
 function low__posn(x:longint):longint;
@@ -4214,6 +4034,7 @@ function div64(const xval,xval2:comp):comp;//rounds down like "trunc()" e.g. 1.4
 
 //.32bit number processers
 function round32(const xval:extended):longint;//12dec2025
+function trunc32(const xval:extended):longint;//26mar2026
 function add32(const xval,xval2:comp):longint;//01sep2025
 function sub32(const xval,xval2:comp):longint;//30sep2022, subtract
 function mult32(const xval,xval2:comp):longint;
@@ -4222,6 +4043,7 @@ function pert32(const xval,xlimit:comp):longint;
 
 function text__tooneline(const s:string;xreturncodeASchar:char):string;
 function text__fromoneline(const s:string;xreturncodeASchar:char):string;
+procedure text__filterText(x:tstr8);
 function guid__make(xname:string;xcompact:boolean):string;//11apr2025
 function guid__short_date(x:tdatetime;xcompact:boolean):string;//11apr2025
 function insstr(const x:string;y:boolean):string;
@@ -4345,6 +4167,7 @@ function have_ico:boolean;//22may2022
 
 
 //app procs --------------------------------------------------------------------
+
 //.information
 function app__activehandle:hauto;
 function app__handle:hauto;
@@ -4352,6 +4175,7 @@ function app__hinstance:hauto;
 function app__uptime:comp;
 function app__uptimegreater(x:comp):boolean;
 function app__uptimestr:string;
+
 //.folder
 function app__rootfolder:string;//14feb2025
 function app__folder:string;
@@ -4361,26 +4185,31 @@ function app__subfolder(xsubfolder:string):string;
 function app__subfolder2(xsubfolder:string;xalongsideexe:boolean):string;
 function app__settingsfile(xname:string):string;
 function app__settingsfile2(xname:string;xcreatefolder:boolean):string;//23oct2025
+
 //.settings
 //..load+save
 function app__loadsettings:boolean;
 function app__savesettings:boolean;
 procedure app__filtersettings;//19jun2025
+
 //..register -> filters settings data so only registered values persist
 procedure app__breg(xname:string;xdefval:boolean);//register boolean for settings
 procedure app__ireg(xname:string;xdefval,xmin,xmax:longint);//32bit register longint32 for settings
 procedure app__creg(xname:string;xdefval,xmin,xmax:comp);//64bit register comp for settings
 procedure app__sreg(xname:string;xdefval:string);//register string for settings
+
 //..value readers
 function app__bval(xname:string):boolean;//self-filtering
 function app__ival(xname:string):longint;//self-filtering
 function app__cval(xname:string):comp;//self-filtering
 function app__sval(xname:string):string;//self-filtering
+
 //..value writers
 function app__bvalset(xname:string;xval:boolean):boolean;
 function app__ivalset(xname:string;xval:longint):longint;
 function app__cvalset(xname:string;xval:comp):comp;
 function app__svalset(xname,xval:string):string;
+
 //.run
 //xxxxxxxxxxxxxxxxxxxx//66666666666666666666
 function app__adminlevel:boolean;
@@ -4403,6 +4232,7 @@ function app__processmessages:boolean;
 function app__processallmessages:boolean;
 function app__wproc:twproc;//auto makes the windows message handler
 function app__eventproc(ctrltype:dword32):bool; stdcall;//detects shutdown requests from Windows
+
 //.read + write line
 function app__write(x:string):boolean;//write
 function app__writeln(x:string):boolean;//write line
@@ -4413,19 +4243,25 @@ function app__read(var x:char):boolean;//read one char - waits
 function app__key:char;//read one char - does not wait, but throws away other message types
 function app__line(var x:string):boolean;//non-stopping line reader
 function app__line2(var x:string;xecho:boolean):boolean;//non-stopping line reader
+
 //.timers
 function app__firsttimer:boolean;//true the first time the timer events are called
 function app__lasttimer:boolean;//true when the timer events are called for the last time
 procedure app__timers;//should only be called from app__run
+
 //.wait
+procedure app__rootWaitAndMessages;//01apr2026
 procedure app__waitms(xms:longint);//wait for xms
 procedure app__waitsec(xsec:longint);//wait for xsec
+
 //.turbo mode -> run with maximum CPU power for a short burst of time
 procedure app__turbo;
 procedure app__shortturbo(xms:comp);//doesn't shorten any existing turbo, but sets a small delay when none exist, or a short one already exists - 05jan2024
 function app__turboOK:boolean;
+
 //.eco mode modifiers
 procedure app__ecomode_pause;//06dec2024
+
 //.window alpha level
 function app__cansetwindowalpha:boolean;
 function app__setwindowalpha(xwindow:hauto;xalpha:longint):boolean;//27nov2024: sets the alpha level of window, also automatically upgrades window's extended style to support alpha values
@@ -4598,6 +4434,7 @@ function low__shiftarea(xarea:twinrect;xshiftx,xshifty:longint):twinrect;//alway
 function low__shiftarea2(xarea:twinrect;xshiftx,xshifty:longint;xvalidcheck:boolean):twinrect;//xvalidcheck=true=shift only if valid area, false=shift always
 function low__areawithinrect(x,xnew:twinrect):boolean;//12jan2025
 
+function area__shift(const xarea:twinrect;const xshiftx,xshifty:longint):twinrect;//20feb2026
 procedure area__simplifyoverlapping(var slist:array of twinrect;var scount:longint);//04feb2025
 function area__nil:twinrect;
 function area__valid(const x:twinrect):boolean;//09may2025
@@ -4606,7 +4443,7 @@ function area__make(const xleft,xtop,xright,xbottom:longint):twinrect;
 procedure area__makefast(const xleft,xtop,xright,xbottom:longint;var x:twinrect);//23dec2025
 
 function area__makewh(const xleft,xtop,xwidth,xheight:longint):twinrect;//28jul2025
-function area__clip(clip_rect,s:twinrect):twinrect;//21nov2023
+function area__clip(const clip_rect,s:twinrect):twinrect;//20feb2026, 21nov2023
 function area__grow(const x:twinrect;const xby:longint):twinrect;//07apr2021
 function area__grow2(const x:twinrect;const xby,yby:longint):twinrect;//14jul2025
 function area__str(const x:twinrect):string;
@@ -4663,15 +4500,6 @@ procedure low__swapcur(var x,y:currency);
 procedure low__swapext(var x,y:extended);//06JUN2007
 procedure low__swapstr8(var x,y:tstr8);//07dec2023
 procedure low__swapvars8(var x,y:tvars8);//07dec2023
-
-
-//file procs -------------------------------------------------------------------
-function low__foldertep(xfolder:string):longint;
-function low__foldertep2(xownerid:longint;xfolder:string):longint;
-
-
-//.support
-function tepext(xfilenameORext:string):longint;
 
 
 //logic helpers support -------------------------------------------------------
@@ -4844,7 +4672,7 @@ function dialog__updateFilterList(var xfilterlist:string;const dindex:longint):b
 implementation
 
 uses main, gossio {$ifdef gui},gossdat ,gossgui{$endif} {$ifdef snd},gosssnd{$endif} ,gossimg, gossnet,
-     gossfast, gosszip{$ifdef jpeg},gossjpg{$endif} {$ifdef gamecore},gossgame{$endif};
+     gossfast, gosszip{$ifdef jpeg},gossjpg{$endif} {$ifdef gamecore},gossgame{$endif}, gosstext;
 
 const
    //security checkid 2 of 2 -> put it here to space it out inside the EXE - harder to track - 11oct2022
@@ -5804,15 +5632,19 @@ if system_started_root then exit else system_started_root:=true;
 
 //os version info
 low__cls(@xver,sizeof(xver));//02oct2025
+
 xver.dwOSVersionInfoSize:=sizeof(xver);
+
 if win____GetVersionEx(xver) then
    begin
+
    system_osid     :=xver.dwPlatformId;
    system_osmajver :=xver.dwMajorVersion;//Note: tops out at v6.2 according to MS, unless the app is "manifested" for higher versions
    system_osminver :=xver.dwMinorVersion;
    system_osbuild  :=xver.dwBuildNumber;
    system_osstr    :=intstr32(system_osid)+'.'+intstr32(system_osmajver)+'.'+intstr32(system_osminver)+'.'+intstr32(system_osbuild);
    system_osWin9X  :=(system_osmajver<=4);//Windows95..98..ME = v4.*
+
    end;
 
 
@@ -6019,18 +5851,20 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gossroot.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.6761'
-else if (xname='date')       then result:='01feb2026'
+if      (xname='ver')        then result:='4.00.6840'
+else if (xname='date')       then result:='11apr2026'
 else if (xname='name')       then result:='Root'
 else if (xname='mode.int')   then result:=intstr32(info__mode)
 else if (xname='mode')       then
    begin
+
    case info__mode of
-   1:result:='Console App';
-   2:result:='Windows Service';
-   3:result:='GUI App';
-   else result:='Unknown';
+   1    :result:='Console App';
+   2    :result:='Windows Service';
+   3    :result:='GUI App';
+   else  result:='Unknown';
    end;//case
+
    end
 else
    begin
@@ -6040,7 +5874,7 @@ else
 except;end;
 end;
 
-function info__rootfind(xname:string):string;//central point from which to find the requested information - 08aug2025, 09apr2024
+function info__rootfind(xname:string):string;//central point from which to find the requested information - 05feb2026, 08aug2025, 09apr2024
 var
    v:longint;
 
@@ -6076,6 +5910,7 @@ if (result='') then
 if (result='') then result:=info__root(xname);
 if (result='') then result:=info__io(xname);
 if (result='') then result:=info__img(xname);
+if (result='') then result:=info__imgs(xname);//07mar2026
 if (result='') then result:=info__net(xname);
 if (result='') then result:=info__win(xname);
 if (result='') then result:=info__fast(xname);//01feb2026
@@ -6098,6 +5933,8 @@ if (result='') then result:=info__jpg(xname);//05may2025
 if (result='') then result:=info__game(xname);//08aug2025
 {$endif}
 
+if (result='') then result:=info__text(xname);//13feb2026
+
 
 //global values
 if (result='') then
@@ -6114,13 +5951,17 @@ if (result='') then
       vbuildno(app__info('gossroot.ver'))+
       vbuildno(app__info('gossio.ver'))+
       vbuildno(app__info('gossimg.ver'))+
+      vbuildno(app__info('gossteps.ver'))+//10mar2026
       vbuildno(app__info('gossnet.ver'))+
       vbuildno(app__info('gosswin.ver'))+
       vbuildno(app__info('gosswina.ver'))+//28aug2025
       vbuildno(app__info('gosssnd.ver'))+
       vbuildno(app__info('gossgui.ver'))+
+      vbuildno(app__info('gosstext.ver'))+//13feb2026
       vbuildno(app__info('gosszip.ver'))+
       vbuildno(app__info('gossjpg.ver'))+
+      vbuildno(app__info('gossfast.ver'))+//05feb2026
+      vbuildno(app__info('gossgame.ver'))+//05feb2026
       0;
       //set
       result:=intstr64(v);
@@ -6280,9 +6121,17 @@ if (xtaglist<>'') then
 end;
 
 function msix__tagValid(const xtag:char):boolean;//31jan2026
+
+   function m(const n:string):boolean;
+   begin
+
+   result:=strmatch(n,xtag);
+
+   end;
+
 begin
 
-result:=strmatch(xtag,msixMIDI);
+result:=m(msixNULL) or m(msixMIDI);
 
 end;
 
@@ -6657,23 +6506,17 @@ end;
 
 function track__val(xindex:longint):longint;//17dec2024
 begin
-result:=0;
 
 //special links - 17dec2024
 if      (xindex=satTotalGUI)  then xindex:=satGUITotal
-else if (xindex=satTotalCore) then xindex:=satCoreTotal
-else if (xindex=satSysFont)   then
-   begin
-   {$ifdef gui}
-   result:=low__fontcount;
-   {$else}
-   result:=0;
-   {$endif}
-   exit;
-   end;
+else if (xindex=satTotalCore) then xindex:=satCoreTotal;
 
 //get
-if (xindex>=0) and (xindex<track_limit) then result:=track_active[xindex];
+case (xindex>=0) and (xindex<track_limit) of
+true:result:=track_active[xindex];
+else result:=0;
+end;//case
+
 end;
 
 function track__create(xindex:longint;xcreate:boolean):longint;//29aug2025
@@ -6726,7 +6569,9 @@ satGUIresources     :r('OS.GUI.Resources');
 satDLLload          :r('OS.DLL.Load');
 satAPIload          :r('OS.Api.Load');
 satAPIcalls         :r('OS.Api.Calls');
+satResourceLoad     :r('Resource Load');//20feb2026
 satRenderRate       :r('Render Rate');
+satFrameRate        :r('Frame Rate');
 satMemory           :r('Memory In Use');
 satMemorycount      :r('Memory Pointers');
 satMemoryFreeCount  :r('Memory Free Calls');
@@ -6812,6 +6657,9 @@ satColors           :r('colors');
 satMainhelp         :r('mainhelp');
 satPlaylist         :r('playlist');
 satImageexts        :r('imageexts');
+satRLE6             :r('RLE6');//06mar2026
+satRLE8             :r('RLE8');//26feb2025
+satRLE32            :r('RLE32');//05mar2026
 
 //.gui
 satGUITotal         :r('Total');
@@ -7036,7 +6884,7 @@ case xindex of
 track_Overview_start-1:xset2('Overview','Quantity',true);
 track_Core_start-1    :xset4('Core','Load','Create','Free',true);
 track_GUI_start-1     :xset4('GUI','Load','Create','Free',true);
-satUpTime             :xset0(low__uptime(sub64(ms64,system_boot),false,false,false,true,true,#32));//real-time
+satUpTime             :xset0(low__uptime(sub64(ms64,system_boot),false,false,false,true,true,#32));//realtime
 satVer                :xset0( splash__findvalue2(0,true) );//17dec2025
 satCodebase           :xset0( splash__findvalue2(3,true) );//17dec2025
 satMSIXmode           :xset0(low__yes(msix__active));//10dec2025
@@ -7047,7 +6895,9 @@ satGUIresources       :xset0( low__aorbstr('-',k64(app__guiresources),app__guire
 satDLLload            :xset0(k64(win__dllload)+' / '+k64(dllcount));//07sep2025
 satAPIload            :xset0(k64(win__procload)+' / '+k64(win__proccount));
 satAPIcalls           :xset0(k64(win__proccalls));
+satResourceLoad       :xset0(k64(res__count)+' / '+k64(res__limit));
 satRenderRate         :xset0(curdec(fd__renderMPS,2,true)+' mps');//07jan2026
+satFrameRate          :xset0(curdec(fd__renderFPS,2,true)+' fps');//01apr2026
 satMemory             :xset0(k64(system_memory_bytes));
 satMemoryCount        :xset0(k64(system_memory_count));
 satMemoryFreeCount    :xset0(k64(system_memory_freecount));
@@ -7287,36 +7137,46 @@ str__free(@d);
 except;end;
 end;
 
-function utf8__toasciib(const xtext:string;xhaltonunsupportedchar:boolean):string;
+function utf8__toasciib(const xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):string;
 var
    s,d:tstr8;
 begin
+
 //defaults
 result:='';
 s     :=nil;
 d     :=nil;
 
 try
+
 //init
 s     :=str__new8;
 d     :=str__new8;
 
 //get
 s.text:=xtext;
-utf8__toascii(@s,@d,xhaltonunsupportedchar);
+utf8__toascii2(@s,@d,xhaltonunsupportedchar,xMarkUnknownChars);
 
 //reduce ram
 str__clear(@s);
 
 //set
 result:=d.text;
+
 except;end;
+
 //free
 str__free(@s);
 str__free(@d);
+
 end;
 
-function utf8__toascii(s,d:pobject;xhaltonunsupportedchar:boolean):boolean;
+function utf8__toascii(s,d:pobject;const xhaltonunsupportedchar:boolean):boolean;
+begin
+result:=utf8__toascii2(s,d,xhaltonunsupportedchar,true);
+end;
+
+function utf8__toascii2(s,d:pobject;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):boolean;//16feb2026
 label
    redo,skipend;
 var
@@ -7325,13 +7185,18 @@ var
 
    procedure dadd(x:byte);
    begin
+
    if (d8<>nil) then d8.addbyt1(x) else str__addbyt1(d,x);
+
    end;
+
 begin
+
 //defaults
 result:=false;
 
 try
+
 //check
 if not str__lock2(s,d) then goto skipend;
 if (s=d)               then goto skipend;
@@ -7340,6 +7205,7 @@ if (s=d)               then goto skipend;
 str__clear(d);
 spos :=0;
 slen :=str__len32(s);
+
 if str__is8(d) then d8:=(d^ as tstr8) else d8:=nil;
 
 //check
@@ -7353,6 +7219,7 @@ if (slen<=0) then
 redo:
 if (spos<slen) then
    begin
+
    v:=utf8__charpoint0(s,spos);
 
    case v of
@@ -7374,10 +7241,13 @@ if (spos<slen) then
 
    else
       begin
+
       if xhaltonunsupportedchar then goto skipend
-      else                           dadd(ssQuestion);
+      else if xMarkUnknownChars then dadd(ssQuestion);//16feb2026
+
       end;
-   end;
+
+   end;//case
 
    goto redo;
    end;
@@ -7387,32 +7257,144 @@ result:=true;
 
 skipend:
 except;end;
+
 //free
 str__uaf2(s,d);
+
 end;
 
-function utf8__toplaintext7bitb(const x:string):string;//22apr2025
-begin
-try;result:=x;utf8__toplaintext7bit(result);except;end;
-end;
-
-procedure utf8__toplaintext7bit(var x:string);
+function utf8__to7bitText(s,d:pobject;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):boolean;//16feb2026
+label
+   redo,skipend;
 var
-   p:longint;
-begin
-try
-x:=utf8__toasciib(x,false);
+   v,slen,spos:longint;
+   d8:tstr8;//pointer only
 
-for p:=1 to low__len32(x) do
+   procedure dadd(x:byte);
+   begin
+
+   if (d8<>nil) then d8.addbyt1(x) else str__addbyt1(d,x);
+
+   end;
+
 begin
-case ord(x[p-1+stroffset]) of
-9,10,13,32..127:;//OK
-160            :x[p-1+stroffset]:=#32;
-else            x[p-1+stroffset]:='?';//replace out-of-range char with a question mark
-end;//case
-end;//p
+
+//defaults
+result:=false;
+
+try
+
+//check
+if not str__lock2(s,d) then goto skipend;
+if (s=d)               then goto skipend;
+
+//init
+str__clear(d);
+spos :=0;
+slen :=str__len32(s);
+
+if str__is8(d) then d8:=(d^ as tstr8) else d8:=nil;
+
+//check
+if (slen<=0) then
+   begin
+   result:=true;
+   goto skipend;
+   end;
+
+//get
+redo:
+
+if (spos<slen) then
+   begin
+
+   v:=utf8__charpoint0(s,spos);
+
+   case v of
+   9,10,13,32..127:dadd(v);//OK
+   160            :dadd(32);
+   8212  :begin//long dash
+      dadd(ssdash);
+      dadd(ssdash);
+      end;
+   8216  :dadd(sssinglequote);//left single quote
+   8217  :dadd(sssinglequote);//right single quote
+   8220  :dadd(ssdoublequote);//left double quote
+   8221  :dadd(ssdoublequote);//right double quote
+   8230  :begin//eclipse "..."
+      dadd(ssdot);
+      dadd(ssdot);
+      dadd(ssdot);
+      end;
+   65279 :dadd(ssspace);//non-breaking-space
+
+   else
+      begin
+
+      if      xhaltonunsupportedchar then goto skipend
+      else if xMarkUnknownChars      then dadd(ssQuestion);//16feb2026
+
+      end;
+
+   end;//case
+
+   goto redo;
+   end;
+
+//successful
+result:=true;
+
+skipend:
+except;end;
+
+//free
+str__uaf2(s,d);
+
+end;
+
+function utf8__to7bitTextb(const xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean):string;//16feb2026
+var
+   s,d:tstr8;
+begin
+
+//defaults
+result:='';
+s     :=nil;
+d     :=nil;
+
+try
+
+//init
+s     :=str__new8;
+d     :=str__new8;
+
+//get
+s.text:=xtext;
+
+utf8__to7bitText(@s,@d,xhaltonunsupportedchar,xMarkUnknownChars);
+
+//reduce ram
+str__clear(@s);
+
+//set
+result:=d.text;
 
 except;end;
+
+//free
+str__free(@s);
+str__free(@d);
+
+end;
+
+procedure utf8__to7bitTextb2(var xtext:string;const xhaltonunsupportedchar,xMarkUnknownChars:boolean);//16feb2026
+begin
+try;xtext:=utf8__to7bitTextb(xtext,xhaltonunsupportedchar,xMarkUnknownChars);except;end;
+end;
+
+procedure utf8__to7bitTextb3(var xtext:string);//16feb2026
+begin
+try;xtext:=utf8__to7bitTextb(xtext,false,true);except;end;
 end;
 
 
@@ -8096,15 +8078,15 @@ xdata     :=str__new8;
 //.subject
 swapchars(xsubject,#10,#32);
 low__remchar(xsubject,#13);
-utf8__toplaintext7bit(xsubject);
-utf8__toplaintext7bit(xuseragent);
+utf8__to7bitTextb3(xsubject);
+utf8__to7bitTextb3(xuseragent);
 
 //.xserverdomain
 low__remchar(xserverdomain,#32);
-utf8__toplaintext7bit(xserverdomain);
+utf8__to7bitTextb3(xserverdomain);
 
 //.message
-utf8__toplaintext7bit(xmsg);
+utf8__to7bitTextb3(xmsg);
 
 
 //find attachment count
@@ -8255,7 +8237,7 @@ if (x<>nil) then
    begin
 
    {$ifdef 64bit}
-   result:=win____GlobalHandle(x);//?????
+   result:=win____GlobalHandle(x);
    {$else}
    result:=win____GlobalHandle(x);
    {$endif}
@@ -8427,7 +8409,7 @@ begin
 h:=global__handle(xptr);
 
 {$ifdef 64bit}
-if (h<>0) then result:=win____GlobalSize(h) else result:=0;//???
+if (h<>0) then result:=win____GlobalSize(h) else result:=0;
 {$else}
 if (h<>0) then result:=win____GlobalSize(h) else result:=0;
 {$endif}
@@ -8614,7 +8596,7 @@ end;
 
 //pointer procs ----------------------------------------------------------------
 
-function pointer__make64(const x:pointer3264):pointer64;//????????????????????????
+function pointer__make64(const x:pointer3264):pointer64;
 begin
 
 {$ifdef 64bit}
@@ -10438,6 +10420,62 @@ if str__ok(x) then
    end;
 end;
 
+function str__toarrayBYTE(const s,d:pobject):boolean;//18mar2026
+var
+   dline:tstr8;
+   slen,p:longint;
+begin
+
+//defaults
+result      :=false;
+dline       :=nil;
+
+//check
+if not str__lock2(s,d) then exit;
+
+try
+
+//init
+str__clear( d );
+slen  :=str__len32(s);
+dline :=str__new8;
+
+
+//start
+str__sadd(d, ':array[0..'+intstr32(slen-1)+'] of byte=('+rcode );
+
+//content
+for p:=1 to slen do
+begin
+
+str__sadd( @dline ,intstr32(byte( str__bytes1(s,p) )) + insstr(',',p<slen) );
+
+if (str__len(@dline)>=990) then
+   begin
+
+   str__add(d,@dline);
+   str__sadd(d,rcode);
+   str__clear(@dline);
+
+   end;
+
+end;//p
+
+//.finalise
+str__add(d,@dline);
+str__sadd(d,');'+rcode);
+
+//get
+result      :=true;
+except;end;
+
+//free
+str__free(@dline);
+str__uaf(s);
+str__uaf(d);
+
+end;
+
 function str__tob64(s,d:pobject;linelength:longint):boolean;//to base64
 begin
 result:=str__tob642(s,d,1,linelength);
@@ -11289,10 +11327,10 @@ if (system_ms64_divval<=0) then
 
 //get
 win____QueryPerformanceCounter(result);
-result           :=div64(result,system_ms64_divval);
 
-system_slowms64.ms   :=result;//auto-sync the ms63 timer
-system_slowms64.scan :=0;
+result                :=div64(result,system_ms64_divval);
+system_slowms64.ms    :=result;//auto-sync the ms63 timer
+system_slowms64.scan  :=0;
 
 end;
 
@@ -11776,6 +11814,20 @@ low__decodedate2(x,y,m,d);
 low__decodetime2(x,h,min,s,ms);
 //get
 result:=low__digpad11(y,4)+low__digpad11(m,2)+low__digpad11(d,2)+'_'+low__digpad11(h,2)+low__digpad11(min,2)+low__digpad11(s,2)+low__digpad11(ms,4);
+end;
+
+function low__datetimename3_clearVals(x:tdatetime):string;//05feb2026
+const
+   sep='_';
+var
+   y,m,d:word;
+   h,min,s,ms:word;
+begin
+//init
+low__decodedate2(x,y,m,d);
+low__decodetime2(x,h,min,s,ms);
+//get
+result:=low__digpad11(y,4)+sep+low__digpad11(m,2)+sep+low__digpad11(d,2) +sep+sep+ low__digpad11(h,2)+sep+low__digpad11(min,2)+sep+low__digpad11(s,2)+sep+low__digpad11(ms,4);
 end;
 
 function low__safedate(x:tdatetime):tdatetime;
@@ -13075,6 +13127,7 @@ begin
 result:=curdec(low__percentage64(a,b),2,false)+insstr('%',xsymbol);
 end;
 
+
 //base64 procs -----------------------------------------------------------------
 function low__tob64(s,d:tstr8;linelength:longint;var e:string):boolean;//to base64
 begin
@@ -13175,6 +13228,130 @@ str__free(@s);
 str__free(@d);
 
 end;
+
+function low__tohex(s,d:tstr8;xlinelength:longint):boolean;//16feb2026
+label
+   skipend;
+var
+   a,b,llen,p:longint;
+
+   procedure sa(const x:byte);
+   begin
+
+   case x of
+   0..9   :d.addbyt1(48+x);
+   10..15 :d.addbyt1(55+x);
+   end;//case
+
+   end;
+
+begin
+
+//defaults
+result      :=false;
+
+try
+
+//check
+if not str__lock2(@s,@d) then goto skipend;
+
+//init
+xlinelength :=frcmin32(xlinelength,1);
+d.clear;
+
+//get
+llen        :=0;
+
+for p:=1 to str__len32(@s) do
+begin
+
+a           :=s.pbytes[p-1] div 16;
+b           :=s.pbytes[p-1]-(a*16);
+
+sa(a);
+sa(b);
+
+inc(llen,2);
+
+if (llen>=xlinelength) then
+   begin
+
+   llen     :=0;
+   d.addbyt1(13);
+   d.addbyt1(10);
+
+   end;
+
+end;//p
+
+//successful
+result      :=true;
+skipend:
+except;end;
+
+//free
+str__uaf2(@s,@d);
+
+end;
+
+function low__fromhex(s,d:tstr8):boolean;//19feb2026
+label
+   skipend;
+var
+   p:longint;
+   v,lv:byte;
+   xalt:boolean;
+
+   procedure sa(const x:byte);
+   begin
+
+   case xalt of
+   true:lv  :=x;
+   else d.addbyt1( (lv*16) + x );
+   end;//case
+
+   //alt
+   xalt     :=not xalt;
+
+   end;
+
+begin
+
+//defaults
+result      :=false;
+xalt        :=true;
+
+try
+
+//check
+if not str__lock2(@s,@d) then goto skipend;
+
+//init
+d.clear;
+
+//get
+for p:=1 to str__len32(@s) do
+begin
+
+v            :=s.pbytes[p-1];
+case v of
+nn0..nn9:sa(v-nn0);
+uuA..uuZ:sa(v-uuA+10);
+llA..llZ:sa(v-llA+10);
+end;//case
+
+end;//p
+
+//successful
+result      :=true;
+skipend:
+except;end;
+
+//free
+str__uaf2(@s,@d);
+
+end;
+
 
 //general procs ----------------------------------------------------------------
 function debugging:boolean;
@@ -13303,6 +13480,16 @@ d.bytes[1]:=s.bytes[2];
 d.bytes[2]:=s.bytes[1];
 d.bytes[3]:=s.bytes[0];
 result:=d.val;
+end;
+
+function int32__make(const a,b,c,d:byte):longint;//09apr2026
+begin
+
+tint4( result ).bytes[ 0 ]   :=a;
+tint4( result ).bytes[ 1 ]   :=b;
+tint4( result ).bytes[ 2 ]   :=c;
+tint4( result ).bytes[ 3 ]   :=d;
+
 end;
 
 function low__wrdr(x:word):word;//reverse word
@@ -13976,6 +14163,15 @@ else                      result:=round(xval);
 
 end;
 
+function trunc32(const xval:extended):longint;//26mar2026
+begin
+
+if      (xval<min32) then result:=min32
+else if (xval>max32) then result:=max32
+else                      result:=trunc(xval);
+
+end;
+
 function add32(const xval,xval2:comp):longint;//01sep2025
 begin
 
@@ -14161,6 +14357,49 @@ swapchars(result,xreturncodeASchar,#10);
 except;end;
 end;
 
+procedure text__filterText(x:tstr8);
+label
+   skipend;
+var
+   xlen,dlen,p:longint;
+   v:byte;
+begin
+
+//lock
+if not str__lock(@x) then exit;
+
+//check
+dlen        :=0;
+xlen        :=blen32(x);
+
+if (xlen<=0) then goto skipend;
+
+//get
+for p:=1 to xlen do
+begin
+
+v:=x.byt1[p-1];
+
+if (v=9) or (v=10) or (v>=32) then
+   begin
+
+   inc(dlen);
+   if (dlen<p) then x.byt1[dlen-1]:=v;//16feb2026
+
+   end;
+
+end;//p
+
+//trim
+if (dlen<xlen) then x.setlen(dlen);
+
+skipend:
+
+//free
+str__uaf(@x);
+
+end;
+
 function low__remdup(const x:string):string;//remove duplicates
 begin
 result:=low__remdup2(x,false,false,false);
@@ -14313,6 +14552,7 @@ function low__urlok(const xurl:string;xmailto:boolean):boolean;//19apr2021
    begin
    result:=(n<>'') and strmatch(strcopy1(xurl,1,low__len32(n)),n);
    end;
+   
 begin
 result:=xmatch('http://') or xmatch('https://') or xmatch('ftp://') or xmatch('ftps://') or (xmailto and xmatch('mailto:'));
 end;
@@ -15987,6 +16227,7 @@ try
 //check
 if (system_runstyle>rsBooting) then exit else system_runstyle:=rsUnknown;
 
+
 //------------------------------------------------------------------------------
 //-- Thread Safe Memory --------------------------------------------------------
 
@@ -15999,7 +16240,7 @@ win____CoInitializeEx(nil,2);
 //Enable Delphi 3 thread safe memory handling
 IsMultiThread :=true;
 
-//warn if system is running statically link Win32 procs
+//warn if system is running statically linked Win32 procs
 if win____emergencyfallback_engaged then
    begin
 
@@ -16010,6 +16251,7 @@ if win____emergencyfallback_engaged then
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+
 
 //critical - make app DPI aware per monitor V2 - for Win10 (late) and Win 11 - 27nov2024
 if win__ok(vwin2____SetProcessDpiAwarenessContext) then system_monitors_dpiAwareV2:=(0<>win2____SetProcessDpiAwarenessContext(-4));
@@ -16253,12 +16495,12 @@ for p:=0 to high(systrack_ptr) do systrack_ptr[p]:=nil;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //idle trackers - 25jan2025 ----------------------------------------------------
-syskeytime:=ms64;//keyboard key press/stroke up or down
-sysclicktime:=ms64;//mouse click
-sysmovetime:=ms64;//mouse move
-sysmovetime_global:=ms64;//global mouse move
-sysdowntime:=ms64;//moue down
-syswheeltime:=ms64;//mouse wheel
+syskeytime            :=ms64;//keyboard key press/stroke up or down
+sysclicktime          :=syskeytime;//mouse click
+sysmovetime           :=syskeytime;//mouse move
+sysmovetime_global    :=syskeytime;//global mouse move
+sysdowntime           :=syskeytime;//moue down
+syswheeltime          :=syskeytime;//mouse wheel
 
 
 //------------------------------------------------------------------------------
@@ -16336,7 +16578,9 @@ gossimg__start;
 gossio__start;
 gossnet__start;
 {$ifdef snd}gosssnd__start;{$endif}
-gossres__start;//19dec2025
+gossfast__start;//05mar2026
+gossteps__start;//10mar2026
+gosstext__start;//13feb2026
 
 
 //------------------------------------------------------------------------------
@@ -16377,13 +16621,16 @@ scn__settitle(app__info('name'));
 //console creation point -> "app__create" used to create support objects required for program's operation
 if not xguimode then
    begin
+
    if not xremove then app__create;
+
    //For console: handles shutdown messages from Windows -> connect the proc AFTER the app has been created - 19aug2024, 23dec2023
    win____setconsolectrlhandler(@app__eventproc,true);
+
    end;
 
 
-//multi-monitor information - 26nov2024
+//multi-monitor information - 11apr2026, 26nov2024
 monitors__sync;
 
 
@@ -16422,6 +16669,7 @@ if xremove then
    goto skipremove;
    end;
 
+   
 //.Gossamer handles it's own buffering and visual controls, so no double buffering is required
 //was: {$ifdef laz}form1.doublebuffered:=false;{$endif}
 
@@ -16478,8 +16726,8 @@ if (app__gui<>nil) then
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-//.compiler check - 15jul2025
 
+//.compiler check - 15jul2025
 app__checkCompilerOptionsForMaxSpeed;
 
 
@@ -16491,26 +16739,20 @@ system_firsttimer:=true;
 app__timers;
 system_firsttimer:=false;
 
-//.start system timer -> basic timer using the Windows event queue -> this timer
-// acts as a basic action pump, allowing passive checkers and procs to activate when
+//.start system timer -> high precision 1 ms timer -> this timer  acts as a
+// basic action pump, allowing passive checkers and procs to activate when
 // required, performing actions indirectly and without direct user interaction.
-
 
 //new timing contoller - 30dec2025
 //was: if system_eventdriven then win____settimer(app__wproc.window,1,system_timerinterval,nil);
-if system_eventdriven then system_stophere:=tstophere.create;//more accurate and consistent timing
+if system_eventdriven then system_stophere:=tstophere.create;//more accurate and consistent timing -> was ~15 ms precision, now ~1 ms
 
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-
 
 //.main program loop
 redo:
-
-//.sync less demanding timer proc "slowms64"
-system_slowms64.scan :=0;
-system_slowms64.ms   :=ms64;
 
 //.pause
 if system_pause then
@@ -16563,41 +16805,13 @@ if msok(timer30) then
    //log writer
    log__writemaybe;
 
-   //font timeouts - GUI - 17dec2024
-   {$ifdef gui}
-   low__font('timeouts','','',10,false,false,0,int1);
-   {$endif}
-
    //reset
    msset(timer30,30000);
 
    end;
 
 //.messages
-case system_eventdriven of
-true:if (not app__processmessages) and (system_state=ssRunning) and (not system_musthalt) then
-   begin
-
-   if (system_stophere<>nil) then
-      begin
-
-      case app__turbook of
-      true:system_stophere.stop2( 1 );//1ms
-      else system_stophere.stop2( system_timerinterval );//15ms
-      end;//case
-
-      end
-   else win____waitmessage;//don't switch to wait mode if we're not running, e.g. shuting down etc - 28apr2024
-
-   end;
-else app__processmessages;//time sliced - custom ms/processing
-end;//case
-
-//.timers
-app__timers;
-
-//.run normally when not in turbo mode - WARNING: turbo mode uses full CPU power when NOT event_driven -> no real way to slow it down at this stage
-if (not system_turbo) and (not system_eventdriven) then app__waitms(system_timerinterval);
+app__rootWaitAndMessages;//01apr2026
 
 //.increase processing priority during turbo mode
 if (system_turbo<>xlastturbo) then
@@ -16648,56 +16862,106 @@ system_state:=ssStopped;
 shutdown:
 system_state:=ssShutdown;
 
+
+//finalise ---------------------------------------------------------------------
+
+//save settings
+app__savesettings;
+
+//finish logs (if active) and close vars
+log__writenow;
+
+//clear the console screen//??????????????????????
+//scn__windowcls;
+
 //windows message proc
 if (system_wproc<>nil) then freeobj(@system_wproc);
 
-//gui
+
+//gui-game ---------------------------------------------------------------------
+
 {$ifdef gui}
 gossgui__stop;//highest level library -> first to stop -> also saves program/system settings but not the low level "app__settings" - 14jul2025
 {$endif}
+
+{$ifdef gamecore}
+gossgame__stop;//05mar2026
+{$endif}
+
+
+//sound ------------------------------------------------------------------------
 
 {$ifdef snd}
 gosssnd__stop;
 {$endif}
 
 
-//network
+//network ----------------------------------------------------------------------
+
 gossnet__stop;
 
-//save settings
-app__savesettings;
-freeobj(@system_settings);
-freeobj(@system_settings_ref);
 
-
-//finish logs (if active) and close vars
-log__writenow;
-str__free(@system_log_cache);
-
-
-//clear the console screen
-//scn__windowcls;
-
+//remaining units --------------------------------------------------------------
 
 //disable any custom timing resolution - 14mar2024
 root__stoptimeperiod;
 
-//remaining library stop procs
+//close units
+gosstext__stop;//17feb2026
+gossteps__stop;//10mar2026
 gossio__stop;
-gossimg__stop;//temp buffers are destroyed - so do close to last
+gossimg__stop;//temp buffers are destroyed -> must be done very close to last lib
+gossfast__stop;//10mar2026 - do near last, as it's relied upon by other units
 gosswin__stop;//25jan2025
 gossroot__stop;
 
 
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 //finished -> app has now shutdown
 system_state:=ssFinished;
+
+//free controls
+freeobj(@system_settings);
+freeobj(@system_settings_ref);
+str__free(@system_log_cache);
 
 except;end;
 end;
 
+procedure app__rootWaitAndMessages;//01apr2026
+begin
+
+case system_eventdriven of
+true:if (not app__processmessages) and (system_state=ssRunning) and (not system_musthalt) then
+   begin
+
+   if (system_stophere<>nil) then
+      begin
+
+      case app__turbook of
+      true:system_stophere.stop2( 1 );//1ms
+      else system_stophere.stop2( system_timerinterval );//15ms
+      end;//case
+
+      end
+   else win____waitmessage;//don't switch to wait mode if we're not running, e.g. shuting down etc - 28apr2024
+
+   end;
+else app__processmessages;//time sliced - custom ms/processing
+end;//case
+
+//.timers
+app__timers;
+
+//.run normally when not in turbo mode - WARNING: turbo mode uses full CPU power when NOT event_driven -> no real way to slow it down at this stage
+if (not system_turbo) and (not system_eventdriven) then app__waitms(system_timerinterval);
+
+//.sync for "slowms64"
+ms64;
+
+end;
 
 //app__* procs -----------------------------------------------------------------
 procedure app__startclose;
@@ -17021,34 +17285,41 @@ var
 
    function mprimary:boolean;
    begin
+
    result:=(0 in tint4(m.dwFlags).bits);
+
    end;
+
 begin
+
 //OK -> continue receiving data
-result:=1;
+result      :=1;
 
 {$ifdef gui}
 try
 
 if win__ok(vwin2____GetMonitorInfo) then
    begin
+
    //init
    low__cls(@m,sizeof(m));
-   m.cbSize:=sizeof(m);
+
+   m.cbSize :=sizeof(m);
 
    //get
    if (0<>win2____GetMonitorInfo(unnamedParam1,@m)) then
       begin
 
-      i:=system_monitors_count;
-      if (i<=high(system_monitors_area)) then
+      i     :=system_monitors_count;
+
+      if ( i <= high(system_monitors_area) ) then
          begin
 
          system_monitors_hmonitor[i] :=unnamedParam1;
          system_monitors_area[i]     :=m.rcMonitor;
          system_monitors_workarea[i] :=m.rcWork;
          system_monitors_primary[i]  :=mprimary;
-         system_monitors_count:=i+1;
+         system_monitors_count       :=i+1;
 
          //zero based
          dec(system_monitors_area[i].right);
@@ -17057,7 +17328,8 @@ if win__ok(vwin2____GetMonitorInfo) then
          dec(system_monitors_workarea[i].bottom);
 
          //scale
-         if (0<>win2____GetDpiForMonitor(unnamedParam1,0,v,v2)) then v:=100;
+         if (0<>win2____GetDpiForMonitor(unnamedParam1,0,v,v2)) then v:=100;//11apr2026
+
          system_monitors_scale[i]:=v;//not sure but perhaps: 140=> [140]/96 = 1.45 (150%) and [120]/96=1.25 (125%) etc...
 
          end;
@@ -17086,6 +17358,7 @@ label
 var
    p:longint;
 begin
+
 {$ifdef gui}
 
 //get list of monitor areas & workareas ----------------------------------------
@@ -17111,7 +17384,9 @@ if (system_monitors_count<=0) then
 
    system_monitors_hmonitor[0] :=0;
    system_monitors_area[0]     :=area__make(0,0,win____getsystemmetrics(SM_CXSCREEN_primarymonitor),win____getsystemmetrics(SM_CYSCREEN_primarymonitor));//fixed for Win95 -> win95 doesn't support "SM_CXVIRTUALSCREEN" or "SM_CYVIRTUALSCREEN" - 06jan2025
-   win____systemparametersinfo(SPI_GETWORKAREA,0,@system_monitors_workarea[0],0);
+
+   win____systemparametersinfo( SPI_GETWORKAREA ,0 ,@system_monitors_workarea[0] ,0 );
+
    system_monitors_primary[0]  :=true;
    system_monitors_count:=1;
 
@@ -17151,6 +17426,7 @@ end;//p
 
 
 {$else}
+
 system_monitors_hmonitor[0]   :=0;
 system_monitors_area[0]       :=area__make(0,0,640-1,480-1);
 system_monitors_workarea[0]   :=system_monitors_area[0];
@@ -17159,6 +17435,7 @@ system_monitors_count         :=1;
 
 system_monitors_totalarea     :=system_monitors_area[0];
 system_monitors_totalworkarea :=system_monitors_workarea[0];
+
 {$endif}
 
 end;
@@ -17639,6 +17916,32 @@ result.x:=x;
 result.y:=y;
 end;
 
+function area__shift(const xarea:twinrect;const xshiftx,xshifty:longint):twinrect;//20feb2026
+begin
+
+if area__valid(xarea) then
+   begin
+
+   try
+
+   result.left    :=xarea.left    + xshiftx;
+   result.right   :=xarea.right   + xshiftx;
+   result.top     :=xarea.top     + xshifty;
+   result.bottom  :=xarea.bottom  + xshifty;
+
+   except
+
+   //return input value on error
+   result:=xarea;
+
+   end;
+
+   end
+
+else result:=xarea;
+
+end;
+
 procedure area__simplifyoverlapping(var slist:array of twinrect;var scount:longint);
 label
    redo;
@@ -17795,41 +18098,48 @@ end;
 
 function area__makewh(const xleft,xtop,xwidth,xheight:longint):twinrect;//28jul2025
 begin
+
 result.left   :=xleft;
 result.top    :=xtop;
 result.right  :=xleft + xwidth-1;
 result.bottom :=xtop  + xheight-1;
+
 end;
 
 function area__torect(const x:twinrect):twinrect;
 begin
+
 result.left   :=x.left;
 result.top    :=x.top;
 result.right  :=x.right;
 result.bottom :=x.bottom;
+
 end;
 
-
-function area__clip(clip_rect,s:twinrect):twinrect;//21nov2023
+function area__clip(const clip_rect,s:twinrect):twinrect;//20feb2026, 21nov2023
 begin
-//defaults
-result:=s;
 
-try
-//check
-if (s.left>clip_rect.right) or (s.right<clip_rect.left) or (s.top>clip_rect.bottom) or (s.bottom<clip_rect.top) or (s.right<s.left) or (s.bottom<s.top) or (clip_rect.right<clip_rect.left) or (clip_rect.bottom<clip_rect.top) then
+if ( s.left  > clip_rect.right )  or  ( s.right  < clip_rect.left )  or  ( s.top           > clip_rect.bottom )  or ( s.bottom         < clip_rect.top ) or
+   ( s.right < s.left          )  or  ( s.bottom < s.top          )  or  ( clip_rect.right < clip_rect.left   )  or ( clip_rect.bottom < clip_rect.top ) then
    begin
-   result:=nilrect;
-   exit;
+
+   result   :=nilrect;
+
+   end
+else
+   begin
+
+   //get
+   result.left        :=frcrange32( s.left    ,clip_rect.left ,clip_rect.right  );
+   result.right       :=frcrange32( s.right   ,clip_rect.left ,clip_rect.right  );
+   result.top         :=frcrange32( s.top     ,clip_rect.top  ,clip_rect.bottom );
+   result.bottom      :=frcrange32( s.bottom  ,clip_rect.top  ,clip_rect.bottom );
+
+   //check
+   if (result.right<result.left) or (result.bottom<result.top) then result:=nilrect;
+
    end;
-//range
-result.left      :=frcrange32(result.left,clip_rect.left,clip_rect.right);
-result.right     :=frcrange32(result.right,clip_rect.left,clip_rect.right);
-result.top       :=frcrange32(result.top,clip_rect.top,clip_rect.bottom);
-result.bottom    :=frcrange32(result.bottom,clip_rect.top,clip_rect.bottom);
-//check
-if (result.right<result.left) or (result.bottom<result.top) then result:=nilrect;
-except;end;
+
 end;
 
 function area__grow(const x:twinrect;const xby:longint):twinrect;//07apr2021
@@ -19452,30 +19762,6 @@ end;
 
 
 //general procs ----------------------------------------------------------------
-//.file procs ------------------------------------------------------------------
-function low__foldertep(xfolder:string):longint;
-begin
-result:=low__foldertep2(0,xfolder);
-end;
-
-function low__foldertep2(xownerid:longint;xfolder:string):longint;
-begin
-{$ifdef gui}
-result:=gui__foldertep2(xownerid,xfolder);
-{$else}
-result:=tepNone;//for GUI only
-{$endif}
-end;
-
-//nav procs (file list support) ------------------------------------------------
-function tepext(xfilenameORext:string):longint;
-begin
-{$ifdef gui}
-result:=gui__tepext(xfilenameORext);
-{$else}
-result:=tepNone;
-{$endif}
-end;
 
 function low__true1(v1:boolean):boolean;
 begin
