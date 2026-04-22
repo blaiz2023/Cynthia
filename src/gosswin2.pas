@@ -26,13 +26,13 @@ uses gosswin;
 //## Note..................... ** This is an automatically generated unit, created by "gosswin.win__make_gosswin2_pas" **
 //## Library.................. dynamically loaded and managed 32/64 bit Windows api's (gosswin2.pas)
 //## Version.................. 4.00.542
-//## Items.................... 309
-//## Last Updated ............ 18dec2025
+//## Items.................... 310
+//## Last Updated ............ 22apr2026
 //## ==========================================================================================================================================================================================================================
 
 
 const
-   vwin____proccount                                     =309;//total number of Win32 api procs defined
+   vwin____proccount                                     =310;//total number of Win32 api procs defined
    vwin____ChooseColor                                   =0;
    vwin____GetSaveFileName                               =1;
    vwin____GetOpenFileName                               =2;
@@ -342,6 +342,7 @@ const
    vwin2____GetCurrentPackageFullName                    =306;
    vwin2____GetDpiForWindow                              =307;
    vwin2____GetDpiForSystem                              =308;
+   vwin2____GetClipboardSequenceNumber                   =309;
 
 
 type
@@ -654,6 +655,7 @@ type
    twin2____GetCurrentPackageFullName                    =function(var xPackageFullNameLen:longint;xOptNameBuffer:pchar):longint; stdcall;
    twin2____GetDpiForWindow                              =function(winHandle:hauto):longint; stdcall;
    twin2____GetDpiForSystem                              =function:longint; stdcall;
+   twin2____GetClipboardSequenceNumber                   =function:longint; stdcall;
 
 
 function win____slotinfo(const xslot:longint;var dname,rvalue:longint;var pname:string;var xmisc:string):boolean;
@@ -966,6 +968,7 @@ function win2____VerQueryValue(pBlock: pauto; lpSubBlock: PAnsiChar; var lplpBuf
 function win2____GetCurrentPackageFullName(var xPackageFullNameLen:longint;xOptNameBuffer:pchar):longint;
 function win2____GetDpiForWindow(winHandle:hauto):longint;
 function win2____GetDpiForSystem:longint;
+function win2____GetClipboardSequenceNumber:longint;
 
 
 implementation
@@ -1312,6 +1315,7 @@ vwin2____VerQueryValue                    :s3( 0              ,dversion       ,'
 vwin2____GetCurrentPackageFullName        :s3( 15700          ,dkernel32      ,'GetCurrentPackageFullName'        );//custom return value
 vwin2____GetDpiForWindow                  :s3( 0              ,duser32        ,'GetDpiForWindow'                  );
 vwin2____GetDpiForSystem                  :s3( 0              ,duser32        ,'GetDpiForSystem'                  );
+vwin2____GetClipboardSequenceNumber       :s3( 0              ,duser32        ,'GetClipboardSequenceNumber'       );
 -1:;//placeholder
 end;//case
 
@@ -4713,6 +4717,17 @@ var
    a:pointer;
 begin
 if win__useint(result,vwin2____GetDpiForSystem,a) then result:=twin2____GetDpiForSystem(a);
+win__dec;
+end;
+
+
+//function win2____GetClipboardSequenceNumber:longint; stdcall; external user32 name 'GetClipboardSequenceNumber';//22apr2026;
+
+function win2____GetClipboardSequenceNumber:longint;
+var
+   a:pointer;
+begin
+if win__useint(result,vwin2____GetClipboardSequenceNumber,a) then result:=twin2____GetClipboardSequenceNumber(a);
 win__dec;
 end;
 

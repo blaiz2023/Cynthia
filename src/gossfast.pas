@@ -31,9 +31,9 @@ uses gossroot, gossimg, gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. FastDraw - rapid render graphic procs (gossfast.pas)
-//## Version.................. 4.00.5775 (+128)
+//## Version.................. 4.00.5795 (+128)
 //## Items.................... 9
-//## Last Updated ............ 10apr2026, 07apr2026, 04apr2026, 01apr2026, 29mar2026, 27mar2026, 21mar2026, 19mar2026, 15mar2026, 10mar2026, 06mar2026, 03mar2026, 01mar2026, 28feb2026, 27feb2026, 23feb2026, 20feb2026, 01feb2026, 07jan2026, 05jan2025, 01jan2026, 29dec2025, 26dec2025, 25dec2025, 24dec2025, 22dec2025, 19dec2025
+//## Last Updated ............ 19apr2026, 10apr2026, 07apr2026, 04apr2026, 01apr2026, 29mar2026, 27mar2026, 21mar2026, 19mar2026, 15mar2026, 10mar2026, 06mar2026, 03mar2026, 01mar2026, 28feb2026, 27feb2026, 23feb2026, 20feb2026, 01feb2026, 07jan2026, 05jan2025, 01jan2026, 29dec2025, 26dec2025, 25dec2025, 24dec2025, 22dec2025, 19dec2025
 //## Lines of Code............ 35,700+
 //## Origin .................. Human generated and maintained
 //##
@@ -62,7 +62,7 @@ uses gossroot, gossimg, gosswin;
 //## | font__*                | family of procs   | 1.00.021  | 10mar2026   | Font support procs - 03mar2026
 //## | res__*                 | family of procs   | 1.00.170  | 22dec2025   | Manage system resources -> fonts, fontchars, teps etc - 19dec2025
 //## | rescache__*            | family of procs   | 1.00.080  | 03apr2026   | Cache commonly used/reused objects for high-speed use - 27feb2026, 22dec2025
-//## | fd__*/fast__*          | family of procs   | 1.00.3675 | 09apr2026   | FastDraw high-speed graphic procs for 32 and 24 bit image operations - 04apr2026, 01apr2026, 29mar2026, 21mar2026, 19mar2026, 15mar2026, 06mar2026, 03mar2026, 28feb2026, 23feb2026, 20feb2026, 01feb2026, 07jan2026, 05jan2026, 01jan2026, 29dec2025, 26dec2025, 25dec2025, 24dec2025, 22dec2025
+//## | fd__*/fast__*          | family of procs   | 1.00.3695 | 19apr2026   | FastDraw high-speed graphic procs for 32 and 24 bit image operations - 09apr2026, 04apr2026, 01apr2026, 29mar2026, 21mar2026, 19mar2026, 15mar2026, 06mar2026, 03mar2026, 28feb2026, 23feb2026, 20feb2026, 01feb2026, 07jan2026, 05jan2026, 01jan2026, 29dec2025, 26dec2025, 25dec2025, 24dec2025, 22dec2025
 //## | tresfont               | tobject           | 1.00.812  | 09apr2026   | Dynamic font handler -> create font characters as compressed RLE8's on-the-fly when needed - 27feb2026, 01mar2026, 22dec2025, 19dec2025
 //## | tbasicrle6             | tobject           | 1.00.355  | 09apr2026   | 4-shade(51 ), 4-feather(10), 6bit, system image + realtime system feather for use as font character and 4-color-shade image - 19mar2026, 06mar2026, 05mar2026
 //## | tbasicrle8             | tobject           | 1.00.160  | 09apr2026   | 1-shade( 245 = 11..255 ), 1-feather( 10 = 1..10 ), 8bit, system image + realtime system feather for use as font character and 1-color-shade image - 07apr2026, 19mar2026, 06mar2026, 05mar2026, 25feb2026
@@ -1153,7 +1153,7 @@ procedure fd__setframe(const xframeName:string;const xframeData:tstr8;xsize,xcol
 procedure fd__render(const xcode:longint32);
 procedure fd__drawChar(const xcharIndex,dx,dy,dlineTop,dlineHeight,hpos:longint;dbackColor:longint);//07apr2026, 03mar2026, 28feb2026, 19feb2026
 procedure fd__drawText(const x:string;dx,dy:longint);
-procedure fd__drawTextTab(const xtab,x:string;dx,dy:longint);
+procedure fd__drawTextTab(const xtab,x:string;dx,dy:longint);//19apr2026
 
 //.support procs -> internal use only, do not call directly --------------------
 procedure xfd__roundStart(const xcode:longint32);
@@ -1275,8 +1275,6 @@ uses main, gossteps {$ifdef gui}, gossgui{$endif};
 
 //start-stop procs -------------------------------------------------------------
 procedure gossfast__start;
-var
-   p:longint;
 begin
 try
 
@@ -1494,8 +1492,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gossfast.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.5775'
-else if (xname='date')       then result:='10apr2026'
+if      (xname='ver')        then result:='4.00.5795'
+else if (xname='date')       then result:='19apr2026'
 else if (xname='name')       then result:='FastDraw'
 else
    begin
@@ -1765,8 +1763,6 @@ if (result<>res_nil) then
 end;
 
 function res__del(const xslot:tresslot):tresslot;
-var
-   p:longint;
 begin
 
 //inc delcount
@@ -3400,7 +3396,7 @@ end;
 
 function ling__makeCornerEraser(var s,d:tling):boolean;//28mar2026
 var
-   dx,dy,dw,dh:longint32;
+   dx,dy:longint32;
 begin
 
 //defaults
@@ -4463,7 +4459,7 @@ end;
 
 procedure fast__drawText(const dbackRef:longint;const dclip,darea:twinrect;const dx,dy,dcol:longint;const dtab,dtext:string;const dfont,ddecoration,dfeather4:longint32);//09apr2026, 29mar2026, 25feb2026
 var
-   c,v:longint;
+   v:longint;
 begin
 
 //check
@@ -4504,7 +4500,7 @@ end;
 
 procedure fast__drawText2(const dbackRef:longint;const dclip,darea:twinrect;const dx,dy,dcol,dpower255:longint;const dtab,dtext:string;const dfont,ddecoration,dcornerCode,dcornerMode,dfeather4:longint32;const dround:boolean);//15mar2025, 25feb2026
 var
-   c,v:longint;
+   v:longint;
 begin
 
 //check
@@ -5346,10 +5342,10 @@ end;//p
 
 end;
 
-procedure fd__drawTextTab(const xtab,x:string;dx,dy:longint);
+procedure fd__drawTextTab(const xtab,x:string;dx,dy:longint);//19apr2026
 var
    vw,sv,di,pmax,tx,i,xcolalign,xcolcount,xcolwidth,xtotalwidth,x1,x2,dlimitwidth,xlen,tw,lp,p,lcolindex,fheight:longint;
-   xclip,xarea,xcolarea:twinrect;
+   tclip,xclip,xarea,xcolarea:twinrect;
    f:tresfont;
    v:byte;
    bol1:boolean;
@@ -5379,9 +5375,10 @@ dlimitwidth :=fd_focus.b.aw;
 tx          :=dx;
 xclip       :=area__make( fd_focus.b.cx1,fd_focus.b.cy1,fd_focus.b.cx2,fd_focus.b.cy2 );
 xarea       :=area__make( fd_focus.b.ax1,fd_focus.b.ay1,fd_focus.b.ax2,fd_focus.b.ay2 );
+tclip       :=area__clip( xclip, xarea );
 
-fd__setarea( fd_clip ,area__clip( xclip, xarea ) );
 
+//fd__setarea( fd_clip ,area__clip( xclip, xarea ) );
 
 for p:=0 to (xlen-1) do
 begin
@@ -5399,11 +5396,13 @@ if (v=ss9) or (p>=(xlen-1)) then
       begin
 
       //.xcolarea
-      xcolarea.left   :=frcrange32(dx+x1,fd_focus.b.ax1,fd_focus.b.ax2);
-      xcolarea.right  :=frcrange32(dx+x2,fd_focus.b.ax1,fd_focus.b.ax2);
+      xcolarea.left   :=frcrange32(dx+x1,tclip.left,tclip.right);//19apr2026
+      xcolarea.right  :=frcrange32(dx+x2,tclip.left,tclip.right);//19apr2026
       xcolarea.top    :=fd_focus.b.ay1;
       xcolarea.bottom :=fd_focus.b.ay2;
 
+      //set temporariy clip area for text column as fd_char modified "fd_area" making it unreliable - 19apr2026
+      fd__setarea( fd_clip ,area__clip( tclip, xcolarea ) );
       fd__setarea( fd_area ,xcolarea );
 
       //.xcolalign
@@ -5416,21 +5415,27 @@ if (v=ss9) or (p>=(xlen-1)) then
       //get
       pmax            :=(p-low__insint(1,v=ss9));
 
-      for i:=lp to pmax do//last char adjust if "v=ss9" then don't include this last char - 23feb2021
-      begin
+      //don't draw tiny columns (1px or less) - 19apr2026
+      if ((xcolarea.right-xcolarea.left)>=1) then
+         begin
 
-      if (xcolalign=taR) then di:=pmax-(i-lp) else di:=i;
+         for i:=lp to pmax do//last char adjust if "v=ss9" then don't include this last char - 23feb2021
+         begin
 
-      sv              :=byte( x[di+stroffset] );
-      vw              :=f.wlist[sv];
+         if (xcolalign=taR) then di:=pmax-(i-lp) else di:=i;
 
-      if (xcolalign=taR) then dec(tx,vw);
+         sv              :=byte( x[di+stroffset] );
+         vw              :=f.wlist[sv];
 
-      fd__drawChar( sv ,tx ,dy ,0 ,0 ,0 ,0 );
+         if (xcolalign=taR) then dec(tx,vw);
 
-      if (xcolalign=taL) or (xcolalign=taC) then inc(tx,vw);
+         fd__drawChar( sv ,tx ,dy ,0 ,0 ,0 ,0 );
 
-      end;//i
+         if (xcolalign=taL) or (xcolalign=taC) then inc(tx,vw);
+
+         end;//i
+
+         end;//end of narrow column check
 
       end
 
@@ -5446,6 +5451,9 @@ if (v=ss9) or (p>=(xlen-1)) then
 
 end;//p
 
+//restore clip area - 19apr2026
+fd__setarea( fd_clip ,xclip );
+
 end;
 
 procedure fd__drawChar(const xcharIndex,dx,dy,dlineTop,dlineHeight,hpos:longint;dbackColor:longint);//07apr2026, 03mar2026, 28feb2026, 19feb2026
@@ -5454,8 +5462,8 @@ var//Note: uses fd_textColor(fd_color1) for text color,
    //       and fd_highColor(fd_color3) for highlight color
    f:tresfont;
    c:tbasicrle8;
-   c1,c2:tcolor32;
-   v1,v2,v,yu,uthick,sx,sy,sw,sh:longint32;
+   c1:tcolor32;
+   v1,v2,yu,uthick,sx,sy,sw,sh:longint32;
    dmustrestore:boolean;
 begin
 
@@ -5751,7 +5759,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -6185,7 +6192,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -6625,7 +6631,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -8368,7 +8373,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    c32   :tcolor32;
    vlist :pdlbyte;
@@ -9642,7 +9646,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -10045,7 +10048,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -10453,7 +10455,6 @@ var
    lr8   :pcolorrows8;
    dr24  :pcolorrows24;
    dr32  :pcolorrows32;
-   s8    :pcolor8;
    s24   :pcolor24;
    s32   :pcolor32;
    vlist :pdlbyte;
@@ -11102,8 +11103,6 @@ end;//case
 end;
 
 procedure fd__rgba(const xcode:longint;var r,g,b,a:byte);
-var
-   c32:tcolor32;
 begin
 
 case xcode of
@@ -12032,8 +12031,6 @@ end;
 
 procedure fd__setLayerMask(const xval:tobject);
 var
-   f:pfastdrawbuffer;
-   xwasok:boolean;
    sbits,sw,sh:longint32;
 begin
 
@@ -18820,7 +18817,7 @@ var
    sr24:pcolorrows24;
    sr32:pcolorrows32;
    iimage:pling;
-   ysize,ysize1,ysize2,yswitch,v,hoffset,lw,lh,lv8,cx1,cx2,cy1,cy2,ax1,ax2,ay1,ay2,dx,dy,xhalf,yhalf:longint32;
+   ysize,ysize1,ysize2,yswitch,hoffset,lw,lh,lv8,cx1,cx2,cy1,cy2,ax1,ax2,ay1,ay2,dx,dy,xhalf,yhalf:longint32;
    c1,c2,c3,c4,c32:tcolor32;
    c24:tcolor24;
    yratio01:extended;
@@ -23841,7 +23838,7 @@ var
    dr32:pcolorrows32;
    sr96:pcolorrows96;
    dr96:pcolorrows96;
-   xstop,ystop,xreset,xreset2,dx,dy:longint32;
+   xstop,ystop,xreset,dx,dy:longint32;
    lx1,lx2,rx1,rx2,xreset96,xstop96:longint;
 
    function xcan96:boolean;
@@ -30709,7 +30706,7 @@ end;
 
 procedure fd__sparkleNewLevel(const xnewlevel:longint);
 var
-   v,p:longint32;
+   p:longint32;
 begin
 
 if low__setint( fd_sparkle.level ,frcrange32( xnewlevel ,0 ,fd_sparkleLimit ) ) then
@@ -30812,7 +30809,7 @@ label
    yredo,xredo;
 
 var
-   dfeather,ca,cr,cg,cb,vcount,vstop,vpos,vlum,dstopY,dresetX,dstopX,dbits,dw,dh,dx,dy,vw,vh:longint;
+   dfeather,ca,cr,cg,cb,vcount,vstop,vpos,dstopY,dresetX,dstopX,dbits,dw,dh,dx,dy,vw,vh:longint;
    vlist:pdlbyte;
    s24 :pcolor24;
    s32 :pcolor32;
@@ -32958,7 +32955,7 @@ label
    yredo,xredo;
 
 var
-   dfeather,vcount,vstop,vpos,vlum,dstopY,dresetX,dstopX,a,dbits,dw,dh,dx,dy,vw,vh:longint;
+   dfeather,vcount,vstop,vpos,dstopY,dresetX,dstopX,a,dbits,dw,dh,dx,dy,vw,vh:longint;
    vlist:pdlbyte;
    s24 :pcolor24;
    s32 :pcolor32;
@@ -35564,8 +35561,6 @@ var//8 bit image assumed to be greyscale with 0=transparent, 255=solid and 1..25
    xheight1:boolean;
 
    function sSLOW8(const sy,sx:longint):byte;//3x3 blur matrix
-   var
-      va:longint;
    begin
 
    //get

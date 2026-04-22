@@ -78,9 +78,9 @@ uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin, gossroot, gossio
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. TextCore - non-GUI and GUI text engine for text boxes - (gosstext.pas)
-//## Version.................. 4.00.7542 (+40)
-//## Items.................... 1
-//## Last Updated ............ 26mar2026, 25mar2026, 03mar2026, 01mar2026, 28feb2026, 19feb2026, 17feb2026, 15feb2026, 13feb2026
+//## Version.................. 4.00.7544 (+40)
+//## Items.................... 2
+//## Last Updated ............ 22apr2026, 26mar2026, 25mar2026, 03mar2026, 01mar2026, 28feb2026, 19feb2026, 17feb2026, 15feb2026, 13feb2026
 //## Lines of Code............ 12,900+
 //## Origin .................. Human generated and maintained
 //##
@@ -106,7 +106,7 @@ uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin, gossroot, gossio
 //## | Name                   | Hierarchy         | Version   | Date        | Update history / brief description of function
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
 //## | tspell                 | tobjectex         | 1.00.160  | 17feb2026   | System dictionary of 296,000+ full length, non-encoded / non-shortened words - 11feb2022
-//## | ttextcore              | tobject           | 2.00.7342 | 26mar2026   | Multi-line, multi-format, text engine for text box controls - now using FastDraw procs for ~200%+ render speed improvement - 25mar2026, 03mar2026, 28feb2026, 17feb2026, 17feb2026: read/write basic RTF, 15feb2026, 13feb2026
+//## | ttextcore              | tobject           | 2.00.7344 | 22apr2026   | Multi-line, multi-format, text engine for text box controls - now using FastDraw procs for ~200%+ render speed improvement - 26mar2026, 25mar2026, 03mar2026, 28feb2026, 17feb2026, 17feb2026: read/write basic RTF, 15feb2026, 13feb2026
 //## ==========================================================================================================================================================================================================================
 //## Performance Note:
 //##
@@ -661,7 +661,7 @@ type
 
     procedure xcopy(const xall:boolean);
     function xcanpaste:boolean;
-    function xpaste(xreplace:boolean):boolean;//01may2025
+    function xpaste(xreplace:boolean):boolean;//22apr2026, 01may2025
 
     procedure xfontonevals(var xfontname:string;var xfontsize:longint);//04feb2023
     procedure xfilterText(x:tstr8);
@@ -1086,8 +1086,6 @@ uses gossteps {$ifdef gui} ,gossgui{$endif};
 
 //start-stop procs -------------------------------------------------------------
 procedure gosstext__start;
-var
-   p:longint;
 begin
 try
 
@@ -1133,8 +1131,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gosstext.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.7542'
-else if (xname='date')       then result:='25mar2026'
+if      (xname='ver')        then result:='4.00.7544'
+else if (xname='date')       then result:='22apr2026'
 else if (xname='name')       then result:='Text'
 else
    begin
@@ -1327,7 +1325,6 @@ var
    a:tstr8;
    b:ttextcore;
    int1:longint;
-   str1,str2:string;
 begin
 
 //defaults
@@ -3824,7 +3821,7 @@ procedure ttextcore.fFILL(const findex:longint;const xwine_remake:boolean);
 var
    xonefontsize,xlen,xsize,p:longint;
    xbol1,xbol2,xbold,xitalic:boolean;
-   e,str1,xfontname:string;
+   str1,xfontname:string;
 begin
 try//only if font is NIL or EMPTY
    //only if WINE and font is NOT-NIL and NOT-EMPTY
@@ -5006,7 +5003,7 @@ function ttextcore.xmakefont2(const xoverride:boolean;xname:string;xsize,xcolor,
 label
    skipend;
 var
-   e,xref:string;
+   xref:string;
    xnew,i,p:longint;
 
 begin
@@ -8445,7 +8442,7 @@ end;
 procedure ttextcore.xwrite__htm__basic(const v:ttextio);//16feb2026
 var//Generates HTML for Clipboard -> works with Gmail's compose box in Browser
    a:tbasicimage;
-   xstartOfHtml,xlastc,p:longint;
+   xlastc,p:longint;
    ff:tfastfont;
    fc:tfastchar;
    e:string;
@@ -9233,7 +9230,6 @@ label
 var
    a,b:tstr8;
    v:ttextio;
-   e:string;
    xfrom,xto:longint;
    xopened:boolean;
 begin
@@ -9459,7 +9455,7 @@ result:=false;
 
 end;
 
-function ttextcore.xpaste(xreplace:boolean):boolean;//01may2025
+function ttextcore.xpaste(xreplace:boolean):boolean;//22apr2026, 01may2025
 label
    skipend;
 var
@@ -9490,6 +9486,7 @@ try
 
 
 //bwp --------------------------------------------------------------------------
+
 if clip__hasformat(cf_bwp) then
    begin
 
@@ -9516,9 +9513,9 @@ if clip__hasformat(cf_bwp) then
 
 
 //rtf --------------------------------------------------------------------------
+
 if clip__hasformat(cf_rtf) then
    begin
-
    adata    :=str__new8;
 
    if clip__pasteformat(cf_rtf,@adata) then
@@ -9538,6 +9535,7 @@ if clip__hasformat(cf_rtf) then
 
 
 //cf_rtf__RTFasText ------------------------------------------------------------
+
 if clip__hasformat(cf_rtf__RTFasText) then
    begin
 
@@ -9560,6 +9558,7 @@ if clip__hasformat(cf_rtf__RTFasText) then
 
 
 //bwd --------------------------------------------------------------------------
+
 if clip__hasformat(cf_bwd) then
    begin
 
@@ -9586,42 +9585,49 @@ if clip__hasformat(cf_bwd) then
 
 
 //image ------------------------------------------------------------------------
+
+//Note: this is a dual handler: accepts binary images AND plain text, so must allow fallback when plain text is NOT an image - 22apr2026
 if clip__canpasteimage(true) then
    begin
 
    //init
    a        :=misraw32(1,1);
-   adata    :=str__new8;
-   adata2   :=str__new8;
 
-   clip__pasteimage(a,true);//18mar2026, 21dec2021, was fixed via "xinfo" - 18jun2021
+   if clip__pasteimage(a,true) then //upon failure assume clipboard content is text and fallback to next paste handler below - 22apr2026, 18mar2026, 21dec2021, was fixed via "xinfo" - 18jun2021
+      begin
 
-   //jif
-   mis__todata(a,@adata,'jif',e);//bmp -> jif
+      //init
+      adata    :=str__new8;
+      adata2   :=str__new8;
 
-   //.improve image quality for small image sizes - 16feb2026
-   if (adata.len32<30000) then mis__todata2(a,@adata,'jif',ia_highquality,e);//bmp -> jif
-   if (adata.len32<30000) then mis__todata2(a,@adata,'jif',ia_bestquality,e);//bmp -> jif
+      //jif
+      mis__todata(a,@adata,'jif',e);//bmp -> jif
 
-   v1       :=adata.len32;
-   if (v1<=0) then v1:=max32;
+      //.improve image quality for small image sizes - 16feb2026
+      if (adata.len32<30000) then mis__todata2(a,@adata,'jif',ia_highquality,e);//bmp -> jif
+      if (adata.len32<30000) then mis__todata2(a,@adata,'jif',ia_bestquality,e);//bmp -> jif
 
-   //png
-   mis__todata(a,@adata2,'png',e);
-   v2       :=adata2.len32;
-   if (v2<=0) then v2:=max32;
+      v1       :=adata.len32;
+      if (v1<=0) then v1:=max32;
 
-   //ins
-   creplace;
+      //png
+      mis__todata(a,@adata2,'png',e);
+      v2       :=adata2.len32;
+      if (v2<=0) then v2:=max32;
 
-   case (v1<v2) of
-   true:xinsimg(adata);//jif
-   else xinsimg(adata2);//png
-   end;//case
+      //ins
+      creplace;
 
-   //successful
-   result:=true;
-   goto skipend;
+      case (v1<v2) of
+      true:xinsimg(adata);//jif
+      else xinsimg(adata2);//png
+      end;//case
+
+      //successful
+      result:=true;
+      goto skipend;
+
+      end;
 
    end;
 
@@ -9629,7 +9635,7 @@ if clip__canpasteimage(true) then
 //text -------------------------------------------------------------------------
 
 //Note: Do "text" last as some enhanced image formats can be presented
-//      in Clipboard as plain text, e.g. base64
+//      in Clipboard as plain text, e.g. base64 or Pascal array
 
 if clip__hasformat(cf_text) then
    begin
@@ -9655,7 +9661,6 @@ if clip__hasformat(cf_text) then
 
    end;
 
-   
 skipend:
 except;end;
 
@@ -10175,7 +10180,7 @@ end;
 
 procedure ttextcore.xbackup(const xcap:string);
 var
-   e,str2,dname,dext:string;
+   e,dname,dext:string;
    xdata:tstr8;
 begin
 try
@@ -12012,7 +12017,7 @@ end;
 
 procedure ttextcore.xdell;
 var
-   int1,int2,int3,xselstart,xselcount:longint;
+   int1,xselstart,xselcount:longint;
 begin
 
 //check
@@ -12443,7 +12448,7 @@ var
    ximgid  :array[0..999] of word;
    n:string;
    int1,nlen,dlen,xskipstart,xstart,xpos,xlen,i,p:longint;
-   bol1,xwebimagesANDtopics:boolean;
+   bol1:boolean;
 
    function xnospaces(const x:string):string;//25mar2026
    var
@@ -12575,10 +12580,9 @@ var
    label
       skipend;
    var
-      e:string;
       b:tstr8;
       v:twrd2;
-      aw,ah,xid,p:longint;
+      xid,p:longint;
       xadded:boolean;
    begin
 

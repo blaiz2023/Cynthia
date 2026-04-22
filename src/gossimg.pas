@@ -5361,7 +5361,6 @@ var
    pcount,spalCount:longint;
    xpos,sbits,sx,sy,sw,sh,sbpp:longint;
    xtransColorIndex:byte;
-   c32:tcolor32;
    sr32:pcolorrow32;
    sr24:pcolorrow24;
     sr8:pcolorrow8;
@@ -5407,7 +5406,6 @@ var
    var
       int1,commentcount,count,p:longint;
       v:byte;
-      c24:tcolor24;
       eop,eof:boolean;
    begin
 
@@ -5531,8 +5529,6 @@ var
    end;
 
    procedure p1(x:byte);
-   var
-      v:byte;
    begin
 
    //top-left pixel is assumed to be transparent -> record index and use from this point on
@@ -5644,7 +5640,6 @@ var
    var
       commentcount:longint;
       v:byte;
-      z:tcolor24;
       xignore,eof:boolean;
    begin
 
@@ -6473,9 +6468,8 @@ function san__todata(s:tobject;d:pobject;var e:string):boolean;//16sep2025
 label
    skipend;
 var
-   n:string;
    vd:tstr8;
-   sbits,sw,sh,xdelay,xcellcount,xcellwidth,p:longint;
+   sbits,sw,sh,xdelay,xcellcount,xcellwidth:longint;
    xtransparent:boolean;
    scopy:tobject;
 
@@ -6492,8 +6486,6 @@ var
    end;
 
    procedure wd(x:pobject);
-   var
-      xlen:longint;
    begin
 
    str__addbyt1( d, 12 );//vaLString
@@ -6503,8 +6495,6 @@ var
    end;
 
    procedure wi32(const x:longint);
-   var
-      xlen:longint;
    begin
 
    str__addbyt1( d, 4 );//vaInt32
@@ -12436,7 +12426,7 @@ var
 
    function xfind32(const xname:string;var xout:longint):boolean;
    var
-      xmode,nlen,p:longint;
+      xmode,nlen:longint;
    begin
 
    //defaults

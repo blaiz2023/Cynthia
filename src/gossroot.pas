@@ -32,10 +32,10 @@ uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin, gossteps;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. Root (gossroot.pas)
-//## Version.................. 4.00.6840 (+870)
-//## Items.................... 48
-//## Last Updated ............ 11apr2026, 09apr2026, 02apr2026, 26mar2026, 18mar2026, 10mar2026, 07mar2026, 20feb2026, 17feb2026, 05feb2026, 01feb2026, 31jan2026, 05jan2026, 23dec2025, 19dec2025, 18dec2025, 15dec2025, 13dec2025, 10dec2025, 08dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
-//## Lines of Code............ 33,900+
+//## Version.................. 4.00.6850 (+870)
+//## Items.................... 49
+//## Last Updated ............ 20apr2026, 11apr2026, 09apr2026, 02apr2026, 26mar2026, 18mar2026, 10mar2026, 07mar2026, 20feb2026, 17feb2026, 05feb2026, 01feb2026, 31jan2026, 05jan2026, 23dec2025, 19dec2025, 18dec2025, 15dec2025, 13dec2025, 10dec2025, 08dec2025, 04dec2025, 06nov2025, 02nov2025, 24oct2025, 10oct2025, 08oct2025, 03oct2025, 29sep2025, 26sep2025, 18sep2025, 14sep2025, 13sep2025, 07sep2025, 10aug2025, 09aug2025, 29jul2025, 19jul2025, 15jul2025, 07jul2025, 03jul2025, 19jun2025, 11jun2025, 28may2025, 26apr2025, 11apr2025, 31mar2025, 21mar2025, 08mar2025, 20feb2025, 29jan2025, 11jan2025, 17dec2024, 06dec2024, 27nov2024, 15nov2024, 11nov2024, 01nov2024, 31oct2024, 12oct2024, 24aug2024: images extensions fix, 26jul2024: str__write, 20jul2024: zip_* procs updated, 18jun2024: GUI support added, 02may2024: low__ref256/U, 28apr2024: low__uptime(), 17apr2024
+//## Lines of Code............ 34,800+
 //## Origin .................. Human generated and maintained
 //##
 //## main.pas ................ App specific code
@@ -87,6 +87,7 @@ uses {$ifdef laz}classes, {$endif} sysutils, gosswin2, gosswin, gossteps;
 //## | tstr9                  | tobjectex         | 1.00.268  | 15mar2025   | 8bit binary memory handler - memory as a stream of randomly allocated memory blocks - 07mar2024: softclear2(), 25feb2024: splice() proc, 07feb2024: Optimised for speed, 04feb2024: Created
 //## | tvars8                 | tobject           | 1.00.245  | 12may2025   | 8bit binary replacement for "tdynamicvars" and "tdynamictext" -> simple, fast, and lighter with full binary support (no string used) - 28jun2024, 26jun2024: updated, 15jan2024, 31jan2022, 02jan2022, 16aug2020
 //## | tfastvars              | tobject           | 1.00.112  | 19aug2025   | Faster version of tvars8 (10x faster) and simpler - 12oct2024, 12oct2024: dedicated getdata/setdata procs for IN ORDER processing of items, 24aug2024, 24mar2024: fixed ilimit (was: max-1 => now: max+1) 07feb2024: updated, 12jan2024: support for tstr9 in sfoundB() proc, 25dec2023
+//## | tfastvars2             | tobject           | 1.00.010  | 20apr2026   | Faster version of tvars8 (10x faster) and simpler with dynamic limit
 //## | tmask8                 | tobject           | 1.00.360  | 07jul2021   | 10may2020, Rapid 8bit graphic mask for tracking onscreen window areas (square and rounded) at speed: WRITE: 101x[1920x1080] mask redraws in under 500ms ~ 5ms/mask and READ: 101x[1920x1080] mask scans in under 1,100ms ~11ms/mask on Intel Atom 1.1Ghz
 //## | tdynamiclist           | tobject           | 1.00.120  | 25jul2024   | Base class for dynamic arrays/lists of differing structures: byte, word, longint, currency, pointer etc. - 25jul2024: forcesize() proc, 09feb2024: removed "protected" for "public", 08aug2017
 //## | tdynamicbyte           | tdynamiclist      | 1.00.010  | 09feb2024   | Dynamic array of byte (1b/item) - 09feb2024: removed "protected" for "public", 21jun2006
@@ -1325,6 +1326,7 @@ type
    //.reference arrays
    pbitboolean   =^tbitboolean;  tbitboolean        =set of 0..7;
    pdlbitboolean =^tdlbitboolean;tdlbitboolean      =array[0..maxslot8]    of tbitboolean;
+   pdlboolean    =^tdlboolean;   tdlboolean         =array[0..maxslot8]    of boolean;//1
    pdlbyte       =^tdlbyte;      tdlbyte            =array[0..maxslot8]    of byte;
    pdlchar       =^tdlchar;      tdlchar            =array[0..maxslot8]    of char;
    pdlsmallint   =^tdlsmallint;  tdlsmallint        =array[0..maxslot16]   of smallint;
@@ -3021,6 +3023,7 @@ type
 {tfastvars}
    tfastvars=class(tobject)//10x or more faster than "tvars8"
    private
+
     icount,ilimit:longint;
     vnref1:array[0..999] of longint;
     vnref2:array[0..999] of longint;
@@ -3030,6 +3033,7 @@ type
     vc:array[0..999] of comp;
     vs:array[0..999] of string;
     vm:array[0..999] of byte;
+
     function xmakename(xname:string;var xindex:longint):boolean;
     function getb(xname:string):boolean;
     function geti(xname:string):longint;
@@ -3051,23 +3055,30 @@ type
     procedure setnettext(x:string);
     function getv(xindex:longint):string;
     procedure setv(xindex:longint;x:string);//22aug2024
+
    public
+
     //options
     ofullcompatibility:boolean;//defaults=true
     oincludecomments:boolean;//defaults=true
+
     //create
     constructor create; virtual;
     destructor destroy; override;
+
     //information
     property limit:longint read ilimit;
     property count:longint read icount;
+
     //workers
     procedure clear;
     function find(xname:string;var xindex:longint):boolean;
+
     //found
     function found(xname:string):boolean;
     function sfound(xname:string;var x:string):boolean;
     function sfound8(xname:string;x:pobject;xappend:boolean;var xlen:longint):boolean;
+
     //values
     property b[x:string]:boolean read getb write setb;
     property i[x:string]:longint read geti write seti;
@@ -3076,8 +3087,10 @@ type
     property dt[xname:string]:tdatetime read getdt write setdt;//20aug2024
     property n[x:longint]:string read getn;//name
     property v[x:longint]:string read getv write setv;//value
+
     //.html support
     property checked[x:string]:boolean read getchecked write setchecked;//uses string storage "s[x]"
+
     //inc
     //.32bit longint
     procedure iinc(xname:string);
@@ -3085,12 +3098,114 @@ type
     //.64bit comp
     procedure cinc(xname:string);
     procedure cinc2(xname:string;xval:comp);
+
     //io
     property nettext:string write setnettext;//reads in POST data from a web stream
     property text:string read gettext write settext;
     property data:tstr8 read getdata write setdata;
     function tofile(x:string;var e:string):boolean;
     function fromfile(x:string;var e:string):boolean;
+
+   end;
+
+{tfastvars2}
+   tfastvars2=class(tobject)
+   private
+
+    icount,ilimit:longint;
+
+    ivnref1           :tdynamicinteger;
+    ivnref2           :tdynamicinteger;
+    ivn               :tdynamicstring;
+    ivb               :tdynamicbyte;
+    ivi               :tdynamicinteger;
+    ivc               :tdynamiccomp;
+    ivs               :tdynamicstring;
+    ivm               :tdynamicbyte;
+
+    vnref1            :pdllongint;
+    vnref2            :pdllongint;
+    vn                :pdlstring;
+    vb                :pdlboolean;
+    vi                :pdllongint;
+    vc                :pdlcomp;
+    vs                :pdlstring;
+    vm                :pdlbyte;
+
+    function xmakename(xname:string;var xindex:longint):boolean;
+    function getb(xname:string):boolean;
+    function geti(xname:string):longint;
+    function getc(xname:string):comp;
+    function gets(xname:string):string;
+    function getdt(xname:string):tdatetime;
+    procedure setb(xname:string;x:boolean);
+    procedure seti(xname:string;x:longint);
+    procedure setc(xname:string;x:comp);
+    procedure sets(xname:string;x:string);
+    procedure setdt(xname:string;xval:tdatetime);//20aug2024
+    function getchecked(xname:string):boolean;//12jan2024
+    procedure setchecked(xname:string;x:boolean);
+    function getn(xindex:longint):string;
+    procedure setdata(xdata:tstr8);//20aug2024: upgraded to handle more data variations, e.g. "name: value" or "name:value" or "name   " -> originally only the first instance was accepted, now all 3 are
+    function getdata:tstr8;
+    procedure settext(const x:string);
+    function gettext:string;
+    procedure setnettext(x:string);
+    function getv(xindex:longint):string;
+    procedure setv(xindex:longint;x:string);//22aug2024
+    procedure setlimit(x:longint32);
+
+   public
+
+    //options
+    ofullcompatibility:boolean;//defaults=true
+    oincludecomments:boolean;//defaults=true
+
+    //create
+    constructor create2(const xlimit:longint32); virtual;
+    constructor create; virtual;
+    destructor destroy; override;
+
+    //information
+    property limit:longint read ilimit;
+    property count:longint read icount;
+
+    //workers
+    procedure clear;
+    function find(xname:string;var xindex:longint):boolean;
+
+    //found
+    function found(xname:string):boolean;
+    function sfound(xname:string;var x:string):boolean;
+    function sfound8(xname:string;x:pobject;xappend:boolean;var xlen:longint):boolean;
+
+    //values
+    property b[x:string]:boolean read getb write setb;
+    property i[x:string]:longint read geti write seti;
+    property c[x:string]:comp read getc write setc;
+    property s[x:string]:string read gets write sets;
+    property dt[xname:string]:tdatetime read getdt write setdt;//20aug2024
+    property n[x:longint]:string read getn;//name
+    property v[x:longint]:string read getv write setv;//value
+
+    //.html support
+    property checked[x:string]:boolean read getchecked write setchecked;//uses string storage "s[x]"
+
+    //inc
+    //.32bit longint
+    procedure iinc(xname:string);
+    procedure iinc2(xname:string;xval:longint);
+    //.64bit comp
+    procedure cinc(xname:string);
+    procedure cinc2(xname:string;xval:comp);
+
+    //io
+    property nettext:string write setnettext;//reads in POST data from a web stream
+    property text:string read gettext write settext;
+    property data:tstr8 read getdata write setdata;
+    function tofile(x:string;var e:string):boolean;
+    function fromfile(x:string;var e:string):boolean;
+
    end;
 
 {tflowcontrol}
@@ -4055,7 +4170,7 @@ function low__randomstr(const x:tstr8;const xlen:longint32):boolean;//27apr2021
 function low__urlok(const xurl:string;xmailto:boolean):boolean;//19apr2021
 function low__limitlines(const x:string;xlimit:longint):string;//14apr2021
 function low__findchar(const x:string;c:char):longint;//27feb2021, 14SEP2007
-function low__havechar(const x:string;c:char):boolean;//27feb2021, 02FEB2008
+function low__havechar(const x:string;c:char):boolean;//27feb2021, 02FEB2008//low__haschar()
 function low__findchars(const x:string;const c:array of char):longint;//03jan2025
 function low__havechars(const x:string;const c:array of char):boolean;//03jan2025
 function low__swapvals0(const x,v0:string):string;
@@ -5851,8 +5966,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gossroot.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.6840'
-else if (xname='date')       then result:='11apr2026'
+if      (xname='ver')        then result:='4.00.6850'
+else if (xname='date')       then result:='20apr2026'
 else if (xname='name')       then result:='Root'
 else if (xname='mode.int')   then result:=intstr32(info__mode)
 else if (xname='mode')       then
@@ -16381,7 +16496,7 @@ label
 var
    dscale:double;
    dw,dh,int1,p,p2:longint;
-   xref64,painttimer,timer1000,timer30:comp;
+   painttimer,timer1000,timer30:comp;
    xremove,xguimode,xlastturbo,xlastvisible:boolean;
 
    procedure xmn32;
@@ -19272,11 +19387,8 @@ const
    sname  =0;
    svalue =1;
 var
-   w:twrd2;
-   i:tint4;
-   s,v:byte;
-   slen,vlen,nok,xmax,xlen:longint;
-   vtmp:string;
+   s:byte;
+   vlen,xmax,xlen:longint;
 
    function vs(xlen:longint):string;
    begin
@@ -26418,7 +26530,6 @@ procedure tstr8.setstr(xpos:longint64;xlen:longint64;xval:string);
 var
    p:longint3264;
    xminlen:longint64;
-   v:byte;
 begin
 try
 
@@ -26743,8 +26854,6 @@ end;
 function tstr9.writeto(const a:pointer3264;const asize,xfrom0:longint64;xlen:longint64):boolean;//14dec2025, 26jul2024
 var
    slen,sp,p:longint3264;
-   b:pdlBYTE;
-   v:byte;
 begin
 
 //defaults
@@ -30692,9 +30801,11 @@ begin//speed: 4,094ms -> 3,400ms -> 2,100ms -> 2,000ms
 result:=ibytes[(dy*irowsize)+dx];
 end;
 
+
 //## tfastvars #################################################################
 constructor tfastvars.create;
 begin
+
 //self
 if classnameis('tfastvars') then track__inc(satFastvars,1);
 zzadd(self);
@@ -30707,14 +30818,17 @@ oincludecomments:=true;//24aug2024: new
 
 //clear
 clear;
+
 end;
 
 destructor tfastvars.destroy;
 begin
 try
+
 //self
 inherited destroy;
 if classnameis('tfastvars') then track__inc(satFastvars,-1);
+
 except;end;
 end;
 
@@ -31362,6 +31476,736 @@ if xmakename(xname,xindex) then
    vi[xindex]:=0;
    low__roll64(vc[xindex],xval);
    vs[xindex]:='';
+   vm[xindex]:=3;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+
+//## tfastvars2 ################################################################
+
+constructor tfastvars2.create;
+begin
+
+create2( 1000 );
+
+end;
+
+constructor tfastvars2.create2(const xlimit:longint32);
+begin
+
+//self
+if classnameis('tfastvars') then track__inc(satFastvars,1);
+zzadd(self);
+inherited create;
+
+//init
+ivnref1     :=tdynamicinteger.create;
+ivnref2     :=tdynamicinteger.create;
+ivn         :=tdynamicstring.create;
+ivb         :=tdynamicbyte.create;
+ivi         :=tdynamicinteger.create;
+ivc         :=tdynamiccomp.create;
+ivs         :=tdynamicstring.create;
+ivm         :=tdynamicbyte.create;
+
+//limit
+setlimit( xlimit );
+
+//vars
+ofullcompatibility    :=true;//21aug2024: new
+oincludecomments      :=true;//24aug2024: new
+
+//clear
+clear;
+
+end;
+
+destructor tfastvars2.destroy;
+begin
+try
+
+//free
+
+//self
+inherited destroy;
+if classnameis('tfastvars') then track__inc(satFastvars,-1);
+
+except;end;
+end;
+
+procedure tfastvars2.setlimit(x:longint32);
+begin
+
+//range
+x           :=frcmin32( x ,1 );
+ilimit      :=x;
+
+//size
+ivnref1     .setparams(x,x,0);
+ivnref2     .setparams(x,x,0);
+ivn         .setparams(x,x,0);
+ivb         .setparams(x,x,0);
+ivi         .setparams(x,x,0);
+ivc         .setparams(x,x,0);
+ivs         .setparams(x,x,0);
+ivm         .setparams(x,x,0);
+
+//get
+vnref1      :=ivnref1.core;
+vnref2      :=ivnref2.core;
+vn          :=ivn.core;
+vb          :=ivb.core;
+vi          :=ivi.core;
+vc          :=ivc.core;
+vs          :=ivs.core;
+vm          :=ivm.core;
+
+end;
+
+function tfastvars2.tofile(x:string;var e:string):boolean;
+var
+   b:tstr8;
+begin
+result:=false;
+e:=gecTaskfailed;
+b:=nil;
+
+try
+b:=str__new8;
+b.text:=text;
+result:=io__tofile(x,@b,e);
+except;end;
+
+//free
+str__free(@b);
+
+end;
+
+function tfastvars2.fromfile(x:string;var e:string):boolean;
+var
+   b:tstr8;
+begin
+result:=false;
+e:=gecTaskfailed;
+b:=nil;
+
+try
+b:=str__new8;
+if io__fromfile(x,@b,e) then
+   begin
+   text:=b.text;
+   result:=true;
+   end;
+except;end;
+
+//free
+str__free(@b);
+
+end;
+
+procedure tfastvars2.setdata(xdata:tstr8);//20aug2024: upgraded to handle more data variations, e.g. "name: value" or "name:value" or "name   " -> originally only the first instance was accepted, now all 3 are
+label
+   redo;
+var
+   xline:tstr8;
+   pmax,xlen,p,xpos:longint;
+   lb:pdlbyte;
+   xok:boolean;
+begin
+try
+//init
+xline:=nil;
+clear;
+
+//check
+if zznil(xdata,2077) then exit;
+
+//init
+str__lock(@xdata);
+xline:=str__new8;
+xpos:=0;
+
+//get
+redo:
+if low__nextline0(xdata,xline,xpos) then
+   begin
+   xlen:=xline.len32;
+   pmax:=xline.len32-1;
+   if (pmax>=0) and (xline.pbytes<>nil) then//27apr2021
+      begin
+      //init
+      xok:=false;
+      lb:=xline.pbytes;
+
+      //scan for "name: value" divider ":"
+      for p:=0 to pmax do if (lb[p]=ssColon) then
+         begin
+
+         //"name:"
+         if (p=pmax) then
+            begin
+            xok:=true;
+            sets(xline.str[0,p],'');
+            break;
+            end
+
+         //"name: value"
+         else if (p<pmax) and (lb[p+1]=ssSpace) then
+            begin
+            xok:=true;
+            sets(xline.str[0,p],xline.str[p+2,pmax+1]);
+            break;
+            end
+
+         //"name:value"
+         else if ofullcompatibility then
+            begin
+            xok:=true;
+            sets(xline.str[0,p],xline.str[p+1,pmax+1]);
+            break;
+            end
+
+         else break;
+
+         end;//p
+
+      //"name:value" not found, switch to "name....(last non-space)" where name terminates on last non-space (scans right-to-left)
+      if (not xok) and ofullcompatibility then
+         begin
+
+         for p:=pmax downto 0 do if (lb[p]<>ssSpace) then
+            begin
+            xok:=true;
+            sets(xline.str[0,p+1],'');
+            break;
+            end;
+
+         end;
+
+      end;//pmax
+
+   //fetch next line
+   goto redo;
+   end;
+except;end;
+
+//free
+str__free(@xline);
+str__uaf(@xdata);
+
+end;
+
+function tfastvars2.getdata:tstr8;
+var
+   p:longint;
+begin
+result :=nil;
+
+try
+//defaults
+result :=str__newaf8;
+
+//get
+for p:=0 to (icount-1) do if (vnref1[p]<>0) or (vnref2[p]<>0) then
+   begin
+
+   case vm[p] of
+   1   :result.sadd(n[p]+': '+bolstr(vb[p])+r10);
+   2   :result.sadd(n[p]+': '+intstr32(vi[p])+r10);
+   3   :result.sadd(n[p]+': '+intstr64(vc[p])+r10);
+   else result.sadd(n[p]+': '+vs[p]^+r10);
+   end;//case
+
+   end;//p
+
+except;end;
+end;
+
+procedure tfastvars2.settext(const x:string);
+begin
+data:=bcopystr1(x,1,max32);
+end;
+
+function tfastvars2.gettext:string;
+var
+   a:tvars8;
+   p:longint;
+   bol1:boolean;
+begin
+
+//defaults
+result :='';
+a      :=nil;
+
+try
+//init
+a     :=vnew;
+bol1  :=false;
+
+//get
+for p:=0 to (icount-1) do if (vnref1[p]<>0) or (vnref2[p]<>0) then
+   begin
+
+   case vm[p] of
+   1   :a.b[vn[p]^]   :=vb[p];
+   2   :a.i[vn[p]^]   :=vi[p];
+   3   :a.i64[vn[p]^] :=vc[p];
+   else a.s[vn[p]^]   :=vs[p]^;
+   end;//case
+
+   bol1:=true;
+
+   end;//p
+
+//set
+if bol1 then result:=a.text;
+
+except;end;
+
+//free
+freeobj(@a);
+
+end;
+
+procedure tfastvars2.setnettext(x:string);
+var
+   xname,xvalue:string;
+   v,c,xlen,o,t,p:longint;
+begin
+try
+//init
+xlen:=low__len32(x);
+xname:='';
+xvalue:='';
+t:=1;
+
+//clear
+clear;
+
+//get
+c:=ssequal;
+for p:=1 to xlen do
+begin
+v:=byte(x[p-1+stroffset]);
+if (v=c) or (p=xlen) then
+   begin
+   //get
+   if (v=c) then o:=0 else o:=1;
+   xvalue:=strcopy1(x,t,p-t+o);
+   t:=p+1;
+   //set
+   if (c=ssequal) then
+       begin
+       net__decodestr(xvalue);
+       xname:=xvalue;
+       c:=ssampersand;
+       end
+    else
+       begin
+       //set
+//       if storerawvalue then value[_name+'_raw']:=tmp;//28FEB2008
+       net__decodestr(xvalue);
+       s[xname]:=xvalue;
+       //reset
+       xname:='';
+       c:=ssequal;
+       end;
+   end;
+end;//p
+except;end;
+end;
+
+procedure tfastvars2.clear;
+var
+   p:longint;
+begin
+icount:=0;
+for p:=0 to (ilimit-1) do
+begin
+vnref1[p]:=0;
+vnref2[p]:=0;
+vn[p]^:='';
+vb[p]:=false;
+vi[p]:=0;
+vc[p]:=0;
+vs[p]^:='';
+vm[p]:=0;
+end;//p
+end;
+
+function tfastvars2.xmakename(xname:string;var xindex:longint):boolean;//20aug2024: update to check "vn[p]" with xname
+var
+   ni,nref1,nref2,p:longint;
+   c:tcur8;
+begin
+result:=false;
+xindex:=0;
+
+//check
+if (xname='') then exit;
+if (not oincludecomments) and (strcopy1(xname,1,2)='//') then exit;//24aug2024
+
+try
+//init
+c.val:=low__ref256u(xname);
+nref1:=c.ints[0];
+nref2:=c.ints[1];
+ni:=-1;
+
+//get
+for p:=0 to (ilimit-1) do
+begin
+if (vnref1[p]=nref1) and (vnref2[p]=nref2) and strmatch(vn[p]^,xname) then
+   begin
+   xindex:=p;
+   result:=true;
+   break;
+   end
+else if (ni=-1) and (vnref1[p]=0) and (vnref2[p]=0) then ni:=p;
+end;//p
+
+//new
+if (not result) and (ni>=0) then
+   begin
+   xindex         :=ni;
+   vn[xindex]^    :=xname;
+   vnref1[xindex] :=nref1;
+   vnref2[xindex] :=nref2;
+   result:=true;
+   end;
+
+//count
+if result and (xindex>=icount) then icount:=xindex+1;
+except;end;
+end;
+
+function tfastvars2.find(xname:string;var xindex:longint):boolean;
+var
+   nref1,nref2,p:longint;
+   c:tcur8;
+begin
+result:=false;
+xindex:=0;
+
+//check
+if (xname='') then exit;
+
+try
+//init
+c.val:=low__ref256u(xname);
+nref1:=c.ints[0];
+nref2:=c.ints[1];
+
+//get
+for p:=0 to (ilimit-1) do
+begin
+if (vnref1[p]=nref1) and (vnref2[p]=nref2) and strmatch(vn[p]^,xname) then
+   begin
+   xindex:=p;
+   result:=true;
+   break;
+   end;
+end;//p
+
+except;end;
+end;
+
+function tfastvars2.found(xname:string):boolean;
+var
+   xindex:longint;
+begin
+result:=find(xname,xindex);
+end;
+
+function tfastvars2.sfound(xname:string;var x:string):boolean;
+var
+   xindex:longint;
+begin
+result:=find(xname,xindex);
+x:='';
+
+try;if result then x:=vs[xindex]^ else x:='';except;end;
+end;
+
+function tfastvars2.sfound8(xname:string;x:pobject;xappend:boolean;var xlen:longint):boolean;
+var
+   xindex:longint;
+begin
+result:=false;
+xlen:=0;
+
+try
+if str__lock(x) and find(xname,xindex) then
+   begin
+   xlen:=low__len32(vs[xindex]^);
+   if not xappend then str__clear(x);
+   result:=str__sadd(x,vs[xindex]^);
+   end;
+except;end;
+//free
+str__uaf(x);
+end;
+
+function tfastvars2.getb(xname:string):boolean;
+var
+   xindex:longint;
+begin
+result:=false;
+
+try
+if find(xname,xindex) then
+   begin
+   case vm[xindex] of
+   1:result:=vb[xindex];
+   2:result:=(vi[xindex]>=1);
+   3:result:=(vc[xindex]>=1);
+   else result:=(strint64(vs[xindex]^)>=1);
+   end;//case
+   end;
+except;end;
+end;
+
+function tfastvars2.geti(xname:string):longint;
+var
+   xindex:longint;
+begin
+result:=0;
+
+try
+if find(xname,xindex) then
+   begin
+   case vm[xindex] of
+   1:if vb[xindex] then result:=1;
+   2:result:=vi[xindex];
+   3:result:=restrict32(vc[xindex]);
+   else result:=restrict32(strint64(vs[xindex]^));
+   end;//case
+   end;
+except;end;
+end;
+
+function tfastvars2.getc(xname:string):comp;
+var
+   xindex:longint;
+begin
+result:=0;
+
+try
+if find(xname,xindex) then
+   begin
+   case vm[xindex] of
+   1:if vb[xindex] then result:=1;
+   2:result:=vi[xindex];
+   3:result:=vc[xindex];
+   else result:=strint64(vs[xindex]^);
+   end;//case
+   end;
+except;end;
+end;
+
+function tfastvars2.gets(xname:string):string;
+var
+   xindex:longint;
+begin
+result:='';
+
+try
+if find(xname,xindex) then
+   begin
+   case vm[xindex] of
+   1:if vb[xindex] then result:='1' else result:='0';
+   2:result:=intstr32(vi[xindex]);
+   3:result:=intstr64(vc[xindex]);
+   else result:=vs[xindex]^;
+   end;//case
+   end;
+except;end;
+end;
+
+function tfastvars2.getn(xindex:longint):string;
+begin
+result:='';
+
+try;if (xindex>=0) and (xindex<ilimit) and ((vnref1[xindex]<>0) or (vnref2[xindex]<>0)) then result:=vn[xindex]^;except;end;
+end;
+
+function tfastvars2.getv(xindex:longint):string;
+begin
+result:='';
+
+try;if (xindex>=0) and (xindex<ilimit) and ((vnref1[xindex]<>0) or (vnref2[xindex]<>0)) then result:=vs[xindex]^;except;end;
+end;
+
+procedure tfastvars2.setv(xindex:longint;x:string);//22aug2024
+begin
+try;if (xindex>=0) and (xindex<ilimit) and ((vnref1[xindex]<>0) or (vnref2[xindex]<>0)) then vs[xindex]^:=x;except;end;
+end;
+
+function tfastvars2.getchecked(xname:string):boolean;//12jan2024
+begin
+result:=strmatch(s[xname],'on');
+end;
+
+procedure tfastvars2.setchecked(xname:string;x:boolean);
+begin
+s[xname]:=insstr('on',x);
+end;
+
+procedure tfastvars2.setb(xname:string;x:boolean);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=x;
+   vi[xindex]:=0;
+   vc[xindex]:=0;
+   vs[xindex]^:='';
+   vm[xindex]:=1;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+procedure tfastvars2.seti(xname:string;x:longint);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=false;
+   vi[xindex]:=x;
+   vc[xindex]:=0;
+   vs[xindex]^:='';
+   vm[xindex]:=2;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+procedure tfastvars2.setc(xname:string;x:comp);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=false;
+   vi[xindex]:=0;
+   vc[xindex]:=x;
+   vs[xindex]^:='';
+   vm[xindex]:=3;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+procedure tfastvars2.sets(xname:string;x:string);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=false;
+   vi[xindex]:=0;
+   vc[xindex]:=0;
+   try;vs[xindex]^:=x;except;end;
+   vm[xindex]:=4;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+function tfastvars2.getdt(xname:string):tdatetime;//20aug2024
+var
+   y,m,d,hh,mm,ss,ms:word;
+   int1,lp,p,vcount:longint;
+   str1,v:string;
+begin
+result:=0;
+
+try
+//init
+y:=2000;
+m:=1;
+d:=1;
+hh:=0;
+mm:=0;
+ss:=0;
+ms:=0;
+
+//get
+v:=gets(xname)+'-';//trailing dash
+vcount:=0;
+lp:=1;
+
+for p:=1 to low__len32(v) do
+begin
+if (v[p-1+stroffset]='-') then
+   begin
+   str1:=strcopy1(v,lp,p-lp);
+   int1:=strint32(str1);
+
+   case vcount of
+   0:y :=frcrange32(int1,1900,max32);
+   1:m :=frcrange32(int1,1,12);//confirmed: 1..12
+   2:d :=frcrange32(int1,1,31);//confirmed: 1..31
+   3:hh:=frcrange32(int1,0,23);
+   4:mm:=frcrange32(int1,0,59);
+   5:ss:=frcrange32(int1,0,59);
+   6:begin
+      ms:=frcrange32(int1,0,999);
+      break;
+      end;
+   end;//case
+
+   //inc
+   lp:=p+1;
+   inc(vcount);
+   end;
+end;//p
+
+//set
+result:=low__safedate( low__encodedate2(y,m,d) + low__encodetime2(hh,mm,ss,ms) );
+except;end;
+end;
+
+procedure tfastvars2.setdt(xname:string;xval:tdatetime);//20aug2024
+var
+   y,m,d,hh,mm,ss,ms:word;
+begin
+try
+low__decodedate2(xval,y,m,d);
+low__decodetime2(xval,hh,mm,ss,ms);
+sets(xname,intstr32(y)+'-'+intstr32(m)+'-'+intstr32(d)+'-'+intstr32(hh)+'-'+intstr32(mm)+'-'+intstr32(ss)+'-'+intstr32(ms));
+except;end;
+end;
+
+procedure tfastvars2.iinc(xname:string);
+begin
+iinc2(xname,1);
+end;
+
+procedure tfastvars2.iinc2(xname:string;xval:longint);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=false;
+   low__iroll(vi[xindex],xval);
+   vc[xindex]:=0;
+   vs[xindex]^:='';
+   vm[xindex]:=2;//1=boolean, 2=longint, 3=comp, 4=string
+   end;
+end;
+
+procedure tfastvars2.cinc(xname:string);
+begin
+cinc2(xname,1);
+end;
+
+procedure tfastvars2.cinc2(xname:string;xval:comp);
+var
+   xindex:longint;
+begin
+if xmakename(xname,xindex) then
+   begin
+   vb[xindex]:=false;
+   vi[xindex]:=0;
+   low__roll64(vc[xindex],xval);
+   vs[xindex]^:='';
    vm[xindex]:=3;//1=boolean, 2=longint, 3=comp, 4=string
    end;
 end;

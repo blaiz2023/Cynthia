@@ -1,5 +1,11 @@
 unit gossgui;
 
+//-- Known Issues --------------------------------------------------------------
+//
+//1. Occasionally resizing the "Options" window causes the window to repaint at wrong location or main window beneath not to repaint
+//
+//------------------------------------------------------------------------------
+
 interface
 {$ifdef gui4} {$define gui3} {$define gamecore}{$endif}
 {$ifdef gui3} {$define gui2} {$define net} {$define ipsec} {$endif}
@@ -31,12 +37,12 @@ uses gosswin2, gossroot, gossfast, gosstext, gossimg, gossio {$ifdef snd},gosssn
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. GUI (gossgui.pas)
-//## Version.................. 4.00.33280 (+5927) (Build no reduced by 5611 due to WordCore (now TextCore) removed to dedicated unit gosstext.pas - 16feb2026)
+//## Version.................. 4.00.33310 (+5929) (Build no reduced by 5611 due to WordCore (now TextCore) removed to dedicated unit gosstext.pas - 16feb2026)
 //## Items.................... 46
-//## Last Updated ............ 15apr2026, 11apr2026, 07apr2026, 03apr2026,
+//## Last Updated ............ 23apr2026, 22apr2026, 17apr2026, 15apr2026, 11apr2026, 07apr2026, 03apr2026,
 //##                                      29mar2026, 26mar2026, 23mar2026, 18mar2026, 10mar2026, 06mar2026, 28feb2026, 26feb2026, 15feb2026, 01feb2026, 23jan2026, 13jan2026, 11jan2026, 07jan2026, 29dec2025, 27dec2025, 26dec2025, 17dec2025, 13dec2025, 12dec2025, 04dec2025, 01dec2025, 30nov2025, 28nov2025, 09nov2025, 06nov2025, 24oct2025, 08oct2025, 05oct2025, 29sep2025, 26sep2025, 18sep2025, 15sep2025, 09sep2025, 07sep2025, 28aug2025, 23aug2025, 15aug2025, 10aug2025, 08aug2025, 26jul2025, 24jul2025, 17jul2025, 14jul2025, 04jul2025, 16jun2025, 12jun2025, 09jun2025, 07jun2025, 03jun2025, 29may2025, 29apr2025, 13apr2025, 31mar2025, 24mar2025, 18feb2025, 28dec2024, 11dec2024, 29nov2024, 22nov2024, 15nov2024, 10nov2024, 04oct2024, 28aug2024, 01ug2024, 25jul2024, 28jun2024, 22mar2024, 09feb2024, 13dec2023, 25nov2023, 19may2023, 25feb2023, 30dec2022, 15nov2022, 06nov2022, 11oct2022, 28sep2022, 05jul2022, 29jun2022, 14jun2022, 31may2022, 14may2022, 30apr2022, 30mar2022, 27feb2022, 08feb2022, 31jan2021, 30dec2021,
 //##                                      19dec2021, 30sep2021, 29aug2021, 09aug2021, 27jul2021, 07jul2021, 20jun2021, 02jun2021, 30may2021, 12may2021, 10may2021, 30apr2021, 19apr2021, 14apr2021, 03apr2021, 31mar2021, 20mar2021, 08mar2021, 26feb2021, 01feb2021, 28jan2021, 11oct2020, 25sep2020, 07sep2020, 26aug2020, 22aug2020, 28jul2020, 23may2020, 10may2020
-//## Lines of Code............ 53,200+
+//## Lines of Code............ 53,300+
 //## Origin .................. Human generated and maintained
 //##
 //## main.pas ................ App specific code
@@ -63,14 +69,14 @@ uses gosswin2, gossroot, gossfast, gosstext, gossimg, gossio {$ifdef snd},gosssn
 //## | low level procs        | n/a               | 1.00.1890 | 03mar2026   | Collection of basic procedures and functions to support platform and it's controls etc - 14sep2025, 09sep2025, 05sep2025, 28aug2025, 23aug2025, 13mar2025, 11jan2025: ecomode now kicks in at 10min, 18dec2024, 17dec2024: low__font(), 11dec2024, 01dec2024: fixed font leak on Win98 for proc low__toLGF(), 26nov2024, 13dec2023, 19may2023, 11oct2022, 27sep2022, 14may2022, 21may2020
 //## | scale__*               | family of procs   | 1.00.092  | 17dec2025   | System wide scaling support - 10dec2025, 05sep2025
 //## | system__*              | family of procs   | 1.00.050  | 13may2025   | System management and Windows message handling
-//## | sysback__*             | family of procs   | 1.00.135  | 07mar2026   | Background image management procs (integrates with tbackgroundmanager) - 01mar2026, 19aug2025, 11apr2025, 18mar2025
+//## | sysback__*             | family of procs   | 1.00.148  | 17apr2026   | Background image management procs (integrates with tbackgroundmanager) - 07mar2026, 01mar2026, 19aug2025, 11apr2025, 18mar2025
 //## | clip__*                | family of procs   | 1.00.382  | 03apr2026   | Clipboard copy/paste for text and images - 18mar2026, 01sep2025, 08aug2025: fixed "cf_png" bad value, 12jun2025, 01jun2025, 01jun2025, 29apr2025, 17mar2025, 17dec2024
 //## | canvas__*              | family of procs   | 1.00.050  | 01dec2024   | TCanvas abstraction procs
 //## | cols_*                 | color schemes     | 1.00.450  | 09mar2025   | Collection of built-in color schemes
 //## | tbasicapp              | tobjectex         | 1.00.045  | 10dec2025   | Basic GUI app structure, complete with GUI (tbasicsystem) - 10aug2024, 30jul2021, 24jul2021
 //## | trnd8                  | tobject           | 1.00.020  | 29nov2023   | Random stream generator
 //## | tbackgroundmanager     | tobject           | 1.00.332  | 02mar2026   | Handles static, animated and dynamic background imagery for "tbasicsystem" - 07jan2026, 13dec2025, 03jun2025
-//## | tbasicsystem           | tobject           | 1.00.5990 | 07apr2026   | GUI rendering and control system - 03apr2026, 26mar2026, 10mar2026, 06mar2026, 01feb2026, 13jan2026, 29dec2025, 13dec2025, 01dec2025, 09nov2025, 08oct2025, 17sep2025, 09sep2025, 31aug2025, 27aug2025, 17aug2025, 10aug2025, 26jul2025, 04jul2025, 28may2025, 15may2025, 21apr2025, 18feb2025, 04feb2025: auto switches between using buffer 1+2 or only buffer 1 for optimal rendering, 28jan2025, 28nov2024: supports background exclusion areas, 21nov2024: background pauses for window resize/reposition, 18nov2024, 26jul2024m 28jun2024: fixed part paint, 09dec2023, 19nov2023, 12feb2023, 20may2022, 27mar2022: updated onaccept proc for deep drag and drop support, 26feb2022, Fixed ibuffer.w/h mismatch with mustmask - 21sep2021, 29aug2021, 28jul2021, 07jul2021, 18jun2021, 29may2021, 14apr2021, 03apr2021, 08mar2021, 25feb2021, 11oct2020, 28jul2020, 20may2020
+//## | tbasicsystem           | tobject           | 1.00.6005 | 23apr2026   | GUI rendering and control system - 07apr2026, 03apr2026, 26mar2026, 10mar2026, 06mar2026, 01feb2026, 13jan2026, 29dec2025, 13dec2025, 01dec2025, 09nov2025, 08oct2025, 17sep2025, 09sep2025, 31aug2025, 27aug2025, 17aug2025, 10aug2025, 26jul2025, 04jul2025, 28may2025, 15may2025, 21apr2025, 18feb2025, 04feb2025: auto switches between using buffer 1+2 or only buffer 1 for optimal rendering, 28jan2025, 28nov2024: supports background exclusion areas, 21nov2024: background pauses for window resize/reposition, 18nov2024, 26jul2024m 28jun2024: fixed part paint, 09dec2023, 19nov2023, 12feb2023, 20may2022, 27mar2022: updated onaccept proc for deep drag and drop support, 26feb2022, Fixed ibuffer.w/h mismatch with mustmask - 21sep2021, 29aug2021, 28jul2021, 07jul2021, 18jun2021, 29may2021, 14apr2021, 03apr2021, 08mar2021, 25feb2021, 11oct2020, 28jul2020, 20may2020
 //## | tbasiccontrol          | tobject           | 1.00.1270 | 29mar2026   | Flicker free base control with built-in _onnotify/_ontimer and _onpaint procs for easy customisation - 23mar2026, 25feb2026, 26dec2025, 04dec2025, 30nov2025, 05sep2025, 19jul2025, 03jul2025, 24may2025, 19apr2025, 31mar2025, 06jan2025, 25dec2024, 28nov2024, 19aug2024, 28jun2024: fixed ldso4 leak, 02dec2023: ldso4 cliparea handling, 17nov2023, 12jan2022, 09sep2021, 27mar2021, 11oct2020, 20may2020, 12apr2020, 14mar2020
 //## | tbasicimgview          | tbasiccontrol     | 1.00.755  | 03apr2026   | Animated image viewer - 18feb2025, 30jan2025, 26dec2024
 //## | tbasichelp             | tbasiccontrol     | 1.00.100  | 16may2025   | Realtime help scroller - 02aug2024, 12apr2020, 25mar2020
@@ -1416,25 +1422,26 @@ type
     function popmanyedit2(xcount:longint;var x:array of string;xtep32:longint;xtitle:string;xcap:array of string;xhelp:array of string;xcancelcap,xokcap:string;xsize:longint):boolean;
     function popmanyedit3(xcount:longint;var x:array of string;xtep32:longint;xtitle:string;xcap:array of string;xhelp:array of string;xcolorise:array of tinputcolorise;xcancelcap,xokcap:string;xsize:longint):boolean;
 
-    //.txt - poptext()
-    procedure poptxt0(x:string);//for display purposes only
-    procedure poptxt02(x,xcap:string);//for display purposes only
-    function poptxt(var x:string;xwrap:longint;const xcap,xhelp:string):boolean;
-    function poptxt2(var x:string;xwrap:longint;xreadonly:boolean;const xcap,xhelp:string):boolean;
-    function poptxt3(var x:string;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap:string):boolean;
-    function poptxt4(var x:string;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;
-    function poptxt8(xtext:tstr8;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string):boolean;//12jan2025
-    function poptxt82(xtext:tstr8;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;//12jan2025
+    //.txt - poptext() - 22apr2026: xfont2
+    procedure poptxt0(x:string;const xfont2:boolean);//for display purposes only
+    procedure poptxt02(x,xcap:string;const xfont2:boolean);//for display purposes only
+    function poptxt(var x:string;xwrap:longint;const xfont2:boolean;const xcap,xhelp:string):boolean;
+    function poptxt2(var x:string;xwrap:longint;xreadonly,xfont2:boolean;const xcap,xhelp:string):boolean;
+    function poptxt3(var x:string;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap:string):boolean;
+    function poptxt4(var x:string;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;
+    function poptxt8(xtext:tstr8;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string):boolean;//12jan2025
+    function poptxt82(xtext:tstr8;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;//12jan2025
     function poptxt__event2(a:tbasiccontrol;xstyle:string;xcode:longint;xcode2:string;xtepcolor:longint):boolean;
 
     //.query
-    function popquery(x:string):boolean;
-    function popquery1(xtitle,x:string):boolean;
-    function popquery2(x,xcancelcap,xokcap:string;xlarge:boolean):boolean;
-    function popquery20(xtitle,x,xcancelcap,xokcap:string;xlarge:boolean):boolean;
-    function popquery21(x,xcancelcap,xokcap:string;xlarge,xOKtime:boolean):boolean;
-    function popquery22(xtitle,x,xcancelcap,xokcap:string;xlarge,xOKtime:boolean):boolean;
-    function popqueryex(x,xcancelcap,xokcap:string;dw,dh,ccancel,cok:longint):boolean;
+    function popquery(const x:string):boolean;
+    function popqueryAndConfirm(const x:string):boolean;//22apr2026
+    function popquery1(const xtitle,x:string):boolean;
+    function popquery2(const x,xcancelcap,xokcap:string;const xlarge:boolean):boolean;
+    function popquery20(const xtitle,x,xcancelcap,xokcap:string;const xlarge:boolean):boolean;
+    function popquery21(const x,xcancelcap,xokcap:string;const xlarge,xOKtime:boolean):boolean;
+    function popquery22(const xtitle,x,xcancelcap,xokcap:string;const xlarge,xOKtime:boolean):boolean;
+    function popqueryex(const x,xcancelcap,xokcap:string;const dw,dh,ccancel,cok:longint):boolean;
     function popqueryex2(xtitle,x,xcancelcap,xokcap:string;dw,dh,ccancel,cok:longint):boolean;//11dec2025
     function pop_replaceall_skipall(xtitle,xfilename:string):longint;
 
@@ -5613,7 +5620,7 @@ function sysprogram_monitorindex:longint;//26nov2024
 function sysprogram_wh(var dw,dh:longint):boolean;
 
 //-- system background support -------------------------------------------------
-procedure sysback__init;//19aug2025, 08mar2025
+procedure sysback__init;//17apr2026, 19aug2025, 08mar2025
 function sysback__maketileFromName(const d:tobject;const sv:string):boolean;
 procedure sysback__clear(xindex:longint);
 function sysback__canadjust(xindex:longint):boolean;
@@ -6122,7 +6129,6 @@ procedure gossgui__start;
 var
    p:longint;
    cmp1:comp;
-   str1,str2:string;
    a,b:hrgn;
    ar,br:twinrect;
 begin
@@ -6278,8 +6284,6 @@ except;end;
 end;
 
 procedure gossgui__stop;
-var
-   p:longint;
 begin
 try
 
@@ -6356,8 +6360,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gossgui.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.33280'
-else if (xname='date')       then result:='15apr2026'
+if      (xname='ver')        then result:='4.00.33310'
+else if (xname='date')       then result:='23apr2026'
 else if (xname='name')       then result:='GUI'
 else
    begin
@@ -7039,7 +7043,7 @@ end;
 
 
 //-- system background support -------------------------------------------------
-procedure sysback__init;//19aug2025, 08mar2025
+procedure sysback__init;//17apr2026, 19aug2025, 08mar2025
 var
    xlimit,p:longint;
    xcanwrite:boolean;
@@ -7142,6 +7146,7 @@ var
 
    procedure sall;
    begin
+
    s1(bkmStrength,0);
    s1(bkmColorise,0);
    s1(bkmSpeed,0);
@@ -7151,6 +7156,8 @@ var
    s1(bkmHwobble,0);
    s1(bkmVwobble,0);
    s1(bkmFwobble,0);
+   s1(bkmCrate,0);//17apr2026
+
    end;
 
    procedure xnewfull(const xname:string;const xfromarray:array of byte);
@@ -7177,7 +7184,7 @@ var
    var//w=width, h=height, k=background color(0..N, -1=transparent, -2=not used), a-d=color1..4, s=splice100(0..100), p=power255(0..255),
       hratio,hratio2:double;
       dcol,p:longint;
-      dlabel,dname,v:string;
+      v:string;
    begin
 
    dcol     :=rgba0__int(r,g,b);
@@ -7268,7 +7275,7 @@ var
    procedure pVLine(const xname:string;const r,g,b:byte);
    var//w=width, h=height, k=background color(0..N, -1=transparent, -2=not used), a-d=color1..4, s=splice100(0..100), p=power255(0..255),
       dcol,p:longint;
-      dlabel,dname,v:string;
+      v:string;
    begin
 
    dcol     :=rgba0__int(r,g,b);
@@ -7395,30 +7402,34 @@ xnew('None',false,'',back_none);
 xnewfull('Fuzz',back_fuzz);
 
 xnew('Fuzz 2',false,'',back_fuzz);
-sall;
-s0(bkmStrength,50);
+s1(bkmStrength,18);
 s0(bkmColorise,-100);
-s1(bkmSpeed,20);
-s1(bkmVstep,1);
-s1(bkmFstep,10);
+
+xnew('Fuzz 3',false,'',back_fuzz);
+s1(bkmStrength,18);
+s0(bkmColorise,100);
 
 //.plaster
 xnewfull('Plaster',back_plaster);
 
 xnew('Plaster 2',false,'',back_plaster);
-s0(bkmStrength,17);
+s1(bkmStrength,18);
+s0(bkmColorise,-100);
 
 xnew('Plaster 3',false,'',back_plaster);
-s0(bkmStrength,25);
+s1(bkmStrength,18);
+s0(bkmColorise,100);
 
 //.stone
 xnewfull('Stone',back_stone);
 
-xnew('Stone 2',false,'',back_stone);
-s0(bkmStrength,32);
+xnew('Stone 2',false,'',back_stone);//17apr2026
+s1(bkmStrength,18);
+s0(bkmColorise,-100);
 
 xnew('Stone 3',false,'',back_stone);
-s0(bkmStrength,45);
+s1(bkmStrength,18);
+s0(bkmColorise,100);
 
 //.balls
 xnewfull('Balls',back_balls);
@@ -7459,10 +7470,12 @@ end;//p
 xnewfull('Pitted',back_pitted);
 
 xnew('Pitted 2',false,'',back_pitted);
-s0(bkmStrength,10);
+s1(bkmStrength,10);
+s0(bkmColorise,-100);
 
 xnew('Pitted 3',false,'',back_pitted);
-s0(bkmStrength,15);
+s1(bkmStrength,10);
+s0(bkmColorise,100);
 
 xnew('Pitted 4',false,'',back_pitted);
 s0(bkmStrength,25);
@@ -7471,10 +7484,12 @@ s0(bkmStrength,25);
 xnewfull('Vain',back_vain);
 
 xnew('Vain 2',false,'',back_vain);
-s0(bkmStrength,20);
+s1(bkmStrength,17);
+s0(bkmColorise,-100);
 
 xnew('Vain 3',false,'',back_vain);
-s0(bkmStrength,35);
+s1(bkmStrength,17);
+s0(bkmColorise,100);
 
 //.clouds
 xnew('Clouds',false,'',back_clouds);
@@ -7497,25 +7512,33 @@ s1(bkmVstep,1);
 xnewfull('Ivy',back_ivy);
 
 xnew('Ivy 2',false,'',back_ivy);
-s0(bkmStrength,20);
+s1(bkmStrength,20);
+s0(bkmColorise,-100);
+
+xnew('Ivy 3',false,'',back_ivy);
+s1(bkmStrength,20);
 s0(bkmColorise,100);
 
 //.swell
 xnewfull('Swell',back_swell);
 
 xnew('Swell 2',false,'',back_swell);
-s0(bkmStrength,20);
-s0(bkmColorise,100);
+s1(bkmStrength,20);
+s0(bkmColorise,-100);
 
 xnew('Swell 3',false,'',back_swell);
-s0(bkmStrength,30);
-s0(bkmColorise,-100);
+s1(bkmStrength,20);
+s0(bkmColorise,100);
 
 //.metal
 xnewfull('Metal',back_metal);
 
 xnew('Metal 2',false,'',back_metal);
-s0(bkmStrength,20);
+s1(bkmStrength,20);
+s0(bkmColorise,-100);
+
+xnew('Metal 3',false,'',back_metal);
+s1(bkmStrength,20);
 s0(bkmColorise,100);
 
 //custom
@@ -7546,7 +7569,6 @@ var
    xPreviousSlot:pfastdraw;
    lp,slen,p,xbits,xw,xh:longint;
    pn,n,v:string;
-   c24:tcolor24;
    v32,dw,dh,dh2,dbackcol,dcol1,dcol2,dcol3,dcol4,dpower255,dsplice100:longint;
    xbackFilled:boolean;
 
@@ -10527,7 +10549,7 @@ end;
 function clip__copyimageAsArrayByte(const s:tobject;const dformat:string;const dShowSuccess:boolean):boolean;//18mar2026
 var
    d,dtmp:tstr8;
-   xtext,e:string;
+   e:string;
 begin
 
 //defaults
@@ -12100,7 +12122,6 @@ var
    procedure xtextscaling;
    var
       a:twinbmp;
-      e:string;
    begin
 
    //defaults
@@ -13867,7 +13888,7 @@ end;
 
 function pop_txt2(var x:string;xwrap:longint;xreadonly:boolean;xcap,xhelp:string):boolean;
 begin
-if (sysprogram<>nil) and (sysprogram.gui<>nil) then result:=sysprogram.gui.poptxt2(x,xwrap,xreadonly,xcap,xhelp) else result:=false;
+if (sysprogram<>nil) and (sysprogram.gui<>nil) then result:=sysprogram.gui.poptxt2(x,xwrap,xreadonly,true,xcap,xhelp) else result:=false;
 end;
 
 function pop_save(var xfilename:string;xfilterlist,xcommonfolder:string;var daction:string):boolean;
@@ -18023,7 +18044,7 @@ end;
 procedure tbackgroundmanager.xloadtile;//called by "preComputeCellForRender32()"
 var
    a:tstr8;
-   v,e:string;
+   e:string;
    xbits:longint;
 
    procedure xnotile;
@@ -26727,32 +26748,32 @@ freeobj(@a);
 
 end;
 
-procedure tbasicsystem.poptxt0(x:string);//for display purposes only - 15sep2025
+procedure tbasicsystem.poptxt0(x:string;const xfont2:boolean);//for display purposes only - 15sep2025
 begin
-poptxt3(x,0,false,true,'','','','');
+poptxt3(x,0,false,true,xfont2,'','','','');
 end;
 
-procedure tbasicsystem.poptxt02(x,xcap:string);//for display purposes only - 15sep2025
+procedure tbasicsystem.poptxt02(x,xcap:string;const xfont2:boolean);//for display purposes only - 15sep2025
 begin
-poptxt3(x,0,false,true,xcap,'','','');
+poptxt3(x,0,false,true,xfont2,xcap,'','','');
 end;
 
-function tbasicsystem.poptxt(var x:string;xwrap:longint;const xcap,xhelp:string):boolean;
+function tbasicsystem.poptxt(var x:string;xwrap:longint;const xfont2:boolean;const xcap,xhelp:string):boolean;
 begin
-result:=poptxt3(x,xwrap,false,false,xcap,xhelp,'','');
+result:=poptxt3(x,xwrap,false,false,xfont2,xcap,xhelp,'','');
 end;
 
-function tbasicsystem.poptxt2(var x:string;xwrap:longint;xreadonly:boolean;const xcap,xhelp:string):boolean;
+function tbasicsystem.poptxt2(var x:string;xwrap:longint;xreadonly,xfont2:boolean;const xcap,xhelp:string):boolean;
 begin
-result:=poptxt3(x,xwrap,false,xreadonly,xcap,xhelp,'','');
+result:=poptxt3(x,xwrap,false,xreadonly,xfont2,xcap,xhelp,'','');
 end;
 
-function tbasicsystem.poptxt3(var x:string;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap:string):boolean;
+function tbasicsystem.poptxt3(var x:string;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap:string):boolean;
 begin
-result:=poptxt4(x,xwrap,xrows,xreadonly,xcap,xhelp,xcancelcap,xokcap,'',1,1);
+result:=poptxt4(x,xwrap,xrows,xreadonly,xfont2,xcap,xhelp,xcancelcap,xokcap,'',1,1);
 end;
 
-function tbasicsystem.poptxt4(var x:string;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;
+function tbasicsystem.poptxt4(var x:string;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;
 var
    a:tstr8;
 begin
@@ -26768,7 +26789,7 @@ a           :=str__new8;
 a.text      :=x;
 
 //get
-if poptxt82(a,xwrap,xrows,xreadonly,xcap,xhelp,xcancelcap,xokcap,xstyle,xscaleW,xscaleH) then
+if poptxt82(a,xwrap,xrows,xreadonly,xfont2,xcap,xhelp,xcancelcap,xokcap,xstyle,xscaleW,xscaleH) then
    begin
 
    x        :=a.text;
@@ -26782,12 +26803,12 @@ str__free(@a);
 
 end;
 
-function tbasicsystem.poptxt8(xtext:tstr8;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string):boolean;//12jan2025
+function tbasicsystem.poptxt8(xtext:tstr8;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string):boolean;//12jan2025
 begin
-result:=poptxt82(xtext,xwrap,xrows,xreadonly,xcap,xhelp,xcancelcap,xokcap,xstyle,1,1);
+result:=poptxt82(xtext,xwrap,xrows,xreadonly,xfont2,xcap,xhelp,xcancelcap,xokcap,xstyle,1,1);
 end;
 
-function tbasicsystem.poptxt82(xtext:tstr8;xwrap:longint;xrows,xreadonly:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;//12jan2025
+function tbasicsystem.poptxt82(xtext:tstr8;xwrap:longint;xrows,xreadonly,xfont2:boolean;const xcap,xhelp,xcancelcap,xokcap,xstyle:string;xscaleW,xscaleH:single):boolean;//12jan2025
 var
    a:tbasicscroll;
    b:tbasicbwp;
@@ -26834,7 +26855,20 @@ if      strmatch(xstyle,'plaintext')  then b:=a.nbwp5(xhelp,xtext,xwrap,xrows,tr
 else if strmatch(xstyle,'plaintext2') then b:=a.nbwp5(xhelp,xtext,xwrap,xrows,true,true,false,false,true,true,0,2)//plain text using secondary font (usually Courier New)
 else                                       b:=a.nbwp5(xhelp,xtext,xwrap,xrows,true,true,false,false,true,false,0,0);//default wordcore settings
 
-b.core.onefontsize   :=0;//system font - 05sep2025
+if xfont2 then
+   begin
+
+   b.core.onefontname:=font_name2;//????????????????????
+   b.core.onefontsize:=1;
+
+   end
+else
+   begin
+
+   b.core.onefontsize   :=0;//system font size - 05sep2025
+
+   end;
+
 b.oreadonly          :=xreadonly;
 
 with a.xtoolbar2 do
@@ -26883,37 +26917,46 @@ if zznil(a,2299) then exit;
 if (xcode2='edit') and sbwpok(a.bc2) then sbwp(a.bc2).showmenu;
 end;
 
-function tbasicsystem.popquery(x:string):boolean;
+function tbasicsystem.popquery(const x:string):boolean;
 begin
+
 result:=popquery2(x,'','',false);
+
 end;
 
-function tbasicsystem.popquery1(xtitle,x:string):boolean;
+function tbasicsystem.popqueryAndConfirm(const x:string):boolean;//22apr2026
+begin
+
+result:=popquery(x) and popquery('Last chance to cancel?');
+
+end;
+
+function tbasicsystem.popquery1(const xtitle,x:string):boolean;
 begin
 result:=popquery20(xtitle,x,'','',false);
 end;
 
-function tbasicsystem.popquery2(x,xcancelcap,xokcap:string;xlarge:boolean):boolean;
+function tbasicsystem.popquery2(const x,xcancelcap,xokcap:string;const xlarge:boolean):boolean;
 begin
 result:=popqueryex(x,xcancelcap,xokcap,low__aorb(380,550,xlarge),low__aorb(230,320,xlarge),60,0);
 end;
 
-function tbasicsystem.popquery20(xtitle,x,xcancelcap,xokcap:string;xlarge:boolean):boolean;
+function tbasicsystem.popquery20(const xtitle,x,xcancelcap,xokcap:string;const xlarge:boolean):boolean;
 begin
 result:=popqueryex2(xtitle,x,xcancelcap,xokcap,low__aorb(380,550,xlarge),low__aorb(230,320,xlarge),60,0);
 end;
 
-function tbasicsystem.popquery21(x,xcancelcap,xokcap:string;xlarge,xOKtime:boolean):boolean;
+function tbasicsystem.popquery21(const x,xcancelcap,xokcap:string;const xlarge,xOKtime:boolean):boolean;
 begin
 result:=popquery22('',x,xcancelcap,xokcap,xlarge,xOKtime);
 end;
 
-function tbasicsystem.popquery22(xtitle,x,xcancelcap,xokcap:string;xlarge,xOKtime:boolean):boolean;
+function tbasicsystem.popquery22(const xtitle,x,xcancelcap,xokcap:string;const xlarge,xOKtime:boolean):boolean;
 begin
 result:=popqueryex2(xtitle,x,xcancelcap,xokcap,low__aorb(380,550,xlarge),low__aorb(230,320,xlarge),insint(60,not xOKtime),insint(60,xOKtime));
 end;
 
-function tbasicsystem.popqueryex(x,xcancelcap,xokcap:string;dw,dh,ccancel,cok:longint):boolean;
+function tbasicsystem.popqueryex(const x,xcancelcap,xokcap:string;const dw,dh,ccancel,cok:longint):boolean;
 begin
 result:=popqueryex2('',x,xcancelcap,xokcap,dw,dh,ccancel,cok);
 end;
@@ -28336,7 +28379,7 @@ io__fromfile(low__platfolder('settings')+'colhis.txt',@xdata,e);
 if xeditonly then
    begin
    str1:=xdata.text;
-   if not poptxt(str1,wwsNone,'Edit Color History','Type one red,green,blue number per line') then goto skipend;
+   if not poptxt(str1,wwsNone,true,'Edit Color History','Type one red,green,blue number per line') then goto skipend;
    xdata.text:=str1;
    end;
 //.add to history list
@@ -37997,8 +38040,6 @@ if (not xreadonly) then
 end;
 
 function tbasicbwp.showmenuClick(sender:tobject;xstyle:string;xcode:longint;xcode2:string;xtepcolor:longint):boolean;
-var
-   e:string;
 begin
 
 //handled
@@ -38206,8 +38247,6 @@ itimersync_fastcount:=20;//20 fast cycles
 end;
 
 function tbasicbwp.ioget(xdata:tstr8;xformat:string):boolean;
-var
-   str2:string;
 begin
 
 result:=false;
@@ -39899,7 +39938,7 @@ else if m('nav.favedit') then
 
       str1:=ifavcore.text;
 
-      if gui.poptxt(str1,wwsNone,'Edit Favourites List','Folder Format|Type one full folder name per line including trailing slash - e.g. C:\Windows\ |*|Portable folders (folders on same drive as app) begin with "?:\"') then
+      if gui.poptxt(str1,wwsNone,true,'Edit Favourites List','Folder Format|Type one full folder name per line including trailing slash - e.g. C:\Windows\ |*|Portable folders (folders on same drive as app) begin with "?:\"') then
          begin
 
          savefav(str__newaf8b(low__remdup2(str1,true,false,false)));
@@ -45657,7 +45696,7 @@ var
    s:tclientinfo;
    ppa,doa,da:twinrect;
    dbold,dflash,xflash,denabled,ddown,xhavefocus,xactive:boolean;
-   dcolor,dcolorb,v,aw,ah,p,pad1,pad2,xshiftby:longint;
+   dcolor,dcolorb,aw,ah,p,pad1,pad2,xshiftby:longint;
 
 begin
 try
@@ -47563,12 +47602,14 @@ end;
 procedure tbasicmenu._onpaint(sender:tobject);//15apr2026, 01dec2025, 15may2025, 20jul2024: soft back for title items
 label
    redo;
+
 const
    xpad=5;
    //color modes
    mnor=0;
    mdis=1;
    mhov=2;
+
 var
    //infovars
    s:tclientinfo;
@@ -47802,6 +47843,7 @@ if (p>=0) and (p<icount) and (dy<=(ch-1-s.bs)) and xtepColorsNULL and xgetitem2(
          else if (onumberfrom>=0)  and (p>=onumberfrom)  then str1:=k64(p-onumberfrom+1)+'. '+str1;
 
          end;
+
 
       ftext( s.back ,ra,xoff+dx,yoff+dy+((rh-th) div 2),xfont,xtab,str1,findex,xenabled);//21mar2026, 26feb2026
       int1:=fast__textwidth(xtab,str1,findex);
@@ -48232,10 +48274,9 @@ procedure tsimpleint._onpaint(sender:tobject);
 var
    s:tclientinfo;
    xtouch,xhighbar,xdownlabel,xenabled:boolean;
-   xval,tw,vsp,xlineheight,hsp,p,int0,int1,int2,int3,int4,dy:longint;
+   xval,tw,vsp,xlineheight,hsp,int0,int1,int2,int3,int4:longint;
    ta,ba,da,da2:twinrect;
    z:string;
-   cur1:currency;
 begin
 try
 
@@ -50682,9 +50723,6 @@ io__tofile( tep__folderimageUndoFilename(xfolder) ,@iundo ,e );
 end;
 
 procedure tbasictea.xundoFill;
-var
-   e:string;
-
 begin
 
 str__clear(@iundo);
@@ -50977,9 +51015,8 @@ const
 
 var
    s:tclientinfo;
-   rw,rh,aw,ah,dtep,int1,tmaxw,p,x1,x2,dx,dy,vw,vh:longint;
+   rw,rh,aw,ah,dtep,p,dx,dy,vw,vh:longint;
    da:twinrect;
-   z,zval:string;
 
    function xinfo(x:longint;xval:boolean):string;
    begin

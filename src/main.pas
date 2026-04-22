@@ -30,9 +30,9 @@ uses gossroot, {$ifdef gui}gossgui,{$endif} {$ifdef snd}gosssnd,{$endif} gosswin
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. app code (main.pas)
-//## Version.................. 1.00.6226 (+218)
+//## Version.................. 1.00.6228 (+220)
 //## Items.................... 6
-//## Last Updated ............ 17apr2026, 07apr2026, 01apr2026, 29mar2026, 01feb2026, 30jan2026, 15jan20256, 13dec2025, 11dec2025, 10dec2025, 08dec2025, 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
+//## Last Updated ............ 23apr2026, 17apr2026, 07apr2026, 01apr2026, 29mar2026, 01feb2026, 30jan2026, 15jan20256, 13dec2025, 11dec2025, 10dec2025, 08dec2025, 09nov2025, 07nov2025, 02nov2025, 24oct2025, 26sep2026, 16sep2025, 09sep2025, 05sep2025, 31aug2025, 21aug2025, 19aug2025, 15aug2025, 11aug2025, 03jul2025, 08mar2025, 18feb2025, 08feb2025, 25jan2025, 12jan2025, 22nov2024, 05apr2021, 22mar2021, 20feb2021
 //## Lines of Code............ 5,500+
 //## Code Origin ............. Written and maintained by a human being, not AI-generated
 //##
@@ -486,8 +486,8 @@ else if (xname='codepage')            then result:='1252'//for Clyde
 else if (xname='msix.tags')           then result:='M'//for Clyde -> auto-enables midi support under MSIX - 10dec2025
 else if (xname='msstore.name')        then result:=''//optional - overrides default name for Clyde - 11apr2026
 
-else if (xname='ver')                 then result:='1.00.6226'
-else if (xname='date')                then result:='17apr2026'
+else if (xname='ver')                 then result:='1.00.6228'
+else if (xname='date')                then result:='23apr2026'
 else if (xname='name')                then result:='Cynthia'
 else if (xname='web.name')            then result:='cynthia'//used for website name
 else if (xname='des')                 then result:='Reliably play midi music files'

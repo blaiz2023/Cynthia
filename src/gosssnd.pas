@@ -3255,7 +3255,7 @@ end;
 
 function midioutflush(xhandle:hauto):boolean;//11aug2025
 var//Note: Takes about 140ms to execute - 26may2021
-   xch,xnote,p:byte;
+   p:byte;
    xcount:longint;
 
    function xsend(xmsg,xval1,xval2,xval3:byte):boolean;
@@ -4765,7 +4765,7 @@ procedure tbasicmidi.__pdo;//16sep2025
 label//Special Note: iresetvol allows for a gentle fading in to full volume and avoids any sudden loud notes - 11aug2025, 21feb2022
    redo, skipend;
 var
-   xbroadcasting,bol1:boolean;
+   xbroadcasting:boolean;
    xhandleindex,xchannel,xdeviceToTrack,xdevicefrom,xdeviceto,dhandlecount,xtrack,int1,xsysvol,rvol,xmaxp,xsongms32,xtimems32,p:longint;
    xmsg,xnote,xrawvol,xvol,xvolUNMUTED,xval3:byte;
    dsysvol:array[0..high(tmidilist)] of byte;
@@ -5708,8 +5708,6 @@ ipos:=trunc(cmp1);//timer synced
 end;
 
 procedure tbasicmidi.restart;
-var
-   p:longint;
 begin//Re-syncs midi playback at the new location
 try
 moretime;

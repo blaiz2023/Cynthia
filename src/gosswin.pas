@@ -31,9 +31,9 @@ interface
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. 32 and 64 bit Windows api's (gosswin.pas)
-//## Version.................. 4.00.2099 (+160)
+//## Version.................. 4.00.2100 (+160)
 //## Items.................... 6
-//## Last Updated ............ 11apr2026, 02apr2026, 17dec2025, 16dec2025, 14dec2025, 08oct2025, 05oct2025, 26sep2025, 05sep2025, 31aug2025, 20aug2025, 11aug2025, 09aug2025, 29jul2025, 26jul2025, 04may2025, 17feb2024
+//## Last Updated ............ 22apr2026, 11apr2026, 02apr2026, 17dec2025, 16dec2025, 14dec2025, 08oct2025, 05oct2025, 26sep2025, 05sep2025, 31aug2025, 20aug2025, 11aug2025, 09aug2025, 29jul2025, 26jul2025, 04may2025, 17feb2024
 //## Lines of Code............ 7,800+
 //## Origin .................. Human generated and maintained
 //##
@@ -60,7 +60,7 @@ interface
 //## |------------------------|-------------------|-----------|-------------|--------------------------------------------------------
 //## | xbox__*                | Xbox Controller   | 1.00.741  | 10aug2025   | Xbox Controller support with ease-of-access support, complete with persistent button clicks and variable inputs/outputs scaled to floats between 0..1 and -1..1 - 29jul2025, 25jan2025
 //## | win__*                 | Win32 support     | 1.00.870  | 11apr2026   | Dynamic load and management procs for Win32 api calls - 03dec2025, 02oct2025, 26sep2025, 05sep2025, 31aug2025
-//## | win____*/win2____      | Win32 general     | 1.00.367  | 05oct2025   | Win32 general api procs for Windows specific features and functionality.  The leading "win____" denotes a Window's API call - 11aug2025, 26jul2025, 29apr2025, 01dec2024, 26nov2024, 04mar2024
+//## | win____*/win2____      | Win32 general     | 1.00.368  | 22apr2026   | Win32 general api procs for Windows specific features and functionality.  The leading "win____" denotes a Window's API call - 05oct2025, 11aug2025, 26jul2025, 29apr2025, 01dec2024, 26nov2024, 04mar2024
 //## | net____*               | Win32 network     | 1.00.110  | 04mar2024   | Win32 network api procs for low level network IO.  The leading "net____" denotes a Window's network API call
 //## | reg__*                 | family of procs   | 1.00.032  | 24jun2024   | Registry access procs (requires admin terminal for write/delete) - 03mar2024
 //## | service__*             | family of procs   | 1.00.170  | 04mar2024   | Service support, permits seamless switching from console app to app as a service
@@ -2798,6 +2798,7 @@ function win____MoveFile(lpExistingFileName, lpNewFileName: PChar): BOOL; stdcal
 function win____SetFileAttributes(lpFileName: PChar; dwFileAttributes: dword32): BOOL; stdcall; external kernel32 name 'SetFileAttributesA';
 function win____GetBitmapBits(Bitmap: hauto; Count: Longint; Bits: pauto): Longint; stdcall; external gdi32 name 'GetBitmapBits';
 function win____GetDIBits(DC: hauto; Bitmap: hauto; StartScan, NumScans: uint32; Bits: pauto; var BitInfo: TBitmapInfoHeader; Usage: uint32): longint32; stdcall; external gdi32 name 'GetDIBits';
+
 function win____IsClipboardFormatAvailable(format: uint32): BOOL; stdcall; external user32 name 'IsClipboardFormatAvailable';
 function win____EmptyClipboard: BOOL; stdcall; external user32 name 'EmptyClipboard';
 function win____OpenClipboard(hWndNewOwner: hauto): BOOL; stdcall; external user32 name 'OpenClipboard';
@@ -3205,6 +3206,8 @@ function win2____GetCurrentPackageFullName(var xPackageFullNameLen:longint;xOptN
 function win2____GetDpiForWindow(winHandle:hauto):longint; stdcall; external user32 name 'GetDpiForWindow';//10dec2025
 function win2____GetDpiForSystem:longint; stdcall; external user32 name 'GetDpiForSystem';//10dec2025
 
+function win2____GetClipboardSequenceNumber:longint; stdcall; external user32 name 'GetClipboardSequenceNumber';//22apr2026
+
 //############################################################################################################################################################
 //##
 //## END of automatic scan point AND emergency proc fallback support
@@ -3526,8 +3529,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,8)='gosswin.') then strdel1(xname,1,8) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.2099'
-else if (xname='date')       then result:='11apr2026'
+if      (xname='ver')        then result:='4.00.2100'
+else if (xname='date')       then result:='22apr2026'
 else if (xname='name')       then result:='Win32'
 else
    begin
@@ -4296,7 +4299,7 @@ var
    lnameindex,xlen,pc,lp,p2,p:longint;
    xfunc:boolean;
    xprocline,xorgprocname,str1,str2,xvarlist,xvarlistBARE,xreturntype,dname,lname,pname,vname:string;
-   xdefvalsline,xloadType,xfuncbody,xfuncbodyBARE,xfuncbody2,n,v,etmp:string;
+   xdefvalsline,xloadType,xfuncbody,xfuncbodyBARE,xfuncbody2,etmp:string;
    xdefvals:tfastvars;
    vc:char;
    xhasdefault,xcolon,bol1,bol2:boolean;
@@ -5163,9 +5166,9 @@ const
 var
    a:tdynamicstring;
    xcore:twinscannerinfo;
-   e,etmp,ecdprocline,dv,dv2:string;
-   xpointPrefixLEN,int1,p:longint;
-   bol1,xscanning:boolean;
+   e,etmp:string;
+   xpointPrefixLEN,p:longint;
+   xscanning:boolean;
 
    function emsg(const x:string):boolean;
    begin

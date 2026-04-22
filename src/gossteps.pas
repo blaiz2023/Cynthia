@@ -31,9 +31,9 @@ uses gosswin;
 //##
 //## ==========================================================================================================================================================================================================================
 //## Library.................. Text Pictures - System, Folder and App images (gossteps.pas)
-//## Version.................. 4.00.412 (+25)
+//## Version.................. 4.00.415 (+28)
 //## Items.................... 9
-//## Last Updated ............ 15apr2026, 10apr2026, 03apr2026, 01apr2026, 26mar2026, 25mar2026, 23mar2026, 21mar2026, 20mar2026, 18mar2026, 10mar2026, 07mar2026
+//## Last Updated ............ 22apr2026, 17apr2026, 15apr2026, 10apr2026, 03apr2026, 01apr2026, 26mar2026, 25mar2026, 23mar2026, 21mar2026, 20mar2026, 18mar2026, 10mar2026, 07mar2026
 //## Lines of Code............ 3,600+
 //## Origin .................. Human generated and maintained
 //##
@@ -442,6 +442,7 @@ procedure tep__20(const xindex:longint;const m20,c20:array of byte;const mtype,c
 procedure tep__20b(const xindex:longint;const m20,c20:pointer;const mtype,ctype:longint);//set tep
 procedure tep__24(const xindex:longint;const m24,c24:array of byte;const mtype,ctype:longint);//set tep
 procedure tep__24b(const xindex:longint;const m24,c24:pointer;const mtype,ctype:longint);//set tep
+procedure tep__32(const xindex:longint;const m32,c32:array of byte;const mtype,ctype:longint);//set tep
 
 function tep__tick(x:boolean):longint;//colored arrow
 function tep__tick2(x:boolean):longint;//font colored circle
@@ -987,6 +988,11 @@ mtep_cut20
 mtep_paste20
 :array[0..241] of byte=(
 137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,16,0,0,0,20,8,6,0,0,0,132,98,189,119,0,0,0,185,73,68,65,84,120,1,98,96,24,104,192,136,238,128,223,191,127,167,0,197,188,129,88,18,42,247,28,72,111,101,101,101,157,3,229,163,80,96,3,208,52,61,7,42,14,132,169,2,202,25,1,217,211,160,124,12,195,96,6,172,135,105,2,106,0,217,14,114,5,178,11,230,0,229,183,130,12,1,202,195,213,130,248,44,32,2,8,96,138,25,160,10,193,138,33,82,24,36,200,21,112,192,4,103,17,201,0,90,144,133,172,20,230,2,100,49,56,27,234,157,245,112,1,84,70,32,200,181,132,92,0,242,47,27,54,12,52,11,108,48,33,3,80,237,196,194,27,53,128,129,97,240,132,1,74,242,196,18,91,56,133,96,153,9,61,11,131,178,111,51,49,41,17,167,201,116,147,0,0,0,0,255,255,3,0,39,219,51,214,237,119,34,122,0,0,0,0,73,69,78,68,174,66,96,130);
+
+mtep_delete20
+:array[0..376] of byte=(
+137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,18,0,0,0,20,8,6,0,0,0,128,151,109,74,0,0,1,64,73,68,65,84,120,1,204,84,59,170,132,48,20,205,60,68,59,75,193,214,37,184,13,91,123,27,17,44,92,133,75,16,44,196,37,216,186,13,87,33,8,34,98,61,54,47,39,111,188,220,104,198,55,229,4,130,39,247,115,238,201,77,140,16,223,54,30,16,52,207,179,81,87,215,117,207,40,138,148,175,239,123,17,199,177,109,10,244,60,79,252,152,28,176,85,85,165,72,218,182,21,152,32,132,237,93,188,82,84,215,245,51,77,211,119,49,183,246,178,44,133,156,182,82,4,201,168,10,249,114,64,254,191,19,177,200,41,138,66,109,151,182,54,77,147,240,125,255,182,58,119,158,99,137,8,65,103,39,79,52,97,20,63,6,17,229,121,126,57,145,97,24,168,185,28,35,25,69,147,36,161,28,34,178,44,75,145,111,219,118,20,17,97,24,26,241,190,239,202,238,186,46,249,137,8,22,72,189,59,226,35,107,93,215,3,210,247,79,6,45,63,3,77,211,168,59,22,4,1,37,92,20,125,210,112,196,240,70,131,237,150,72,54,152,42,114,76,70,6,52,34,216,185,34,217,108,58,21,142,77,
+138,180,30,157,229,178,130,26,4,209,89,161,166,40,203,50,27,65,227,56,106,137,124,177,44,203,229,14,193,175,41,114,28,71,200,167,3,127,58,93,68,78,2,140,59,244,122,82,206,174,47,91,255,2,0,0,255,255,3,0,68,199,115,174,156,68,207,234,0,0,0,0,73,69,78,68,174,66,96,130);
 
 mtep_open20
 :array[0..298] of byte=(
@@ -1744,8 +1750,8 @@ xname:=strlow(xname);
 if (strcopy1(xname,1,9)='gossteps.') then strdel1(xname,1,9) else exit;
 
 //get
-if      (xname='ver')        then result:='4.00.412'
-else if (xname='date')       then result:='15apr2026'
+if      (xname='ver')        then result:='4.00.415'
+else if (xname='date')       then result:='22apr2026'
 else if (xname='name')       then result:='TEPs'
 else
    begin
@@ -2249,6 +2255,31 @@ end;//case
 
 end;
 
+procedure tep__32(const xindex:longint;const m32,c32:array of byte;const mtype,ctype:longint);//set tep
+
+   function cset:boolean;//set color
+   begin
+
+   result:=xtep__set( xindex ,32 ,ctype ,nil ,c32 );
+
+   end;
+
+   function mset:boolean;//set mono
+   begin
+
+   result:=xtep__set( xindex ,32 ,mtype  ,nil ,m32 );
+
+   end;
+
+begin
+
+case tep_mono of
+true:if not mset then cset;
+else if not cset then mset;
+end;//case
+
+end;
+
 procedure xtep__scale(const xvariableWidth:boolean;const xheightLimit,sw,sh:longint;var dw,dh:longint);//23mar2026
 begin
 
@@ -2273,9 +2304,9 @@ label
    skipend;
 
 var
-   v,e:string;
+   e:string;
    s,dtmp,d:tbasicimage;
-   xrootw,xrooth,dw,dh,int1,sw,sh:longint;
+   xrootw,xrooth,dw,dh:longint;
 
    function dscale(const v:longint):longint;
    begin
@@ -2762,7 +2793,7 @@ label
 var
    dslot,xlen,p:longint;
    ltime:comp;
-   n,e:string;
+   e:string;
    b:tstr8;
 
 begin
@@ -3212,6 +3243,7 @@ tepfacebook20         :s20('facebook');
 tepMastodon20         :s20('mastodon');
 teptwitter20          :s20('twitter');
 teppaste20            :s20('paste');
+tepdelete20           :s20('delete');
 tepselectall20        :s20('selectall');
 tepframe20            :s20('frame');
 tepBlank20            :s20('blank');
@@ -3450,6 +3482,7 @@ tepRedo20             :cm(tep_redo20,mtep_redo20);
 tepCut20              :cm(tep_cut20,mtep_cut20);
 tepCopy20             :cm(tep_copy20,mtep_copy20);
 tepPaste20            :cm(tep_paste20,mtep_paste20);
+tepDelete20           :m(mtep_delete20);
 tepSelectAll20        :cm(tep_selectall20,mtep_selectall20);
 tepVisual20           :cm(tep_visual20,mtep_visual20);//03jul2025
 tepInfo20             :cm(tep_info20,mtep_info20);//03jul2025
